@@ -1,0 +1,26 @@
+BTC-DOGE MOMENTUM TRADING STRATEGY
+==================================
+
+Optimal lag between BTC and DOGE: 0.0 minutes
+Optimal timeframe for momentum: 60m
+
+TOP INDICATORS BY IMPORTANCE:
+- corr_30m: 0.0358
+- doge_momentum_5m: 0.0318
+- macd_btc: 0.0309
+- btc_returns_lag_1: 0.0299
+- btc_momentum_15m: 0.0294
+- btc_rsi_lag_1: 0.0287
+- doge_returns: 0.0270
+- doge_momentum_15m: 0.0270
+- macd_signal_btc: 0.0267
+- btc_returns_lag_15: 0.0266
+
+TRADING STRATEGY:
+1. Monitor BTC for upward momentum (positive returns, RSI > 50, positive 15m momentum)
+2. When BTC shows upward momentum, expect DOGE to follow in approximately 0.0 minutes
+3. Use the model to predict DOGE's expected return
+4. Take a long position in DOGE when the model predicts returns above threshold
+5. Exit or avoid DOGE when BTC momentum turns negative or predicted returns fall below threshold
+
+Strategy performance: 0.0097 vs Buy-and-hold: 0.0176
