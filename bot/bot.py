@@ -3,6 +3,7 @@ import os
 import ccxt
 from routes.home import home_bp, create_home_route
 from routes.webhook import webhook_bp, create_webhook_route
+from routes.logs import logs_bp, create_logs_route
 
 app = Flask(__name__)
 
@@ -35,6 +36,10 @@ app.register_blueprint(home_bp)
 # Register the webhook route
 create_webhook_route(exchange)
 app.register_blueprint(webhook_bp)
+
+# Register the logs route
+create_logs_route()
+app.register_blueprint(logs_bp)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
