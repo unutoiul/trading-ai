@@ -1,4 +1,5 @@
 from flask import Flask
+import os
 import ccxt
 from routes.home import home_bp, create_home_route
 from routes.webhook import webhook_bp, create_webhook_route
@@ -36,7 +37,6 @@ create_webhook_route(exchange)
 app.register_blueprint(webhook_bp)
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
-
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)
 
