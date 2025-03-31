@@ -1,0 +1,292 @@
+BTC-DOGE MOMENTUM PATTERN ANALYSIS
+==================================
+
+SUMMARY OF IDENTIFIED PATTERNS
+
+VOLATILITY BREAKOUT
+  Instances: 992
+  Optimal lag: 13 minutes
+  Correlation with DOGE returns: -0.0185
+  Average DOGE return at optimal lag: -0.000106
+  Win rate at optimal lag: 45.77%
+
+  Lag-by-lag analysis:
+    Lag 1 min: Return = -0.000091, Win Rate = 46.37%
+    Lag 2 min: Return = -0.000041, Win Rate = 48.49%
+    Lag 3 min: Return = -0.000067, Win Rate = 48.49%
+    Lag 4 min: Return = -0.000059, Win Rate = 48.89%
+    Lag 5 min: Return = -0.000043, Win Rate = 49.80%
+    Lag 6 min: Return = -0.000033, Win Rate = 50.20%
+    Lag 7 min: Return = 0.000067, Win Rate = 52.62%
+    Lag 8 min: Return = -0.000055, Win Rate = 47.18%
+    Lag 9 min: Return = -0.000027, Win Rate = 48.49%
+    Lag 10 min: Return = -0.000066, Win Rate = 45.36%
+    Lag 11 min: Return = -0.000066, Win Rate = 47.58%
+    Lag 12 min: Return = -0.000002, Win Rate = 49.50%
+    Lag 13 min: Return = -0.000106, Win Rate = 45.77%
+    Lag 14 min: Return = -0.000073, Win Rate = 48.49%
+    Lag 15 min: Return = -0.000022, Win Rate = 48.79%
+    Lag 16 min: Return = -0.000000, Win Rate = 46.88%
+    Lag 17 min: Return = -0.000002, Win Rate = 49.90%
+    Lag 18 min: Return = -0.000046, Win Rate = 46.98%
+    Lag 19 min: Return = -0.000044, Win Rate = 50.30%
+    Lag 20 min: Return = -0.000045, Win Rate = 47.78%
+
+STEADY CLIMB
+  Instances: 5696
+  Optimal lag: 1 minutes
+  Correlation with DOGE returns: 0.0173
+  Average DOGE return at optimal lag: 0.000039
+  Win rate at optimal lag: 51.11%
+
+  Lag-by-lag analysis:
+    Lag 1 min: Return = 0.000039, Win Rate = 51.11%
+    Lag 2 min: Return = -0.000008, Win Rate = 48.53%
+    Lag 3 min: Return = 0.000007, Win Rate = 49.10%
+    Lag 4 min: Return = 0.000014, Win Rate = 49.46%
+    Lag 5 min: Return = 0.000015, Win Rate = 50.02%
+    Lag 6 min: Return = 0.000008, Win Rate = 49.65%
+    Lag 7 min: Return = 0.000005, Win Rate = 49.26%
+    Lag 8 min: Return = -0.000004, Win Rate = 48.47%
+    Lag 9 min: Return = 0.000006, Win Rate = 48.37%
+    Lag 10 min: Return = 0.000001, Win Rate = 49.28%
+    Lag 11 min: Return = 0.000017, Win Rate = 50.28%
+    Lag 12 min: Return = 0.000004, Win Rate = 48.96%
+    Lag 13 min: Return = 0.000001, Win Rate = 48.65%
+    Lag 14 min: Return = -0.000003, Win Rate = 48.56%
+    Lag 15 min: Return = 0.000011, Win Rate = 49.70%
+    Lag 16 min: Return = 0.000003, Win Rate = 48.77%
+    Lag 17 min: Return = -0.000005, Win Rate = 48.42%
+    Lag 18 min: Return = -0.000006, Win Rate = 48.89%
+    Lag 19 min: Return = -0.000001, Win Rate = 47.74%
+    Lag 20 min: Return = 0.000004, Win Rate = 48.81%
+
+RSI OVERBOUGHT
+  Instances: 1528
+  Optimal lag: 2 minutes
+  Correlation with DOGE returns: -0.0172
+  Average DOGE return at optimal lag: -0.000079
+  Win rate at optimal lag: 42.60%
+
+  Lag-by-lag analysis:
+    Lag 1 min: Return = -0.000045, Win Rate = 42.87%
+    Lag 2 min: Return = -0.000079, Win Rate = 42.60%
+    Lag 3 min: Return = -0.000036, Win Rate = 44.50%
+    Lag 4 min: Return = -0.000037, Win Rate = 46.34%
+    Lag 5 min: Return = -0.000009, Win Rate = 46.14%
+    Lag 6 min: Return = -0.000030, Win Rate = 46.86%
+    Lag 7 min: Return = -0.000027, Win Rate = 45.94%
+    Lag 8 min: Return = -0.000011, Win Rate = 47.32%
+    Lag 9 min: Return = -0.000015, Win Rate = 47.45%
+    Lag 10 min: Return = 0.000005, Win Rate = 46.86%
+    Lag 11 min: Return = -0.000040, Win Rate = 46.14%
+    Lag 12 min: Return = -0.000054, Win Rate = 46.47%
+    Lag 13 min: Return = -0.000045, Win Rate = 46.79%
+    Lag 14 min: Return = 0.000001, Win Rate = 47.84%
+    Lag 15 min: Return = 0.000027, Win Rate = 47.84%
+    Lag 16 min: Return = 0.000005, Win Rate = 46.47%
+    Lag 17 min: Return = 0.000021, Win Rate = 48.49%
+    Lag 18 min: Return = 0.000022, Win Rate = 47.32%
+    Lag 19 min: Return = -0.000006, Win Rate = 47.05%
+    Lag 20 min: Return = -0.000009, Win Rate = 47.19%
+
+STRONG UP
+  Instances: 3244
+  Optimal lag: 2 minutes
+  Correlation with DOGE returns: -0.0139
+  Average DOGE return at optimal lag: -0.000043
+  Win rate at optimal lag: 45.47%
+
+  Lag-by-lag analysis:
+    Lag 1 min: Return = 0.000000, Win Rate = 47.29%
+    Lag 2 min: Return = -0.000043, Win Rate = 45.47%
+    Lag 3 min: Return = -0.000037, Win Rate = 45.16%
+    Lag 4 min: Return = -0.000021, Win Rate = 46.33%
+    Lag 5 min: Return = -0.000004, Win Rate = 46.95%
+    Lag 6 min: Return = -0.000019, Win Rate = 47.16%
+    Lag 7 min: Return = -0.000041, Win Rate = 46.52%
+    Lag 8 min: Return = -0.000029, Win Rate = 47.47%
+    Lag 9 min: Return = -0.000024, Win Rate = 47.13%
+    Lag 10 min: Return = 0.000004, Win Rate = 48.30%
+    Lag 11 min: Return = 0.000003, Win Rate = 48.34%
+    Lag 12 min: Return = -0.000023, Win Rate = 47.81%
+    Lag 13 min: Return = -0.000016, Win Rate = 48.95%
+    Lag 14 min: Return = -0.000017, Win Rate = 48.15%
+    Lag 15 min: Return = 0.000015, Win Rate = 49.23%
+    Lag 16 min: Return = 0.000023, Win Rate = 49.01%
+    Lag 17 min: Return = -0.000008, Win Rate = 48.12%
+    Lag 18 min: Return = 0.000024, Win Rate = 49.45%
+    Lag 19 min: Return = 0.000008, Win Rate = 49.41%
+    Lag 20 min: Return = 0.000012, Win Rate = 49.72%
+
+MACD CROSSOVER
+  Instances: 1772
+  Optimal lag: 12 minutes
+  Correlation with DOGE returns: -0.0131
+  Average DOGE return at optimal lag: -0.000056
+  Win rate at optimal lag: 47.23%
+
+  Lag-by-lag analysis:
+    Lag 1 min: Return = 0.000040, Win Rate = 51.81%
+    Lag 2 min: Return = -0.000037, Win Rate = 47.40%
+    Lag 3 min: Return = 0.000013, Win Rate = 49.77%
+    Lag 4 min: Return = 0.000012, Win Rate = 49.63%
+    Lag 5 min: Return = 0.000025, Win Rate = 49.97%
+    Lag 6 min: Return = 0.000002, Win Rate = 48.90%
+    Lag 7 min: Return = 0.000010, Win Rate = 47.09%
+    Lag 8 min: Return = -0.000016, Win Rate = 48.36%
+    Lag 9 min: Return = 0.000004, Win Rate = 49.72%
+    Lag 10 min: Return = 0.000003, Win Rate = 48.87%
+    Lag 11 min: Return = -0.000010, Win Rate = 48.59%
+    Lag 12 min: Return = -0.000056, Win Rate = 47.23%
+    Lag 13 min: Return = -0.000045, Win Rate = 48.14%
+    Lag 14 min: Return = -0.000017, Win Rate = 49.49%
+    Lag 15 min: Return = -0.000005, Win Rate = 48.76%
+    Lag 16 min: Return = -0.000013, Win Rate = 48.36%
+    Lag 17 min: Return = 0.000027, Win Rate = 48.53%
+    Lag 18 min: Return = 0.000000, Win Rate = 50.34%
+    Lag 19 min: Return = 0.000006, Win Rate = 47.91%
+    Lag 20 min: Return = 0.000028, Win Rate = 49.46%
+
+RSI OVERSOLD
+  Instances: 1544
+  Optimal lag: 5 minutes
+  Correlation with DOGE returns: -0.0126
+  Average DOGE return at optimal lag: -0.000058
+  Win rate at optimal lag: 49.35%
+
+  Lag-by-lag analysis:
+    Lag 1 min: Return = -0.000006, Win Rate = 53.17%
+    Lag 2 min: Return = -0.000007, Win Rate = 52.66%
+    Lag 3 min: Return = 0.000003, Win Rate = 51.30%
+    Lag 4 min: Return = -0.000026, Win Rate = 51.17%
+    Lag 5 min: Return = -0.000058, Win Rate = 49.35%
+    Lag 6 min: Return = -0.000042, Win Rate = 49.16%
+    Lag 7 min: Return = -0.000001, Win Rate = 50.13%
+    Lag 8 min: Return = 0.000015, Win Rate = 49.94%
+    Lag 9 min: Return = -0.000026, Win Rate = 48.83%
+    Lag 10 min: Return = -0.000002, Win Rate = 48.25%
+    Lag 11 min: Return = -0.000010, Win Rate = 49.35%
+    Lag 12 min: Return = 0.000011, Win Rate = 49.68%
+    Lag 13 min: Return = 0.000010, Win Rate = 49.03%
+    Lag 14 min: Return = -0.000021, Win Rate = 48.25%
+    Lag 15 min: Return = -0.000049, Win Rate = 47.41%
+    Lag 16 min: Return = -0.000025, Win Rate = 48.83%
+    Lag 17 min: Return = -0.000019, Win Rate = 49.03%
+    Lag 18 min: Return = 0.000033, Win Rate = 50.13%
+    Lag 19 min: Return = 0.000014, Win Rate = 49.61%
+    Lag 20 min: Return = -0.000012, Win Rate = 49.68%
+
+STRONG DOWN
+  Instances: 3418
+  Optimal lag: 3 minutes
+  Correlation with DOGE returns: 0.0112
+  Average DOGE return at optimal lag: 0.000033
+  Win rate at optimal lag: 52.22%
+
+  Lag-by-lag analysis:
+    Lag 1 min: Return = -0.000003, Win Rate = 51.49%
+    Lag 2 min: Return = 0.000017, Win Rate = 52.46%
+    Lag 3 min: Return = 0.000033, Win Rate = 52.22%
+    Lag 4 min: Return = 0.000003, Win Rate = 51.23%
+    Lag 5 min: Return = -0.000003, Win Rate = 50.70%
+    Lag 6 min: Return = -0.000009, Win Rate = 50.47%
+    Lag 7 min: Return = 0.000005, Win Rate = 50.99%
+    Lag 8 min: Return = 0.000014, Win Rate = 51.32%
+    Lag 9 min: Return = 0.000016, Win Rate = 50.88%
+    Lag 10 min: Return = 0.000009, Win Rate = 50.29%
+    Lag 11 min: Return = -0.000016, Win Rate = 49.88%
+    Lag 12 min: Return = 0.000011, Win Rate = 50.99%
+    Lag 13 min: Return = 0.000007, Win Rate = 50.47%
+    Lag 14 min: Return = 0.000013, Win Rate = 49.94%
+    Lag 15 min: Return = 0.000003, Win Rate = 49.97%
+    Lag 16 min: Return = 0.000000, Win Rate = 49.71%
+    Lag 17 min: Return = -0.000023, Win Rate = 49.33%
+    Lag 18 min: Return = -0.000005, Win Rate = 50.44%
+    Lag 19 min: Return = -0.000018, Win Rate = 49.71%
+    Lag 20 min: Return = -0.000013, Win Rate = 49.18%
+
+STOCH OVERSOLD BOUNCE
+  Instances: 2249
+  Optimal lag: 2 minutes
+  Correlation with DOGE returns: 0.0104
+  Average DOGE return at optimal lag: 0.000039
+  Win rate at optimal lag: 50.91%
+
+  Lag-by-lag analysis:
+    Lag 1 min: Return = 0.000002, Win Rate = 49.84%
+    Lag 2 min: Return = 0.000039, Win Rate = 50.91%
+    Lag 3 min: Return = -0.000017, Win Rate = 51.09%
+    Lag 4 min: Return = -0.000006, Win Rate = 49.98%
+    Lag 5 min: Return = -0.000025, Win Rate = 48.20%
+    Lag 6 min: Return = 0.000002, Win Rate = 50.51%
+    Lag 7 min: Return = -0.000001, Win Rate = 50.87%
+    Lag 8 min: Return = 0.000006, Win Rate = 49.93%
+    Lag 9 min: Return = -0.000024, Win Rate = 49.31%
+    Lag 10 min: Return = -0.000008, Win Rate = 48.82%
+    Lag 11 min: Return = 0.000033, Win Rate = 51.51%
+    Lag 12 min: Return = -0.000001, Win Rate = 49.04%
+    Lag 13 min: Return = 0.000002, Win Rate = 49.58%
+    Lag 14 min: Return = -0.000016, Win Rate = 49.20%
+    Lag 15 min: Return = -0.000017, Win Rate = 48.84%
+    Lag 16 min: Return = -0.000010, Win Rate = 50.49%
+    Lag 17 min: Return = 0.000009, Win Rate = 49.55%
+    Lag 18 min: Return = 0.000000, Win Rate = 50.80%
+    Lag 19 min: Return = 0.000014, Win Rate = 50.27%
+    Lag 20 min: Return = 0.000001, Win Rate = 49.11%
+
+STEADY DECLINE
+  Instances: 5191
+  Optimal lag: 5 minutes
+  Correlation with DOGE returns: 0.0079
+  Average DOGE return at optimal lag: 0.000018
+  Win rate at optimal lag: 50.55%
+
+  Lag-by-lag analysis:
+    Lag 1 min: Return = -0.000004, Win Rate = 49.07%
+    Lag 2 min: Return = 0.000006, Win Rate = 50.34%
+    Lag 3 min: Return = 0.000012, Win Rate = 50.13%
+    Lag 4 min: Return = 0.000009, Win Rate = 50.05%
+    Lag 5 min: Return = 0.000018, Win Rate = 50.55%
+    Lag 6 min: Return = 0.000005, Win Rate = 50.41%
+    Lag 7 min: Return = -0.000007, Win Rate = 49.26%
+    Lag 8 min: Return = 0.000011, Win Rate = 50.22%
+    Lag 9 min: Return = 0.000004, Win Rate = 50.09%
+    Lag 10 min: Return = 0.000004, Win Rate = 50.16%
+    Lag 11 min: Return = -0.000008, Win Rate = 48.93%
+    Lag 12 min: Return = 0.000006, Win Rate = 50.43%
+    Lag 13 min: Return = 0.000006, Win Rate = 50.65%
+    Lag 14 min: Return = -0.000006, Win Rate = 49.18%
+    Lag 15 min: Return = 0.000006, Win Rate = 49.87%
+    Lag 16 min: Return = -0.000001, Win Rate = 49.41%
+    Lag 17 min: Return = -0.000015, Win Rate = 49.49%
+    Lag 18 min: Return = 0.000002, Win Rate = 49.45%
+    Lag 19 min: Return = -0.000006, Win Rate = 49.74%
+    Lag 20 min: Return = 0.000007, Win Rate = 49.62%
+
+
+PATTERN DEFINITIONS
+- strong_up: BTC shows strong upward momentum with RSI > 60
+- strong_down: BTC shows strong downward momentum with RSI < 40
+- volatility_breakout: Sudden increase in BTC volatility with large price movement
+- steady_climb: Sustained upward movement with lower volatility
+- steady_decline: Sustained downward movement with lower volatility
+- rsi_divergence: Price increases while RSI decreases
+- macd_crossover: MACD line crosses above the signal line
+- stoch_oversold_bounce: Stochastic oscillator bounces from oversold territory
+- rsi_overbought: RSI exceeds 70, indicating overbought conditions
+- rsi_oversold: RSI falls below 30, indicating oversold conditions
+
+
+KEY FINDINGS
+1. Most predictive pattern: VOLATILITY BREAKOUT
+   - Correlation: -0.0185
+   - Optimal lag: 13 minutes
+
+2. Pattern with highest average return: STEADY CLIMB
+   - Average return: 0.000039
+   - Win rate: 51.11%
+
+3. Pattern with highest win rate: STRONG DOWN
+   - Win rate: 52.22%
+   - Average return: 0.000033
