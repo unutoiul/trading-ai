@@ -10,6 +10,9 @@ from src.data_fetch import fetch_data as fetch_crypto_data
 import queue
 import threading
 import time
+from dotenv import load_dotenv
+load_dotenv()  # Load environment variables from .env file
+print('ANTHROPIC_API_KEY: ',os.environ.get("ANTHROPIC_API_KEY"))
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.config['FETCH_RESULTS'] = None  # Initialize the config variable
@@ -183,8 +186,8 @@ def run_analysis():
             # Redirect stdout to our custom stream
             with redirect_stdout(LoggingStream()):
                 try:
-                    # Override sys.argv
-                    sys.argv = ['run.py', '--btc', btc_file, '--doge', alt_file, '--use-ml']
+                    # Override sys.argvf
+                    sys.argv = ['run.py', '--btc', btc_file, '--doge', alt_file, '--use-ml', '--optimize-strategy']
                     
                     # Run analysis
                     result_dir = main(return_results_dir=True)
@@ -383,11 +386,12 @@ def serve_results_file(filename):
 
 @app.route('/generate_strategy', methods=['POST'])
 def generate_strategy():
-    """Generate a Pine Script strategy based on analysis results."""
+    """Generate a Pine Script strategy based on selected report."""
     try:
         data = request.json
         
         # Extract parameters
+        report_path = data.get('report_path')
         strategy_type = data.get('strategy_type', 'momentum')
         risk_per_trade = float(data.get('risk_per_trade', 1.0))
         use_stop_loss = data.get('use_stop_loss', True)
@@ -395,96 +399,110 @@ def generate_strategy():
         use_take_profit = data.get('use_take_profit', True)
         take_profit_percent = float(data.get('take_profit_percent', 10.0))
         
-        # Check for Claude API key - now REQUIRED
+        # Check for Claude API key
         if not os.environ.get("ANTHROPIC_API_KEY"):
             return jsonify({'error': 'Claude API key is required. Please set the ANTHROPIC_API_KEY environment variable.'}), 400
-            
-        # Get latest analysis results
-        last_result_dir = app.config.get('LAST_RESULT_DIR')
-        if not last_result_dir:
-            return jsonify({'error': 'No analysis results found. Run an analysis first.'}), 400
-            
-        # Make sure results directory exists
-        analysis_dir = os.path.join(app.root_path, last_result_dir)
-        if not os.path.exists(analysis_dir):
-            return jsonify({'error': 'Analysis results directory not found.'}), 404
-            
-        # Load pattern stats and ML results
-        pattern_stats = None
-        ml_results = None
         
-        try:
-            # Try to load pattern stats
-            pattern_stats_file = os.path.join(analysis_dir, 'pattern_stats.json')
-            if os.path.exists(pattern_stats_file):
-                with open(pattern_stats_file, 'r') as f:
-                    pattern_stats = json.load(f)
-                    
-            # Try to load ML results if they exist
-            ml_results_file = os.path.join(analysis_dir, 'ml_results.json')
-            if os.path.exists(ml_results_file):
-                with open(ml_results_file, 'r') as f:
-                    ml_results = json.load(f)
-        except Exception as e:
-            print(f"Error loading analysis results: {str(e)}")
-            return jsonify({'error': f'Error loading analysis results: {str(e)}'}), 500
+        # Check if report exists
+        if not report_path:
+            return jsonify({'error': 'Please select an analysis report.'}), 400
             
-        if not pattern_stats:
-            return jsonify({'error': 'No pattern analysis results found.'}), 400
-            
-        # Create strategies directory if it doesn't exist
-        strategies_dir = os.path.join(app.root_path, 'results', 'strategies')
-        if not os.path.exists(strategies_dir):
-            os.makedirs(strategies_dir)
-            
-        # Generate timestamp for filename
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        full_report_path = os.path.join(app.root_path, 'results', report_path)
+        if not os.path.exists(full_report_path):
+            return jsonify({'error': f'Report file not found: {report_path}'}), 404
+        
+        # Read the report content
+        with open(full_report_path, 'r') as f:
+            report_content = f.read()
         
         # Use Claude AI to generate strategy
         from src.ai_analysis import ClaudeAnalyzer
         
         try:
+            # Create strategies directory if it doesn't exist
+            strategies_dir = os.path.join(app.root_path, 'results', 'strategies')
+            if not os.path.exists(strategies_dir):
+                os.makedirs(strategies_dir)
+                
+            # Generate timestamp for filename
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            
+            # Generate Pine Script from report
             analyzer = ClaudeAnalyzer()
-            # Configure prompt with user parameters
-            pine_results = analyzer.generate_pine_script(
-                pattern_stats, 
-                ml_results,
-                strategy_type=strategy_type,
-                risk_per_trade=risk_per_trade,
-                use_stop_loss=use_stop_loss,
-                stop_loss_percent=stop_loss_percent,
-                use_take_profit=use_take_profit,
-                take_profit_percent=take_profit_percent
+            
+            # Generate prompt for Claude based on the report
+            prompt = f"""
+# Generate Pine Script Strategy from Analysis Report
+
+Below is an analysis report of Bitcoin-Dogecoin trading patterns. Use this report to create a Pine Script strategy for TradingView.
+
+## Strategy Parameters:
+- Strategy Type: {strategy_type}
+- Risk Per Trade: {risk_per_trade}%
+- Use Stop Loss: {'Yes' if use_stop_loss else 'No'}
+- Stop Loss Percentage: {stop_loss_percent}%
+- Use Take Profit: {'Yes' if use_take_profit else 'No'}
+- Take Profit Percentage: {take_profit_percent}%
+
+## Analysis Report:
+{report_content}
+
+## Instructions:
+1. Create a Pine Script v5 strategy based on the patterns and insights in the report
+2. Implement the specific strategy type ({strategy_type}) requested
+3. Use the risk parameters provided
+4. Focus on generating actionable trading signals based on BTC patterns affecting DOGE
+5. Include appropriate comments explaining the strategy logic
+
+Respond with just the complete Pine Script code in a code block.
+"""
+            
+            # Call Claude API directly for this custom prompt
+            response = analyzer.client.messages.create(
+                model=analyzer.model,
+                max_tokens=4000,
+                temperature=0.1,
+                system="You are an expert Pine Script developer who specializes in creating algorithmic trading strategies for TradingView. You write clean, optimized, and well-commented code that follows Pine Script best practices.",
+                messages=[
+                    {"role": "user", "content": prompt}
+                ]
             )
             
-            if 'error' in pine_results:
-                return jsonify({'error': f"Claude API error: {pine_results['error']}"}), 500
-                
-            strategy_content = pine_results['pine_script']
+            # Extract code from response
+            full_response = response.content[0].text
+            
+            # Try to extract just the Pine Script code between ```pine and ``` if it exists
+            import re
+            code_match = re.search(r'```pine\n(.*?)```', full_response, re.DOTALL)
+            if code_match:
+                pine_script = code_match.group(1)
+            else:
+                # If no code block, just use the whole response
+                pine_script = full_response
+            
+            # Save the strategy to file
             strategy_filename = f"claude_strategy_{strategy_type}_{timestamp}.pine"
+            strategy_path = os.path.join(strategies_dir, strategy_filename)
+            with open(strategy_path, 'w') as f:
+                f.write(pine_script)
+                
+            # Create a plain text version for viewing in browser
+            view_filename = f"{strategy_filename}.txt"
+            view_path = os.path.join(strategies_dir, view_filename)
+            with open(view_path, 'w') as f:
+                f.write(pine_script)
+                
+            return jsonify({
+                'status': 'success',
+                'message': 'Strategy generated successfully',
+                'download_url': f'/results/strategies/{strategy_filename}',
+                'view_url': f'/results/strategies/{view_filename}',
+                'filename': strategy_filename
+            })
             
         except Exception as e:
-            return jsonify({'error': f"Error generating Claude strategy: {str(e)}"}), 500
+            return jsonify({'error': f"Error generating strategy: {str(e)}"}), 500
             
-        # Save the strategy to file
-        strategy_path = os.path.join(strategies_dir, strategy_filename)
-        with open(strategy_path, 'w') as f:
-            f.write(strategy_content)
-            
-        # Create a plain text version for viewing in browser
-        view_filename = f"{strategy_filename}.txt"
-        view_path = os.path.join(strategies_dir, view_filename)
-        with open(view_path, 'w') as f:
-            f.write(strategy_content)
-            
-        return jsonify({
-            'status': 'success',
-            'message': 'Strategy generated successfully',
-            'download_url': f'/results/strategies/{strategy_filename}',
-            'view_url': f'/results/strategies/{view_filename}',
-            'filename': strategy_filename
-        })
-        
     except Exception as e:
         return jsonify({'error': f'Strategy generation failed: {str(e)}'}), 500
 
@@ -503,6 +521,158 @@ def check_claude_api():
     return jsonify({
         'available': bool(api_key)
     })
+
+@app.route('/list_reports')
+def list_reports():
+    """List all available analysis reports."""
+    try:
+        reports = []
+        
+        # Check if the results directory exists
+        if not os.path.exists('results'):
+            return jsonify({'reports': []})
+        
+        # Look for report files in result directories
+        for result_dir in os.listdir('results'):
+            report_dir = os.path.join('results', result_dir, 'reports')
+            if os.path.exists(report_dir):
+                for file in os.listdir(report_dir):
+                    if file.endswith('_report.txt'):
+                        reports.append({
+                            'path': os.path.join(result_dir, 'reports', file),
+                            'name': f"{result_dir}: {file}",
+                            'date': os.path.getmtime(os.path.join(report_dir, file))
+                        })
+        
+        # Sort by date (newest first)
+        reports.sort(key=lambda x: x['date'], reverse=True)
+        
+        return jsonify({'reports': reports})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/generate_strategy_from_params')
+def generate_strategy_from_params():
+    """Generate a Pine Script strategy from saved optimization parameters."""
+    try:
+        result_dir = request.args.get('result_dir')
+        if not result_dir:
+            return jsonify({'error': 'No result directory specified'}), 400
+            
+        # Validate the path (security check)
+        if '..' in result_dir or '/' in result_dir:
+            return jsonify({'error': 'Invalid result directory'}), 400
+            
+        # Path to strategy parameters
+        params_path = os.path.join('results', result_dir, 'reports', 'strategy_params.json')
+        if not os.path.exists(params_path):
+            return jsonify({'error': 'Strategy parameters not found'}), 404
+            
+        # Load strategy parameters
+        with open(params_path, 'r') as f:
+            strategy_data = json.load(f)
+            
+        # Generate the Pine Script
+        pine_script = generate_optimized_pine_script(strategy_data)
+        
+        # Set filename
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"optimized_strategy_{timestamp}.pine"
+        
+        # Create response with file download
+        response = Response(pine_script)
+        response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response.headers['Content-Type'] = 'text/plain'
+        
+        return response
+        
+    except Exception as e:
+        return jsonify({'error': f'Error generating strategy: {str(e)}'}), 500
+        
+def generate_optimized_pine_script(strategy_data):
+    """Generate Pine Script from optimized strategy parameters."""
+    best_params = strategy_data.get('best_params', {})
+    performance = strategy_data.get('performance_summary', {})
+    
+    script = f"""// @version=5
+// Optimized BTC-Altcoin Strategy
+// Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+// 
+// PERFORMANCE METRICS:
+// Win Rate: {performance.get('win_rate', 0)*100:.1f}%
+// Profit Factor: {performance.get('profit_factor', 0):.2f}
+// Total Return: {performance.get('total_return_pct', 0):.2f}%
+// Max Drawdown: {performance.get('max_drawdown', 0):.2f}%
+// Sharpe Ratio: {performance.get('sharpe_ratio', 0):.2f}
+
+strategy("ML Optimized BTC-Altcoin Strategy", overlay=true)
+
+// === Input Parameters ===
+// These parameters were optimized by machine learning
+stopLossPct = input.float({best_params.get('stop_loss_pct', 2.0)}, "Stop Loss %", minval=0.1, maxval=20)
+takeProfitPct = input.float({best_params.get('take_profit_pct', 5.0)}, "Take Profit %", minval=0.1, maxval=50)
+patternLag = input.int({best_params.get('pattern_lag', 5)}, "Pattern Signal Lag", minval=1, maxval=20)
+positionSizePct = input.float({best_params.get('position_size_pct', 10.0)}, "Position Size %", minval=1, maxval=100)
+
+// === Get BTC Data ===
+// We need BTC data to detect patterns
+btcSymbol = input.symbol("BTCUSDT", "BTC Symbol")
+useCurrentTimeframe = input.bool(true, "Use Current Timeframe")
+btcTimeframe = useCurrentTimeframe ? timeframe.period : input.timeframe("15", "BTC Timeframe")
+
+[btcOpen, btcHigh, btcLow, btcClose] = request.security(btcSymbol, btcTimeframe, [open, high, low, close])
+btcVol = request.security(btcSymbol, btcTimeframe, volume)
+
+// === Pattern Detection ===
+// Detecting the "{best_params.get('use_pattern', 'btc_bullish_momentum')}" pattern
+btcReturns = (btcClose - btcClose[1]) / btcClose[1] * 100
+btcVolRatio = btcVol / ta.sma(btcVol, 20)
+
+// Pattern definitions
+btcBullishMomentum = btcReturns > 0.8 and btcClose > btcOpen and btcVolRatio > 1.2
+btcBearishMomentum = btcReturns < -0.8 and btcClose < btcOpen and btcVolRatio > 1.2
+btcSidewaysAction = math.abs(btcReturns) < 0.3 and btcVolRatio < 0.8
+btcBreakout = btcReturns > 1.5 and btcClose > btcClose[1] and btcVolRatio > 1.5
+
+// === Strategy Logic ===
+// Entry condition based on optimized pattern and lag
+usePattern = "{best_params.get('use_pattern', 'btc_bullish_momentum')}"
+patternSignal = false
+
+if (usePattern == "strong_up")
+    patternSignal := btcBullishMomentum
+else if (usePattern == "strong_down")
+    patternSignal := btcBearishMomentum
+else if (usePattern == "steady_climb" or usePattern == "steady_decline")
+    patternSignal := btcSidewaysAction
+else if (usePattern == "volatility_breakout")
+    patternSignal := btcBreakout
+else
+    patternSignal := btcBullishMomentum // default
+
+// Signal with lag
+entryCondition = patternSignal[patternLag]
+
+// === Position Management ===
+if (entryCondition and strategy.position_size == 0)
+    strategy.entry("Long", strategy.long, qty=strategy.equity * positionSizePct / 100 / close)
+    
+    if (stopLossPct > 0)
+        strategy.exit("SL/TP", "Long", 
+            stop=strategy.position_avg_price * (1 - stopLossPct/100), 
+            limit=strategy.position_avg_price * (1 + takeProfitPct/100))
+
+// === Plot Signals ===
+plotshape(entryCondition, title="Entry Signal", location=location.belowbar, color=color.green, style=shape.triangleup, size=size.small)
+
+// === Strategy Notes ===
+// This strategy was optimized using machine learning
+// It detects specific Bitcoin patterns that precede altcoin moves
+// The parameters have been optimized for maximum returns with acceptable risk
+// Always monitor the market and adjust parameters if needed
+"""
+    
+    return script
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

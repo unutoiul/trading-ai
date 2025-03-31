@@ -1,7 +1,7 @@
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend that's thread-safe
 
-"""Machine learning models for crypto price prediction."""
+"""Machine learning models for crypto pattern analysis and strategy optimization."""
 
 import numpy as np
 import pandas as pd
@@ -55,6 +55,32 @@ def prepare_features_targets(data, target_col='doge_returns', lag_periods=range(
     
     return feature_data, target_data, feature_data.columns.tolist()
 
+def prepare_features_for_analysis(data, feature_cols=None):
+    """
+    Prepare features for pattern analysis and strategy optimization.
+    
+    Args:
+        data: DataFrame with combined BTC and DOGE data
+        feature_cols: List of columns to use as features
+        
+    Returns:
+        Processed feature DataFrame
+    """
+    # If no feature columns specified, use numeric columns except pattern columns
+    if feature_cols is None:
+        feature_cols = [col for col in data.select_dtypes(include=['number']).columns 
+                       if not ('strong_' in col or 'volatility_' in col or 
+                              'steady_' in col or 'rsi_' in col or 'macd_' in col or
+                              'stoch_' in col)]
+    
+    # Create feature DataFrame
+    feature_data = data[feature_cols].copy()
+    
+    # Drop rows with NaN values
+    feature_data = feature_data.dropna()
+    
+    return feature_data, feature_data.columns.tolist()
+
 def train_xgboost_model(X_train, y_train, params=None):
     """
     Train an XGBoost regression model for crypto returns prediction.
@@ -83,6 +109,37 @@ def train_xgboost_model(X_train, y_train, params=None):
     
     model = xgb.XGBRegressor(**params)
     model.fit(X_train, y_train)
+    
+    return model
+
+def train_feature_importance_model(X, y, params=None):
+    """
+    Train an XGBoost model to identify important features for strategy optimization.
+    
+    Args:
+        X: Features
+        y: Strategy performance metric (e.g., Sharpe ratio)
+        params: XGBoost parameters
+        
+    Returns:
+        Trained XGBoost model
+    """
+    # Default XGBoost parameters
+    if params is None:
+        params = {
+            'n_estimators': 100,
+            'learning_rate': 0.05,
+            'max_depth': 4,
+            'min_child_weight': 1,
+            'gamma': 0,
+            'subsample': 0.8,
+            'colsample_bytree': 0.8,
+            'objective': 'reg:squarederror',
+            'random_state': 42
+        }
+    
+    model = xgb.XGBRegressor(**params)
+    model.fit(X, y)
     
     return model
 
@@ -139,7 +196,7 @@ def plot_feature_importance(model, feature_names, output_dir):
     plt.barh(range(len(indices)), importance[indices])
     plt.yticks(range(len(indices)), [feature_names[i] for i in indices])
     plt.xlabel('Feature Importance')
-    plt.title('XGBoost Feature Importance')
+    plt.title('Important Features for Strategy Performance')
     plt.tight_layout()
     
     # Save plot
@@ -170,6 +227,32 @@ def plot_shap_values(model, X_test, feature_names, output_dir):
         shap.summary_plot(shap_values, X_test, plot_type="bar", feature_names=feature_names, show=False)
         plt.tight_layout()
         plt.savefig(os.path.join(output_dir, 'shap_importance.png'))
+        plt.close()
+        
+        return True
+    except Exception as e:
+        print(f"SHAP analysis failed: {e}")
+        return False
+
+def plot_shap_values(model, X, feature_names, output_dir):
+    """Generate SHAP values to explain feature contributions to strategy performance."""
+    try:
+        # Create explainer
+        explainer = shap.Explainer(model)
+        shap_values = explainer(X)
+        
+        # Summary plot
+        plt.figure(figsize=(10, 8))
+        shap.summary_plot(shap_values, X, feature_names=feature_names, show=False)
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_dir, 'shap_summary.png'))
+        plt.close()
+        
+        # Bar plot
+        plt.figure(figsize=(10, 8))
+        shap.summary_plot(shap_values, X, plot_type="bar", feature_names=feature_names, show=False)
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_dir, 'shap_important_features.png'))
         plt.close()
         
         return True

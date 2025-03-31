@@ -244,6 +244,20 @@
             pattern and ML analysis results
           </div>
 
+          <!-- Add this to the Strategy Builder card body, before the strategy type selection -->
+          <div class="mb-3">
+            <label class="form-label">Analysis Report:</label>
+            <select class="form-select" id="reportSelect">
+              <option value="">Loading reports...</option>
+            </select>
+            <button
+              id="loadReportsBtn"
+              class="btn btn-sm btn-outline-secondary mt-2"
+            >
+              Refresh Reports List
+            </button>
+          </div>
+
           <div class="row">
             <div class="col-md-6">
               <div class="mb-3">
@@ -1010,8 +1024,7 @@
 
         const loader = document.getElementById("analysisLoader");
         const resultDiv = document.getElementById("analysisResult");
-        const logCard = document.getElementById("logCard");
-        const logsDiv = document.getElementById("analysisLogs");
+        const strategyBtn = document.getElementById("generateStrategyBtn");
 
         fetch("/analysis_result")
           .then((response) => response.json())
@@ -1026,33 +1039,29 @@
                 </div>
               `;
 
-              // Add a final completion message to logs
-              logsDiv.textContent +=
-                "✅ Analysis completed successfully! Results are ready to view.\n";
-              logsDiv.textContent +=
-                "------------------------------------------------\n";
+              // Check for strategy_params.json to enable the strategy button
+              fetch("/get_optimized_strategy")
+                .then((response) => response.json())
+                .then((stratData) => {
+                  if (stratData.exists) {
+                    // Enable the generate strategy button
+                    strategyBtn.disabled = false;
 
-              // Enable the generate strategy button
-              document.getElementById("generateStrategyBtn").disabled = false;
-
-              // Highlight strategy section
-              setTimeout(() => {
-                document.querySelector(".card:nth-child(4)").scrollIntoView({
-                  behavior: "smooth",
-                  block: "start",
-                });
-
-                // Highlight strategy section briefly
-                const strategyCard =
-                  document.querySelector(".card:nth-child(4)");
-                strategyCard.style.transition = "box-shadow 0.5s ease";
-                strategyCard.style.boxShadow =
-                  "0 0 15px rgba(0, 123, 255, 0.7)";
-
-                setTimeout(() => {
-                  strategyCard.style.boxShadow = "";
-                }, 2000);
-              }, 1000);
+                    // Add strategy metrics if available
+                    resultDiv.innerHTML += `
+                      <div class="alert alert-info mt-3">
+                        <strong>Strategy Optimization Results:</strong><br>
+                        Win Rate: ${stratData.metrics.win_rate}<br>
+                        Profit Factor: ${stratData.metrics.profit_factor}<br>
+                        Stop Loss: ${stratData.metrics.stop_loss}<br>
+                        Take Profit: ${stratData.metrics.take_profit}
+                      </div>
+                    `;
+                  }
+                })
+                .catch((err) =>
+                  console.error("Error checking for optimized strategy:", err)
+                );
             } else {
               resultDiv.innerHTML = `<div class="alert alert-warning">${data.message}</div>`;
             }
@@ -1063,7 +1072,6 @@
           .catch((error) => {
             loader.style.display = "none";
             resultDiv.innerHTML = `<div class="alert alert-danger">Error checking result: ${error}</div>`;
-            logsDiv.textContent += `Error: ${error}\n`;
             if (logSource) logSource.close();
           });
       }
@@ -1543,6 +1551,117 @@
                 strategyResult.innerHTML = `
               <div class="alert alert-success">
                 <strong>Success!</strong> Strategy generated successfully.
+              </div>
+              <div class="d-flex gap-2 mt-3">
+                <a href="${data.download_url}" class="btn btn-primary" download>
+                  Download Pine Script Strategy
+                </a>
+                <a href="${data.view_url}" class="btn btn-outline-secondary" target="_blank">
+                  View Code
+                </a>
+              </div>`;
+              }
+            })
+            .catch((error) => {
+              strategyLoader.style.display = "none";
+              strategyResult.innerHTML = `
+            <div class="alert alert-danger">
+              <strong>Error:</strong> ${error}
+            </div>`;
+            });
+        });
+
+      // Add this function to load available reports
+      function loadAvailableReports() {
+        const reportSelect = document.getElementById("reportSelect");
+
+        // Show loading state
+        reportSelect.innerHTML = '<option value="">Loading reports...</option>';
+
+        fetch("/list_reports")
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.reports && data.reports.length > 0) {
+              reportSelect.innerHTML =
+                '<option value="">-- Select a report --</option>';
+
+              data.reports.forEach((report) => {
+                const option = document.createElement("option");
+                option.value = report.path;
+                option.textContent = report.name;
+                reportSelect.appendChild(option);
+              });
+            } else {
+              reportSelect.innerHTML =
+                '<option value="">No reports available</option>';
+            }
+          })
+          .catch((error) => {
+            reportSelect.innerHTML =
+              '<option value="">Error loading reports</option>';
+            console.error("Error loading reports:", error);
+          });
+      }
+
+      // Call this when the page loads
+      document.addEventListener("DOMContentLoaded", function () {
+        loadAvailableReports();
+      });
+
+      // Add event listener for the refresh reports button
+      document
+        .getElementById("loadReportsBtn")
+        .addEventListener("click", loadAvailableReports);
+
+      // Modify the generate strategy button event listener
+      document
+        .getElementById("generateStrategyBtn")
+        .addEventListener("click", function () {
+          const reportPath = document.getElementById("reportSelect").value;
+          if (!reportPath) {
+            alert("Please select an analysis report first");
+            return;
+          }
+
+          const strategyLoader = document.getElementById("strategyLoader");
+          const strategyResult = document.getElementById("strategyResult");
+
+          strategyLoader.style.display = "block";
+          strategyResult.innerHTML = "";
+
+          // Get strategy parameters
+          const params = {
+            report_path: reportPath,
+            strategy_type: document.getElementById("strategyType").value,
+            risk_per_trade: document.getElementById("riskPerTrade").value,
+            use_stop_loss: document.getElementById("useStopLoss").checked,
+            stop_loss_percent: document.getElementById("stopLossPercent").value,
+            use_take_profit: document.getElementById("useTakeProfit").checked,
+            take_profit_percent:
+              document.getElementById("takeProfitPercent").value,
+          };
+
+          // Send request to generate strategy
+          fetch("/generate_strategy", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(params),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              strategyLoader.style.display = "none";
+
+              if (data.error) {
+                strategyResult.innerHTML = `
+              <div class="alert alert-danger">
+                <strong>Error:</strong> ${data.error}
+              </div>`;
+              } else {
+                strategyResult.innerHTML = `
+              <div class="alert alert-success">
+                <strong>Success!</strong> Strategy generated successfully using Claude AI.
               </div>
               <div class="d-flex gap-2 mt-3">
                 <a href="${data.download_url}" class="btn btn-primary" download>
