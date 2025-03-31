@@ -14,3 +14,4 @@ anthropic>=0.18.0
 # VectorBT backtesting library
 vectorbt>=0.24.0
 numba>=0.53.0
+python-dotenv=>1.1.0
