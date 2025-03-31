@@ -1,0 +1,20 @@
+{
+  "best_params": {
+    "entry_threshold": 0.0001,
+    "stop_loss_pct": 1.0,
+    "take_profit_pct": 5.0,
+    "max_holding_time": 240,
+    "pattern_lag": 5,
+    "use_pattern": "rsi_overbought",
+    "position_size_pct": 10
+  },
+  "performance_summary": {
+    "total_trades": 124.0,
+    "win_rate": 0.4032258064516129,
+    "profit_factor": 1.4431639168336898,
+    "sharpe_ratio": 2.2041378805005567,
+    "max_drawdown": 1.1689661936413729,
+    "total_return_pct": 2.939510528556899
+  },
+  "strategy_summary": "\n========== OPTIMAL STRATEGY SUMMARY ==========\n\nSTRATEGY PARAMETERS:\n- Pattern to monitor: rsi_overbought\n- Signal lag (minutes): 5\n- Entry threshold: 0.000100\n- Stop Loss: 1.00%\n- Take Profit: 5.00%\n- Max holding time: 240 minutes\n- Position size: 10% of capital\n\n\nPattern \"rsi_overbought\" details:\n- Number of instances: 1528\n- Correlation: -0.0133\n- Average return: -0.000102\n- Win rate: 44.63%\n\n\nPERFORMANCE METRICS:\n- Total trades: 124\n- Win rate: 40.32%\n- Profit factor: 1.44\n- Average win: 0.0190\n- Average loss: -0.0089\n- Sharpe ratio: 2.20\n- Total return: 2.94%\n- Maximum drawdown: 1.17%\n\nSTRATEGY IMPLEMENTATION:\n1. Monitor Bitcoin for the \"rsi_overbought\" pattern\n2. When pattern is detected, wait 5 minutes\n3. Enter DOGE long position with 10% of capital\n4. Set stop-loss at 1.00% below entry price\n5. Set take-profit at 5.00% above entry price\n6. Exit the position if max holding time of 240 minutes is reached\n"
+}

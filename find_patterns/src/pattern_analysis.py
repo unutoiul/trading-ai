@@ -191,3 +191,54 @@ def analyze_patterns_parallel(combined_data, patterns, max_lag=20):
                 print(f"Error processing {pattern}: {e}")
     
     return pattern_stats
+
+def optimize_strategy_parameters(combined_data, patterns, max_lag=20):
+    """
+    Optimize trading strategy parameters using ML.
+    
+    Args:
+        combined_data: DataFrame with BTC and altcoin data
+        patterns: DataFrame with pattern columns
+        max_lag: Maximum lag to analyze
+        
+    Returns:
+        dict: Optimized strategy parameters and performance
+    """
+    from src.strategy_optimizer import StrategyOptimizer
+    import numpy as np
+    
+    print("Initializing strategy optimizer...")
+    
+    # Get pattern stats first
+    pattern_stats = analyze_lag_relationships(combined_data, patterns, max_lag)
+    
+    # Initialize optimizer with the pattern statistics
+    optimizer = StrategyOptimizer(combined_data, pattern_stats)
+    
+    # Run ML optimization
+    print("\nRunning machine learning optimization...")
+    optimization_results = optimizer.ml_optimization()
+    
+    # Generate visualizations
+    print("\nGenerating performance visualizations...")
+    optimizer.visualize_results()
+    
+    # Get strategy summary
+    strategy_summary = optimizer.get_optimal_strategy_summary()
+    print("\n" + strategy_summary)
+    
+    # Ensure we have proper metric values for serialization
+    performance_metrics = {}
+    if optimization_results.get('best_metrics'):
+        for k, v in optimization_results['best_metrics'].items():
+            if isinstance(v, (int, float, np.number)):
+                performance_metrics[k] = float(v) 
+            else:
+                performance_metrics[k] = v
+    
+    return {
+        'best_params': optimization_results.get('best_params', {}),
+        'performance_metrics': performance_metrics,
+        'strategy_summary': strategy_summary,
+        'optimizer': optimizer  # Important: Return the optimizer object
+    }

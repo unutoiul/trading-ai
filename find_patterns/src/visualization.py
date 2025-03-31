@@ -1,5 +1,6 @@
 """Visualization functions for BTC-DOGE pattern analysis."""
 
+import json
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend that's thread-safe
 
@@ -376,18 +377,14 @@ def generate_report(pattern_stats, output_dir):
 # Modify the generate_index_html function to include Claude results
 def generate_index_html(result_dirs, base_dir, claude_results=None):
     """Generate an index.html file listing all analysis results."""
-    index_path = os.path.join(base_dir, 'index.html')
+    output_file = os.path.join(base_dir, 'index.html')
     
     print("Generating index.html...")
     
     # Sort directories by name (newest first)
     result_dirs.sort(reverse=True)
     
-    output_file = os.path.join(base_dir, 'index.html')
-    
-    with open(output_file, 'w') as f:
-        f.write("""
-        <!DOCTYPE html>
+    html_content = """<!DOCTYPE html>
         <html>
         <head>
             <title>BTC-DOGE Pattern Analysis Results</title>
@@ -402,95 +399,77 @@ def generate_index_html(result_dirs, base_dir, claude_results=None):
                                    border-radius: 4px; display: inline-block; }
                 .analysis-links a:hover { background-color: #e0e0e0; }
                 .timestamp { color: #666; font-size: 0.9em; margin-bottom: 10px; }
+                .strategy-section { margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; }
+                .download-btn { background-color: #4CAF50; color: white !important; }
+                .download-btn:hover { background-color: #45a049; }
+                .metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin: 10px 0; }
+                .metric-box { border: 1px solid #ddd; border-radius: 4px; padding: 8px; text-align: center; }
+                .metric-label { font-size: 0.8em; color: #666; }
+                .metric-value { font-weight: bold; font-size: 1.1em; }
+                .code-block { background-color: #f5f5f5; padding: 15px; border-radius: 5px; white-space: pre-wrap; font-family: monospace; max-height: 300px; overflow-y: auto; }
             </style>
         </head>
         <body>
             <h1>BTC-DOGE Pattern Analysis Results</h1>
-        """)
-        
-        for dir_name in result_dirs:
-            # Skip non-directories or hidden directories
-            if not os.path.isdir(os.path.join(base_dir, dir_name)) or dir_name.startswith('.'):
-                continue
-                
-            # Format the timestamp for display
-            try:
-                timestamp = dir_name
-                # If timestamp is in format YYYY-MM-DD_HHhMMmSSs
-                if '-' in timestamp and '_' in timestamp and 'h' in timestamp and 'm' in timestamp and 's' in timestamp:
-                    # Format it nicely for display
-                    date_part, time_part = timestamp.split('_')
-                    time_part = time_part.replace('h', ':').replace('m', ':').replace('s', '')
-                    formatted_time = f"{date_part} {time_part}"
-                else:
-                    formatted_time = timestamp
-            except:
-                formatted_time = dir_name
+        """
+    
+    for dir_name in result_dirs:
+        dir_path = os.path.join(base_dir, dir_name)
+        if not os.path.isdir(dir_path):
+            continue
             
-            f.write(f"""
+        html_content += f"""
             <div class="analysis-card">
                 <h2>Analysis: {dir_name}</h2>
-                <div class="timestamp">Timestamp: {formatted_time}</div>
+                <div class="timestamp">Timestamp: {dir_name}</div>
                 <div class="analysis-links">
-            """)
-            
-            # Add links to reports
-            reports_dir = os.path.join(base_dir, dir_name, 'reports')
-            if os.path.exists(reports_dir):
-                for report in os.listdir(reports_dir):
-                    if report.endswith('.txt'):
-                        f.write(f'<a href="{dir_name}/reports/{report}">Report: {report}</a>\n')
-            
-            # Add links to HTML visualizations
-            html_dir = os.path.join(base_dir, dir_name, 'html')
-            if os.path.exists(html_dir):
-                for html_file in os.listdir(html_dir):
-                    if html_file.endswith('.html'):
-                        # Format the name nicely
-                        nice_name = html_file.replace('_', ' ').replace('.html', '')
-                        if 'analysis' in html_file:
-                            nice_name = 'Pattern: ' + nice_name.replace('analysis', '').strip()
-                        f.write(f'<a href="{dir_name}/html/{html_file}">{nice_name}</a>\n')
-            
-            # Add links to charts
-            charts_dir = os.path.join(base_dir, dir_name, 'charts')
-            if os.path.exists(charts_dir):
-                for chart in os.listdir(charts_dir):
-                    if chart.endswith(('.png', '.jpg')):
-                        nice_name = chart.replace('_', ' ').replace('.png', '').replace('.jpg', '')
-                        f.write(f'<a href="{dir_name}/charts/{chart}">Chart: {nice_name}</a>\n')
-            
-            f.write("""
+        """
+        
+        # Add links to reports
+        reports_dir = os.path.join(dir_path, 'reports')
+        if os.path.exists(reports_dir):
+            for file in os.listdir(reports_dir):
+                file_path = os.path.join(dir_name, 'reports', file)
+                
+                # Special handling for strategy_params.json
+                if file == 'strategy_params.json':
+                    # Add a link to the dedicated strategy optimization page instead of embedding
+                    html_content += f'<a href="{dir_name}/html/strategy_optimization_results.html" class="download-btn">Strategy Optimization Results</a>'
+                else:
+                    # Regular file link
+                    html_content += f'<a href="{file_path}">Report: {file}</a>'
+        
+        # Add links to charts
+        charts_dir = os.path.join(dir_path, 'charts')
+        if os.path.exists(charts_dir):
+            for file in os.listdir(charts_dir):
+                if file.endswith('.png'):
+                    file_path = os.path.join(dir_name, 'charts', file)
+                    title = file.replace('.png', '').replace('_', ' ')
+                    html_content += f'<a href="{file_path}" target="_blank">Chart: {title}</a>'
+        
+        # Add links to HTML visualizations
+        html_dir = os.path.join(dir_path, 'html')
+        if os.path.exists(html_dir):
+            for file in os.listdir(html_dir):
+                # Skip strategy_optimization_results.html - we handle it separately
+                if file.endswith('.html') and file != 'strategy_optimization_results.html':
+                    file_path = os.path.join(dir_name, 'html', file)
+                    title = file.replace('.html', '').replace('_', ' ')
+                    html_content += f'<a href="{file_path}">Pattern: {title}</a>'
+        
+        html_content += """
                 </div>
             </div>
-            """)
-        
-        # Add Claude results to the HTML if available
-        if claude_results:
-            f.write('<div class="card mb-4">')
-            f.write('<div class="card-header bg-info text-white">')
-            f.write('<h2 class="h5 mb-0">Claude 3.7 AI Analysis</h2>')
-            f.write('</div>')
-            f.write('<div class="card-body">')
-            
-            if 'analysis_report' in claude_results:
-                rel_path = os.path.relpath(claude_results['analysis_report'], base_dir)
-                f.write(f'<p><a href="{rel_path}" class="btn btn-outline-primary">View Claude Analysis Report</a></p>')
-            
-            if 'pine_script' in claude_results:
-                rel_path = os.path.relpath(claude_results['pine_script'], base_dir)
-                f.write(f'<p><a href="{rel_path}" class="btn btn-outline-success">Download Pine Script Strategy</a></p>')
-            
-            if 'error_report' in claude_results:
-                rel_path = os.path.relpath(claude_results['error_report'], base_dir)
-                f.write(f'<p><a href="{rel_path}" class="btn btn-outline-danger">View Error Report</a></p>')
-            
-            f.write('</div></div>')
-        
-        f.write("""
+        """
+    
+    html_content += """
         </body>
         </html>
-        """)
+    """
+    
+    with open(output_file, 'w') as f:
+        f.write(html_content)
     
     print(f"Generated index.html at {output_file}")
 

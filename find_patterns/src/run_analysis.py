@@ -1,7 +1,9 @@
 """Main script to run the BTC-DOGE pattern analysis and serve results."""
 
+import json
 import os
 import argparse
+import shutil
 import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
@@ -14,6 +16,7 @@ from sklearn.model_selection import train_test_split, TimeSeriesSplit
 sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 
 # Import from src modules with explicit relative imports
+from src import pattern_analysis
 from src.data_processing import load_and_preprocess_data
 from src.pattern_analysis import classify_momentum_patterns, analyze_lag_relationships
 from src.ml_models import prepare_features_targets, train_xgboost_model, evaluate_model, plot_feature_importance
@@ -78,6 +81,8 @@ def main(return_results_dir=False):
                         help='Use XGBoost to analyze feature importance and relationships')
     parser.add_argument('--test-size', type=float, default=0.2,
                         help='Proportion of data to use for testing')
+    parser.add_argument('--optimize-strategy', action='store_true',
+                        help='Optimize trading strategy parameters using ML techniques')
     
     args = parser.parse_args()
     
@@ -122,8 +127,7 @@ def main(return_results_dir=False):
         # Plot feature importance
         feature_importance = plot_feature_importance(model, feature_names, results_dirs['charts'])
         
-        # Plot predictions vs actual
-        plot_ml_predictions(y_test, metrics['predictions'], X_test.index, results_dirs['charts'])
+        # plot_ml_predictions(y_test, metrics['predictions'], X_test.index, results_dirs['charts'])
         
         # Generate ML report
         ml_report = generate_ml_report({
@@ -148,19 +152,52 @@ def main(return_results_dir=False):
     create_pattern_specific_plots(combined_data, pattern_stats, results_dirs['html'])
     generate_report(pattern_stats, results_dirs['reports'])
     
+    # Step 6b: Optimize Trading Strategy (if requested)
+    if args.optimize_strategy:
+        print("\nOptimizing trading strategy parameters...")
+        try:
+            strategy_results = pattern_analysis.optimize_strategy_parameters(
+                combined_data, patterns, max_lag=20
+            )
+            
+            # Save strategy parameters JSON
+            strategy_output = os.path.join(results_dirs['reports'], 'strategy_params.json')
+            with open(strategy_output, 'w') as f:
+                # Convert non-serializable objects to strings
+                serializable_results = {
+                    'best_params': strategy_results.get('best_params', {}),
+                    'performance_summary': {
+                        'total_trades': strategy_results.get('performance_metrics', {}).get('total_trades', 0),
+                        'win_rate': float(strategy_results.get('performance_metrics', {}).get('win_rate', 0)),
+                        'profit_factor': float(strategy_results.get('performance_metrics', {}).get('profit_factor', 1.0)),
+                        'sharpe_ratio': float(strategy_results.get('performance_metrics', {}).get('sharpe_ratio', 0)),
+                        'max_drawdown': float(strategy_results.get('performance_metrics', {}).get('max_drawdown', 0)),
+                        'total_return_pct': float(strategy_results.get('performance_metrics', {}).get('total_return_pct', 0))
+                    },
+                    'strategy_summary': strategy_results.get('strategy_summary', 'No summary available')
+                }
+                json.dump(serializable_results, f, indent=2)
+                
+            # Generate HTML report
+            html_output = os.path.join(results_dirs['html'], 'strategy_optimization_results.html')
+            if 'optimizer' in strategy_results and hasattr(strategy_results['optimizer'], 'generate_html_report'):
+                strategy_results['optimizer'].generate_html_report(html_output)
+                print(f"Generated strategy optimization HTML report: {html_output}")
+            
+            # Copy visualization files to results directory
+            for viz_file in ['sl_tp_heatmap.png', 'equity_curve.png', 'day_win_rate.png', 'parameter_importance.png']:
+                if os.path.exists(viz_file):
+                    shutil.copy(viz_file, os.path.join(results_dirs['charts'], viz_file))
+                    
+            print(f"Strategy optimization results saved to {strategy_output}")
+            
+        except Exception as e:
+            print(f"Warning: Strategy optimization failed: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
+    
     # Step 7: Generate Claude AI analysis if API key is available
-    claude_results = None
-    if os.environ.get("ANTHROPIC_API_KEY"):
-        print("\nGenerating Claude 3.7 AI analysis...")
-        claude_results = generate_claude_reports(pattern_stats, ml_results, results_dirs)
-        
-        # Add claude results to index.html for easy access
-        if claude_results and 'analysis_report' in claude_results:
-            # This will be handled by the index generator
-            pass
-    else:
-        print("\nSkipping Claude 3.7 analysis - no API key found")
-        print("Set the ANTHROPIC_API_KEY environment variable to enable AI analysis")
+    claude_results = None  # No automatic Claude analysis
     
     # Step 8: Generate or update index.html
     all_result_dirs = [d for d in os.listdir(args.results) 
