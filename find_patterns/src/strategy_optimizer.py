@@ -16,6 +16,8 @@ import seaborn as sns
 # Add vectorbt import
 import vectorbt as vbt
 
+
+
 class StrategyOptimizer:
     """Class to optimize trading strategy parameters using machine learning."""
     

@@ -24,7 +24,7 @@ def available_pairs():
         elif pair == 'ETH/USDT':
             return '1'
         elif pair == 'DOGE/USDT':
-            return '2'
+            return '2'        
         else:
             return pair
     
@@ -67,7 +67,7 @@ def fetch_data(pairs, start_date, end_date, timeframe='1m'):
         try:
             # Fetch data in batches
             while current_since < until:
-                print(f"  Fetching batch starting at {datetime.fromtimestamp(current_since/1000, tz=timezone.utc)}")
+                print(f" Fetching batch starting at ➡️ {datetime.fromtimestamp(current_since/1000, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}")
                 
                 # The 1000 here is the API's maximum
                 candles = exchange.fetch_ohlcv(symbol, timeframe, since=current_since, limit=1000)
@@ -114,7 +114,9 @@ def fetch_data(pairs, start_date, end_date, timeframe='1m'):
             symbol_filename = symbol.replace('/', '_')
             start_str = start_date.strftime('%d-%B-%Y')
             end_str = end_date.strftime('%d-%B-%Y')
-            filename = f"data/{symbol_filename}_{start_str}_to_{end_str}.csv"
+            
+            # Include timeframe in the filename
+            filename = f"data/{symbol_filename}_{timeframe}_{start_str}_to_{end_str}.csv"
             
             # Create data directory if it doesn't exist
             os.makedirs('data', exist_ok=True)

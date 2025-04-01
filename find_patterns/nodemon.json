@@ -1,0 +1,6 @@
+{
+  "watch": ["app.py", "src/", "templates/"],
+  "ext": "py,html,css,js,json",
+  "ignore": ["__pycache__/", "data/", "results/"],
+  "exec": "python app.py"
+}

@@ -220,22 +220,26 @@ def run_analysis():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# Modify your analysis_logs function
 @app.route('/analysis_logs')
 def analysis_logs():
     """Stream analysis logs using Server-Sent Events."""
     def generate():
         yield "data: Connected to log stream\n\n"
+        heartbeat_counter = 0
         
         while True:
             try:
-                # Non-blocking queue get with timeout
+                # Timeout to 1 seconds
                 message = log_queue.get(timeout=1)
                 yield f"data: {message}\n\n"
             except queue.Empty:
-                # Send a heartbeat to keep the connection open
-                yield "data: heartbeat\n\n"
+                # Only send heartbeat every 10 cycles (once per second)
+                heartbeat_counter += 1
+                if (heartbeat_counter >= 10):
+                    yield "data: heartbeat\n\n"
+                    heartbeat_counter = 0
             except GeneratorExit:
-                # Client disconnected
                 break
     
     return Response(generate(), mimetype='text/event-stream')
