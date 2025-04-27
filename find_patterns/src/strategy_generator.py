@@ -302,6 +302,7 @@ class DirectionalImpactStrategies:
         
         # Text summary report
         with open(summary_report_path, 'w', encoding='utf-8') as f:
+            # Header section
             f.write(f"DIRECTIONAL ML STRATEGIES FOR {self.altcoin_name}\n")
             f.write("=" * 50 + "\n\n")
             
@@ -312,29 +313,56 @@ class DirectionalImpactStrategies:
                 reverse=True
             )
             
+            # Write summary of all strategies
+            f.write(f"SUMMARY ({len(sorted_strategies)} strategies)\n")
+            f.write("-" * 30 + "\n\n")
+            f.write(f"Backtest period: {self._get_backtest_duration()}\n")
+            f.write(f"Data points analyzed: {len(self.data)}\n\n")
+            f.write("Strategy               | Return %  | Win Rate | Trades | Holding Time\n")
+            f.write("-" * 75 + "\n")
+            
             for scenario, results in sorted_strategies:
                 strategy = self.strategies[scenario]
-                f.write(f"\n{strategy['name'].upper()}\n")
+                name = strategy['name'][:18]  # Limit name length for better formatting
+                hold_time = strategy.get('optimal_holding_time', 'N/A')
+                f.write(f"{name:<20} | {results['total_return_pct']:>8.2f}% | {results['win_rate']*100:>6.1f}% | {results['total_trades']:>5} | {hold_time} min\n")
+            
+            f.write("\n\n")
+            f.write("=" * 50 + "\n\n")
+            f.write("DETAILED STRATEGY REPORTS\n\n")
+            
+            # Write details for each strategy
+            for scenario, results in sorted_strategies:
+                strategy = self.strategies[scenario]
+                f.write("\n" + "=" * 50 + "\n")
+                f.write(f"{strategy['name'].upper()}\n")
                 f.write("-" * len(strategy['name']) + "\n\n")
                 
-                f.write(f"Strategy type: {'Long' if strategy['is_long'] else 'Short'}\n")
-                f.write(f"Best prediction minute: {strategy['best_minute']}\n")
-                f.write(f"ML model accuracy: {strategy['accuracy']*100:.1f}%\n\n")
-                f.write(f"Backtest period: {self._get_backtest_duration()}\n\n")
+                # Strategy basics
+                f.write("STRATEGY SETUP:\n")
+                f.write(f"• Type: {'Long' if strategy['is_long'] else 'Short'}\n")
+                f.write(f"• Best prediction minute: {strategy['best_minute']}\n")
+                f.write(f"• ML model accuracy: {strategy['accuracy']*100:.1f}%\n")
+                f.write(f"• Stop loss: {strategy['stop_loss_pct']}%\n")
+                f.write(f"• Take profit: {strategy['take_profit_pct']}%\n")
+                f.write(f"• Optimal holding time: {strategy.get('optimal_holding_time', 'N/A')} minutes\n\n")
                 
-                f.write("Performance metrics:\n")
-                f.write(f"  Total return: {results['total_return_pct']:.2f}% (over {self._get_backtest_duration()})\n")
-                f.write(f"  Win rate: {results['win_rate']*100:.1f}%\n")
-                f.write(f"  Total trades: {results['total_trades']}\n")
-                f.write(f"  Profit factor: {results.get('profit_factor', 0):.2f}\n")
-                f.write(f"  Sharpe ratio: {results.get('sharpe_ratio', 0):.2f}\n")
-                f.write(f"  Max drawdown: {results.get('max_drawdown', 0):.2f}%\n\n")
+                # Performance metrics
+                f.write("PERFORMANCE METRICS:\n")
+                backtest_duration = self._get_backtest_duration()
+                f.write(f"• Total return: {results['total_return_pct']:.2f}% (over {backtest_duration})\n")
+                f.write(f"• Win rate: {results['win_rate']*100:.1f}%\n")
+                f.write(f"• Total trades: {results['total_trades']}\n")
+                f.write(f"• Profit factor: {results.get('profit_factor', 0):.2f}\n")
+                f.write(f"• Sharpe ratio: {results.get('sharpe_ratio', 0):.2f}\n")
+                f.write(f"• Max drawdown: {results.get('max_drawdown', 0):.2f}%\n\n")
                 
-                f.write("Top features:\n")
-                for feature, importance in self.ml_results[scenario][strategy['best_minute']]['feature_importance'][:5]:
-                    f.write(f"  {feature}: {importance*100:.2f}%\n")
-                    
-                f.write("\n" + "=" * 30 + "\n")
+                # Top features
+                f.write("TOP PREDICTIVE FEATURES:\n")
+                for i, (feature, importance) in enumerate(self.ml_results[scenario][strategy['best_minute']]['feature_importance'][:5], 1):
+                    f.write(f"  {i}. {feature}: {importance*100:.2f}%\n")
+                
+                f.write("\n")
         
         # Create individual strategy text reports
         strategy_reports = {}
@@ -620,7 +648,7 @@ class DirectionalImpactStrategies:
                             <a href="../reports/{strategy_reports[scenario]}" class="btn btn-sm btn-outline-secondary mb-2" target="_blank">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-text" viewBox="0 0 16 16">
                                     <path d="M5 4a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1z"/>
-                                    <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1"></path>
+                                    <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1"></path>
                                 </svg>
                                 Download Backtest Report
                             </a>
