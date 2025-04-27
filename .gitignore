@@ -1,17 +1,7 @@
 # Data directory
 # Add all these patterns to your .gitignore
 # Data files anywhere in the project
-**/data/
-**/*.csv
-**/*.parquet
-**/*.feather
-**/*.pickle
-**/*.pkl
 
-# Specific large data files
-find_patterns/data/*.csv
-find_patterns/data/BTC_USDT*.csv
-find_patterns/data/DOGE_USDT*.csv
 
 #/ Python cache files
 __pycache__/
