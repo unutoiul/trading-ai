@@ -1,6 +1,8 @@
 # Data directory
-/find_patterns/data
-/find_patterns/data/*
+# Add all these patterns to your .gitignore
+# Data files anywhere in the project
+**/data/
+**/*.csv
 
 #/ Python cache files
 __pycache__/
