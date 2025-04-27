@@ -1,8 +1,4 @@
-"""Configuration settings for the BTC-DOGE pattern analysis."""
-
-# Default data paths
-DEFAULT_BTC_PATH = 'data/BTC_USDT_26-February-2025_to_28-March-2025.csv'
-DEFAULT_DOGE_PATH = 'data/DOGE_USDT_26-February-2025_to_28-March-2025.csv'
+"""Configuration settings for the BTC-ALT pattern analysis."""
 
 # Results directory
 RESULTS_DIR = 'results'

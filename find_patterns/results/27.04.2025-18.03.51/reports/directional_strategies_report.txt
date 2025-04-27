@@ -1,0 +1,159 @@
+DIRECTIONAL ML STRATEGIES FOR DOGE
+==================================================
+
+
+DOWN STRONG
+-----------
+
+Strategy type: Short
+Best prediction minute: 1
+ML model accuracy: 96.4%
+
+Backtest period: 1.0 months
+
+Performance metrics:
+  Total return: 14.87% (over 1.0 months)
+  Win rate: 88.9%
+  Total trades: 9
+  Profit factor: 6.97
+  Sharpe ratio: 6.99
+  Max drawdown: -3.82%
+
+Top features:
+  btc_macd_signal: 6.52%
+  doge_momentum_15m: 5.05%
+  btc_momentum_60m: 4.53%
+  doge_macd_histogram: 4.52%
+  volume_doge: 4.46%
+
+==============================
+
+UP MEDIUM
+---------
+
+Strategy type: Long
+Best prediction minute: 1
+ML model accuracy: 86.6%
+
+Backtest period: 1.0 months
+
+Performance metrics:
+  Total return: 11.42% (over 1.0 months)
+  Win rate: 50.0%
+  Total trades: 12
+  Profit factor: 2.08
+  Sharpe ratio: 4.22
+  Max drawdown: -8.25%
+
+Top features:
+  btc_volatility_60m: 6.69%
+  btc_atr: 5.75%
+  btc_momentum_60m: 5.06%
+  doge_momentum_60m: 5.05%
+  btc_volatility_30m: 4.41%
+
+==============================
+
+DOWN MEDIUM
+-----------
+
+Strategy type: Short
+Best prediction minute: 2
+ML model accuracy: 86.9%
+
+Backtest period: 1.0 months
+
+Performance metrics:
+  Total return: 10.77% (over 1.0 months)
+  Win rate: 100.0%
+  Total trades: 7
+  Profit factor: inf
+  Sharpe ratio: 6.95
+  Max drawdown: -1.64%
+
+Top features:
+  btc_volatility_60m: 5.54%
+  btc_momentum_60m: 3.84%
+  btc_atr: 3.82%
+  btc_volatility_30m: 3.80%
+  doge_volatility_60m: 3.72%
+
+==============================
+
+UP STRONG
+---------
+
+Strategy type: Long
+Best prediction minute: 1
+ML model accuracy: 96.1%
+
+Backtest period: 1.0 months
+
+Performance metrics:
+  Total return: -10.77% (over 1.0 months)
+  Win rate: 0.0%
+  Total trades: 5
+  Profit factor: 0.00
+  Sharpe ratio: -10.54
+  Max drawdown: -11.94%
+
+Top features:
+  volume_doge: 6.15%
+  volume_btc: 5.12%
+  doge_macd: 5.10%
+  btc_volatility_15m: 4.70%
+  rsi_btc: 4.28%
+
+==============================
+
+DOWN SMALL
+----------
+
+Strategy type: Short
+Best prediction minute: 1
+ML model accuracy: 56.8%
+
+Backtest period: 1.0 months
+
+Performance metrics:
+  Total return: -31.09% (over 1.0 months)
+  Win rate: 45.2%
+  Total trades: 347
+  Profit factor: 0.73
+  Sharpe ratio: -6.94
+  Max drawdown: -40.51%
+
+Top features:
+  doge_volatility_60m: 11.41%
+  doge_volatility_30m: 9.90%
+  doge_volatility_15m: 7.65%
+  btc_volatility_60m: 4.61%
+  btc_atr: 4.01%
+
+==============================
+
+UP SMALL
+--------
+
+Strategy type: Long
+Best prediction minute: 7
+ML model accuracy: 56.0%
+
+Backtest period: 1.0 months
+
+Performance metrics:
+  Total return: -94.38% (over 1.0 months)
+  Win rate: 15.2%
+  Total trades: 1313
+  Profit factor: 0.20
+  Sharpe ratio: -58.18
+  Max drawdown: -94.38%
+
+Top features:
+  doge_volatility_60m: 14.43%
+  doge_volatility_30m: 10.43%
+  doge_volatility_15m: 8.22%
+  btc_atr: 4.41%
+  btc_volatility_60m: 4.05%
+
+==============================

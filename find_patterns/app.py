@@ -1,20 +1,49 @@
 """Web application for crypto data selection and analysis."""
 
+import re
+import traceback
 from flask import Flask, render_template, request, jsonify, send_file, Response, send_from_directory
 import os
 from datetime import datetime
 import io
 import json
+
+import pandas as pd
+from sklearn.pipeline import islice
 from src.data_fetch import available_pairs as get_available_pairs
 from src.data_fetch import fetch_data as fetch_crypto_data
 import queue
 import threading
 import time
 from dotenv import load_dotenv
+from contextlib import redirect_stdout
+import io
+
+import sys
+
+
+# Use Claude AI to generate strategy
+from src.ai_analysis import ClaudeAnalyzer
+
+# Create global log queues for different operations
+fetch_log_queue = queue.Queue()    # For data fetching operations
+analysis_log_queue = queue.Queue() # For analysis operations
+strategy_log_queue = queue.Queue() # For strategy building operations
+
 load_dotenv()  # Load environment variables from .env file
 print('ANTHROPIC_API_KEY: ',os.environ.get("ANTHROPIC_API_KEY"))
 
-app = Flask(__name__, static_folder='static', template_folder='templates')
+app = Flask(__name__, static_folder='results', template_folder='templates')
+
+# Add these configuration lines
+app.config['DATA_DIR'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+app.config['RESULTS_DIR'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results')
+
+# Create directories if they don't exist
+os.makedirs(os.path.join(app.config['DATA_DIR'], 'btc'), exist_ok=True)
+os.makedirs(os.path.join(app.config['DATA_DIR'], 'altcoins'), exist_ok=True)
+os.makedirs(app.config['RESULTS_DIR'], exist_ok=True)
+
 app.config['FETCH_RESULTS'] = None  # Initialize the config variable
 
 # Create a global log queue
@@ -23,9 +52,18 @@ log_queue = queue.Queue()
 # Add after your existing log_queue
 fetch_log_queue = queue.Queue()
 
+
 def add_log(message):
-    """Add a log message to the queue."""
-    log_queue.put(f"{time.strftime('%H:%M:%S')} - {message}")
+    """Add a log message to the analysis log queue."""
+    timestamp = datetime.now().strftime('%H:%M:%S')
+    log_entry = f"{timestamp} - {message}"
+    analysis_log_queue.put(log_entry)
+
+def add_strategy_log(message):
+    """Add a log message to the strategy builder log queue."""
+    timestamp = datetime.now().strftime('%H:%M:%S')
+    log_entry = f"{timestamp} - {message}"
+    strategy_log_queue.put(log_entry)
 
 def add_fetch_log(message):
     """Add a fetch log message to the queue."""
@@ -34,7 +72,16 @@ def add_fetch_log(message):
 @app.route('/')
 def index():
     """Render the main page."""
-    return render_template('index.html')
+    try:
+        # Get available files for dropdowns
+        btc_files = get_available_files(os.path.join(app.config['DATA_DIR'], 'btc'))
+        alt_files = get_available_files(os.path.join(app.config['DATA_DIR'], 'altcoins'))
+        
+        return render_template('index.html', btcFiles=btc_files, altFiles=alt_files)
+    except Exception as e:
+        app.logger.error(f"Error in index route: {str(e)}")
+        # Create empty lists if there's an error
+        return render_template('index.html', btcFiles=[], altFiles=[])
 
 @app.route('/available_pairs')
 def available_pairs():
@@ -63,9 +110,7 @@ def fetch_data():
         
         # Create a function that will run in a separate thread
         def fetch_with_logs():
-            from contextlib import redirect_stdout
-            import io
-            
+
             # Create a custom stdout to capture prints
             class LoggingStream(io.StringIO):
                 def write(self, text):
@@ -155,83 +200,136 @@ def download_file(filename):
         print(f"Download error: {str(e)}")  # Debug
         return jsonify({'error': str(e)}), 500
 
+import sys
+import io
+
+# Modified run_analysis route to capture console output
+# @app.route('/run_analysis', methods=['POST'])
+# def run_analysis():
+#     try:
+#         data = request.json
+#         btc_file = data.get('btc_file')
+#         alt_file = data.get('alt_file')
+        
+#         # Add initial log
+#         add_log(f"Starting analysis with {btc_file} and {alt_file}")
+#         add_log(f"Strategy optimization: Enabled (automatic)")
+        
+#         # Create logging stream for console output
+#         class LoggingStream(io.StringIO):
+#             def write(self, text):
+#                 if text:
+#                     log_text = text.rstrip('\n')
+#                     if log_text:
+#                         add_log(log_text)
+#                 return super().write(text)
+                
+#             def flush(self):
+#                 return super().flush()
+        
+#         # Save original stdout/stderr
+#         original_stdout = sys.stdout
+#         original_stderr = sys.stderr
+        
+#         # Redirect to logging stream
+#         logging_stream = LoggingStream()
+#         sys.stdout = logging_stream
+#         sys.stderr = logging_stream
+        
+#         try:
+#             # Import the run_analysis module
+#             from src import run_analysis as run_analysis_module
+            
+#             # Call main with optimize_strategy always True
+#             result_dir = run_analysis_module.main(
+#                 btc_file=btc_file,
+#                 alt_file=alt_file,
+#                 use_ml=True,
+#                 optimize_strategy=True, 
+#                 return_results_dir=True
+#             )
+            
+#             # Set the last result directory
+#             app.config['LAST_RESULT_DIR'] = result_dir
+#             add_log("ANALYSIS_COMPLETE")
+            
+#             return jsonify({'status': 'complete', 'result_dir': result_dir})
+        
+#         finally:
+#             # Always restore original stdout/stderr
+#             sys.stdout = original_stdout
+#             sys.stderr = original_stderr
+    
+#     except Exception as e:
+#         add_log(f"ANALYSIS_ERROR: {str(e)}")
+#         return jsonify({'error': str(e)}), 500
+
 @app.route('/run_analysis', methods=['POST'])
 def run_analysis():
-    """Run pattern analysis on selected pairs."""
     try:
         data = request.json
         btc_file = data.get('btc_file')
         alt_file = data.get('alt_file')
         
-        if not btc_file or not alt_file:
-            return jsonify({'error': 'Both BTC and altcoin files are required'}), 400
-        
         # Add initial log
-        add_log(f"Starting analysis with {btc_file} and {alt_file}")
+        add_log(f"Starting directional analysis with {btc_file} and {alt_file}")
+        add_log("Running only directional impact analysis and strategy generation")
         
-        # Create a wrapper function to capture logs
-        def run_with_logging():
-            import sys
-            from src.run_analysis import main
-            import io
-            from contextlib import redirect_stdout
+        # Create logging stream for console output
+        class LoggingStream(io.StringIO):
+            def write(self, text):
+                if text.strip():  # Only process non-empty lines
+                    add_log(text.strip())
+                
+            def flush(self):
+                pass
+        
+        # Save original stdout/stderr
+        original_stdout = sys.stdout
+        original_stderr = sys.stderr
+        
+        # Redirect to logging stream
+        logging_stream = LoggingStream()
+        sys.stdout = logging_stream
+        sys.stderr = logging_stream
+        
+        try:
+            # Import the run_analysis module
+            from src import run_analysis as run_analysis_module
             
-            # Create a custom stdout to capture prints
-            class LoggingStream(io.StringIO):
-                def write(self, text):
-                    if text.strip():  # Only process non-empty lines
-                        add_log(text.strip())
-                    super().write(text)
+            # Call our new focused function instead of the full analysis
+            result_dir = run_analysis_module.run_directional_analysis_only(
+                btc_file=btc_file,
+                alt_file=alt_file
+            )
             
-            # Redirect stdout to our custom stream
-            with redirect_stdout(LoggingStream()):
-                try:
-                    # Override sys.argvf
-                    sys.argv = ['run.py', '--btc', btc_file, '--doge', alt_file, '--use-ml', '--optimize-strategy']
-                    
-                    # Run analysis
-                    result_dir = main(return_results_dir=True)
-                    
-                    # Final log
-                    add_log(f"Analysis complete! Results in {result_dir}")
-                    
-                    return result_dir
-                except Exception as e:
-                    add_log(f"Error: {str(e)}")
-                    raise
+            # Set the last result directory
+            app.config['LAST_RESULT_DIR'] = result_dir
+            add_log("ANALYSIS_COMPLETE")
+            
+            return jsonify({'status': 'complete', 'result_dir': result_dir})
         
-        # Start analysis in a separate thread to not block the response
-        def analysis_thread():
-            try:
-                result_dir = run_with_logging()
-                # Store the result for the client to fetch later
-                app.config['LAST_RESULT_DIR'] = result_dir
-                add_log("ANALYSIS_COMPLETE")
-            except Exception as e:
-                add_log(f"ANALYSIS_ERROR: {str(e)}")
-        
-        threading.Thread(target=analysis_thread).start()
-        
-        return jsonify({
-            'status': 'started',
-            'message': 'Analysis started, connect to log stream for updates'
-        })
+        finally:
+            # Always restore original stdout/stderr
+            sys.stdout = original_stdout
+            sys.stderr = original_stderr
     
     except Exception as e:
+        add_log(f"ANALYSIS_ERROR: {str(e)}")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
-# Modify your analysis_logs function
 @app.route('/analysis_logs')
 def analysis_logs():
     """Stream analysis logs using Server-Sent Events."""
     def generate():
-        yield "data: Connected to log stream\n\n"
+        yield "data: Connected to analysis log stream\n\n"
         heartbeat_counter = 0
         
         while True:
             try:
-                # Timeout to 1 seconds
-                message = log_queue.get(timeout=1)
+                # Timeout to 1 second
+                message = analysis_log_queue.get(timeout=1)
                 yield f"data: {message}\n\n"
             except queue.Empty:
                 # Only send heartbeat every 10 cycles (once per second)
@@ -419,8 +517,7 @@ def generate_strategy():
         with open(full_report_path, 'r') as f:
             report_content = f.read()
         
-        # Use Claude AI to generate strategy
-        from src.ai_analysis import ClaudeAnalyzer
+
         
         try:
             # Create strategies directory if it doesn't exist
@@ -475,8 +572,7 @@ Respond with just the complete Pine Script code in a code block.
             # Extract code from response
             full_response = response.content[0].text
             
-            # Try to extract just the Pine Script code between ```pine and ``` if it exists
-            import re
+
             code_match = re.search(r'```pine\n(.*?)```', full_response, re.DOTALL)
             if code_match:
                 pine_script = code_match.group(1)
@@ -597,7 +693,7 @@ def generate_optimized_pine_script(strategy_data):
     """Generate Pine Script from optimized strategy parameters."""
     best_params = strategy_data.get('best_params', {})
     performance = strategy_data.get('performance_summary', {})
-    
+
     script = f"""// @version=5
 // Optimized BTC-Altcoin Strategy
 // Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
@@ -677,6 +773,85 @@ plotshape(entryCondition, title="Entry Signal", location=location.belowbar, colo
 """
     
     return script
+
+def get_available_files(directory):
+    """Get available data files with date ranges."""
+    files = []
+    for filename in os.listdir(directory):
+        if filename.endswith('.csv'):
+            # Extract symbol from filename
+            symbol = os.path.splitext(filename)[0]
+            filepath = os.path.join(directory, filename)
+            
+            try:
+                # Read first and last rows to get date range
+                df = pd.read_csv(filepath)
+                if len(df) > 0:
+                    # Format min and max timestamps with proper dates
+                    first_date = pd.to_datetime(df['timestamp'].min()).strftime('%Y-%m-%d %H:%M')
+                    last_date = pd.to_datetime(df['timestamp'].max()).strftime('%Y-%m-%d %H:%M')
+                    
+                    # Create display name with full date range
+                    display_name = f"{symbol} ({first_date} to {last_date})"
+                    
+                    # Calculate file size in MB
+                    size = f"{os.path.getsize(filepath)/1024/1024:.1f} MB"
+                    
+                    files.append({
+                        "filename": filename,
+                        "filepath": filepath,
+                        "symbol": symbol,
+                        "display_name": display_name,
+                        "size": size,
+                        "first_date": first_date,
+                        "last_date": last_date
+                    })
+            except Exception as e:
+                # Fall back to simple format without dates
+                files.append({
+                    "filename": filename,
+                    "filepath": filepath,
+                    "symbol": symbol,
+                    "display_name": symbol
+                })
+    
+    return files
+
+# Helper function to read file from bottom
+def reversed_lines(file):
+    """Generate file lines in reverse order."""
+    part = ''
+    for block in reversed_blocks(file):
+        for c in reversed(block):
+            if c == '\n' and part:
+                yield part[::-1]
+                part = ''
+            part += c
+    if part:
+        yield part[::-1]
+
+def reversed_blocks(file, blocksize=4096):
+    """Generate blocks of file's contents in reverse order."""
+    file.seek(0, os.SEEK_END)
+    here = file.tell()
+    while (here > 0):
+        delta = min(blocksize, here)
+        here -= delta
+        file.seek(here, os.SEEK_SET)
+        yield file.read(delta)
+
+@app.route('/get_available_files', methods=['GET'])
+def available_files():
+    """Get available data files for the UI."""
+    file_type = request.args.get('type', 'btc')
+    
+    if file_type == 'btc':
+        directory = os.path.join(app.config['DATA_DIR'], 'btc')
+    else:
+        directory = os.path.join(app.config['DATA_DIR'], 'altcoins')
+    
+    files = get_available_files(directory)
+    return jsonify(files)
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=5000)

@@ -127,49 +127,65 @@ class ClaudeAnalyzer:
     
     def _create_analysis_prompt(self, pattern_stats, ml_results=None, combined_data=None):
         """Create a detailed prompt for pattern analysis."""
-        prompt = """
+        # Detect altcoin name from pattern stats or data
+        altcoin_name = "unknown"
+        if pattern_stats and isinstance(pattern_stats, dict) and len(pattern_stats) > 0:
+            first_pattern = next(iter(pattern_stats.values()))
+            if 'altcoin_name' in first_pattern:
+                altcoin_name = first_pattern['altcoin_name']
+        
+        if altcoin_name == "unknown" and combined_data is not None:
+            for col in combined_data.columns:
+                if col.endswith('_returns') and not col.startswith('btc'):
+                    altcoin_name = col.split('_')[0]
+                    break
+        
+        # Make altcoin name uppercase for display
+        altcoin_name = altcoin_name.upper()
+        
+        prompt = f"""
 # Trading Pattern Analysis Results
 
-I need you to analyze these cryptocurrency pattern findings and provide strategic insights. The data shows how BTC price patterns affect altcoin (DOGE) price movements.
+I need you to analyze these cryptocurrency pattern findings and provide strategic insights. The data shows how BTC price patterns and momentum affect {altcoin_name} price movements.
 
 ## Pattern Statistics Summary:
 """
         
         # Add pattern stats summary
-        for pattern, lags in pattern_stats.items():
+        for pattern, stats in pattern_stats.items():
             if pattern.startswith('btc_pattern_'):
                 pattern_name = pattern.replace('btc_pattern_', '')
-                prompt += f"\n### {pattern_name.replace('_', ' ').title()}\n"
-                
-                # Add most significant lags
-                sorted_lags = sorted(lags.items(), key=lambda x: abs(float(x[1]['mean_response'])), reverse=True)
-                for lag, stats in sorted_lags[:3]:  # Top 3 most significant lags
-                    prompt += f"- Lag {lag}: Mean Response: {stats['mean_response']:.4f}%, Confidence: {stats['confidence']:.2f}%\n"
+                prompt += f"- **{pattern_name}**: Correlation: {stats['correlation']:.4f}, Win Rate: {stats['win_rate']*100:.1f}%, Optimal Lag: {stats['optimal_lag']} minutes\n"
         
-        # Add ML results if available
-        if ml_results and 'feature_importance' in ml_results:
-            prompt += "\n## ML Feature Importance:\n"
-            for feature, importance in ml_results['feature_importance'][:10]:  # Top 10 features
-                prompt += f"- {feature}: {importance:.6f}\n"
+        # Add momentum results if available
+        if ml_results and 'momentum_results' in ml_results:
+            prompt += "\n## BTC Momentum Impact Analysis:\n"
+            momentum_results = ml_results['momentum_results']
             
-            if 'metrics' in ml_results:
-                prompt += f"\nModel Performance:\n"
-                prompt += f"- Directional Accuracy: {ml_results['metrics']['directional_accuracy']:.2%}\n"
-                prompt += f"- R² Score: {ml_results['metrics']['r2']:.4f}\n"
+            if 'momentum_backtest_results' in momentum_results:
+                backtest_results = momentum_results['momentum_backtest_results']
+                prompt += "\nBacktest results for different BTC momentum conditions:\n"
+                
+                for condition, result in backtest_results.items():
+                    metrics = result['metrics']
+                    prompt += f"- **{condition}**: Win Rate: {metrics['win_rate']*100:.1f}%, Return: {metrics['total_return_pct']:.2f}%, Trades: {metrics['total_trades']}, Sharpe: {metrics['sharpe_ratio']:.2f}\n"
+            
+            if 'best_strategy' in momentum_results and momentum_results['best_strategy']:
+                best = momentum_results['best_strategy']
+                prompt += f"\n**Best Momentum Strategy**: {best['condition']}, Win Rate: {best['metrics']['win_rate']*100:.1f}%, Return: {best['metrics']['total_return_pct']:.2f}%\n"
         
-        # Add your requests for analysis
         prompt += """
 ## Analysis Requests:
 
-1. **Key Pattern Insights**: What are the 3-5 most significant BTC patterns that affect DOGE, and how should traders interpret them?
+1. **Key Pattern and Momentum Insights**: What are the 3-5 most significant BTC patterns and momentum conditions that affect the altcoin, and how should traders interpret them?
 
-2. **Trading Strategy Recommendations**: Based on these patterns, develop 2-3 concrete trading strategies for DOGE that leverage BTC movements. Include:
+2. **Trading Strategy Recommendations**: Based on these patterns and momentum conditions, develop 2-3 concrete trading strategies for the altcoin that leverage BTC movements. Include:
    - Entry and exit criteria
    - Optimal time frames
    - Risk management suggestions
    - Expected performance characteristics
 
-3. **Pattern Implementation Guide**: How can traders actually identify these patterns in real-time? Provide specific indicators or visual cues.
+3. **Pattern and Momentum Implementation Guide**: How can traders actually identify these patterns and momentum conditions in real-time? Provide specific indicators or visual cues.
 
 4. **Risk Assessment**: What are the potential failure modes of these pattern-based strategies? When might these correlations break down?
 
@@ -181,10 +197,20 @@ Keep your analysis focused on practical, actionable trading insights. Use clear,
     
     def _create_pine_script_prompt(self, pattern_stats, ml_results=None):
         """Create a prompt for Pine Script generation."""
-        prompt = """
+        # Detect altcoin name from pattern stats
+        altcoin_name = "unknown"
+        if pattern_stats and isinstance(pattern_stats, dict) and len(pattern_stats) > 0:
+            first_pattern = next(iter(pattern_stats.values()))
+            if 'altcoin_name' in first_pattern:
+                altcoin_name = first_pattern['altcoin_name']
+        
+        # Make altcoin name uppercase for display
+        altcoin_name = altcoin_name.upper()
+        
+        prompt = f"""
 # Create a TradingView Pine Script Strategy
 
-Based on our analysis of Bitcoin's impact on DOGE price movements, I need you to create a complete Pine Script strategy that implements these findings for TradingView.
+Based on our analysis of Bitcoin's impact on {altcoin_name} price movements, I need you to create a complete Pine Script strategy that implements these findings for TradingView.
 
 ## Key Pattern Findings:
 """

@@ -1,1 +1,0 @@
-"""Bitcoin-Dogecoin momentum pattern analysis package."""

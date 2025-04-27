@@ -65,6 +65,17 @@
       .data-file button {
         margin-left: 10px;
       }
+      /* Make dropdown options with date ranges more readable */
+      select option {
+        padding: 8px;
+        white-space: normal;
+      }
+
+      /* Increase dropdown width to accommodate longer text */
+      .form-select {
+        width: 100%;
+        max-width: 100%;
+      }
     </style>
   </head>
   <body>
@@ -234,7 +245,7 @@
       </div>
 
       <!-- Add this after the "Run Analysis" card -->
-      <div class="card mb-4">
+      <!-- <div class="card mb-4">
         <div class="card-header">
           <h2 class="h5 mb-0">4. Strategy Builder</h2>
         </div>
@@ -244,7 +255,6 @@
             pattern and ML analysis results
           </div>
 
-          <!-- Add this to the Strategy Builder card body, before the strategy type selection -->
           <div class="mb-3">
             <label class="form-label">Analysis Report:</label>
             <select class="form-select" id="reportSelect">
@@ -358,7 +368,7 @@
           <div class="loader" id="strategyLoader" style="display: none"></div>
           <div id="strategyResult" class="mt-3"></div>
         </div>
-      </div>
+      </div> -->
     </div>
 
     <script>
@@ -830,7 +840,33 @@
               btcFiles.forEach((file) => {
                 const option = document.createElement("option");
                 option.value = file.filepath;
-                option.textContent = file.display_name || file.symbol;
+
+                // Create an enhanced display name with clear date range
+                let displayText = file.symbol;
+
+                // Add complete date range if available
+                if (file.first_date && file.last_date) {
+                  displayText = `${file.symbol} (${file.first_date} to ${file.last_date})`;
+                } else if (
+                  file.display_name &&
+                  file.display_name.includes("to")
+                ) {
+                  // Use display_name if it already has date range
+                  displayText = file.display_name;
+                } else {
+                  // Try to extract date range from filename as fallback
+                  const dateRange = extractDateRange(file.filename);
+                  if (dateRange) {
+                    displayText = `${file.symbol} (${dateRange})`;
+                  }
+                }
+
+                // Show file size if available
+                if (file.size) {
+                  displayText += ` - ${file.size}`;
+                }
+
+                option.textContent = displayText;
                 btcSelect.appendChild(option);
               });
 
@@ -838,7 +874,33 @@
               altFiles.forEach((file) => {
                 const option = document.createElement("option");
                 option.value = file.filepath;
-                option.textContent = file.display_name || file.symbol;
+
+                // Create an enhanced display name with clear date range
+                let displayText = file.symbol;
+
+                // Add complete date range if available
+                if (file.first_date && file.last_date) {
+                  displayText = `${file.symbol} (${file.first_date} to ${file.last_date})`;
+                } else if (
+                  file.display_name &&
+                  file.display_name.includes("to")
+                ) {
+                  // Use display_name if it already has date range
+                  displayText = file.display_name;
+                } else {
+                  // Try to extract date range from filename as fallback
+                  const dateRange = extractDateRange(file.filename);
+                  if (dateRange) {
+                    displayText = `${file.symbol} (${dateRange})`;
+                  }
+                }
+
+                // Show file size if available
+                if (file.size) {
+                  displayText += ` - ${file.size}`;
+                }
+
+                option.textContent = displayText;
                 altSelect.appendChild(option);
               });
 
@@ -885,26 +947,31 @@
         const btcSelect = document.getElementById("btcFileSelect");
         const altSelect = document.getElementById("altFileSelect");
 
-        // Keep only the first option
+        // Safety check to prevent null errors
+        if (!btcSelect || !altSelect) {
+          console.error("File selector elements not found");
+          return;
+        }
+
+        // Clear dropdowns
         btcSelect.innerHTML = '<option value="">-- Select BTC file --</option>';
         altSelect.innerHTML =
           '<option value="">-- Select altcoin file --</option>';
 
+        // Add files with date ranges
         results.forEach((result) => {
           if (!result.error) {
             const option = document.createElement("option");
             option.value = result.filename;
-            option.textContent = result.display_name;
+            option.textContent = result.display_name || result.symbol;
 
-            if (result.symbol === "BTC/USDT") {
+            if (
+              result.symbol === "BTC/USDT" ||
+              result.symbol.startsWith("BTC")
+            ) {
               btcSelect.appendChild(option);
-              btcSelect.value = result.filename;
             } else {
               altSelect.appendChild(option);
-              // If it's DOGE, select it by default
-              if (result.symbol === "DOGE/USDT") {
-                altSelect.value = result.filename;
-              }
             }
           }
         });
@@ -1681,6 +1748,38 @@
             </div>`;
             });
         });
+
+      // In your run analysis function
+      function runAnalysis() {
+        const btcFile = document.getElementById("btcFileSelect").value;
+        const altFile = document.getElementById("altFileSelect").value;
+
+        if (!btcFile || !altFile) {
+          showAlert("Please select both BTC and altcoin files", "warning");
+          return;
+        }
+
+        // Show loading indicators
+        // ...existing code...
+
+        // Send the request with optimize_strategy parameter
+        fetch("/run_analysis", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            btc_file: btcFile,
+            alt_file: altFile,
+            optimize_strategy: optimizeStrategy,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            // ...existing code...
+          })
+          .catch((error) => {
+            // ...existing code...
+          });
+      }
     </script>
   </body>
 </html>
