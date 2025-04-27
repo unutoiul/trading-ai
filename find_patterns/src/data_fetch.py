@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime, timedelta, timezone
 import os
 import time
+import argparse
 
 def available_pairs():
     """
@@ -19,14 +20,18 @@ def available_pairs():
     
     # Sort pairs with BTC first, then other major coins, then alphabetically
     def sort_key(pair):
-        if pair == 'BTC/USDT':
-            return '0'
-        elif pair == 'ETH/USDT':
-            return '1'
-        elif pair == 'DOGE/USDT':
-            return '2'        
-        else:
-            return pair
+        # Define priority coins - can easily add more
+        priority_coins = {
+            'BTC/USDT': '0',
+            'ETH/USDT': '1',
+            'DOGE/USDT': '2',
+            'SOL/USDT': '3',
+            'XRP/USDT': '4',
+            'ADA/USDT': '5',
+        }
+        
+        # Return priority number if it's a priority coin, otherwise just return the name
+        return priority_coins.get(pair, pair)
     
     usdt_pairs.sort(key=sort_key)
     return usdt_pairs
@@ -144,19 +149,65 @@ def fetch_data(pairs, start_date, end_date, timeframe='1m'):
     
     return results
 
-# Main script execution - this will run when you run data_fetch.py directly
-if __name__ == "__main__":
-    # Define symbols and timeframe
-    symbols = ['DOGE/USDT', 'BTC/USDT']
-    timeframe = '1m'  # 1 minute timeframe
+def fetch_btc_and_altcoin(altcoin, days=10, timeframe='1m'):
+    """
+    Fetch both BTC and the specified altcoin data
+    
+    Args:
+        altcoin: The altcoin to fetch (e.g., 'DOGE')
+        days: Number of days of history to fetch
+        timeframe: Candle timeframe
+        
+    Returns:
+        Dictionary with results
+    """
+    # Ensure altcoin has the correct format
+    if not altcoin.endswith('/USDT'):
+        altcoin = f"{altcoin}/USDT"
+    
+    symbols = ['BTC/USDT', altcoin]
     
     # Define date range
     end_date = datetime.now(timezone.utc)
-    start_date = end_date - timedelta(days=10)
+    start_date = end_date - timedelta(days=days)
     
-    print(f"Fetching data from {start_date} to {end_date}")
+    print(f"Fetching {', '.join(symbols)} data from {start_date} to {end_date}")
     
     # Use the fetch_data function
-    fetch_data(symbols, start_date, end_date, timeframe)
+    return fetch_data(symbols, start_date, end_date, timeframe)
+
+# Main script execution
+if __name__ == "__main__":
+    # Set up command line argument parsing
+    parser = argparse.ArgumentParser(description='Fetch cryptocurrency data.')
+    parser.add_argument('--altcoin', type=str, default='DOGE', 
+                        help='Altcoin to analyze against BTC (e.g., DOGE, ETH, SOL)')
+    parser.add_argument('--days', type=int, default=10,
+                        help='Number of days of history to fetch')
+    parser.add_argument('--timeframe', type=str, default='1m',
+                        help='Timeframe for candles (e.g., 1m, 5m, 15m, 1h)')
+    parser.add_argument('--list', action='store_true',
+                        help='List available trading pairs')
     
-    print("Done!")
+    args = parser.parse_args()
+    
+    # List available pairs if requested
+    if args.list:
+        print("Available trading pairs:")
+        pairs = available_pairs()
+        for pair in pairs[:50]:  # Show first 50 to avoid overwhelming output
+            print(f"  {pair}")
+        print(f"...and {len(pairs) - 50} more")
+        exit()
+    
+    # Fetch data for BTC and the specified altcoin
+    results = fetch_btc_and_altcoin(args.altcoin, args.days, args.timeframe)
+    
+    print("\nFetch results:")
+    for result in results:
+        if 'error' in result:
+            print(f"❌ {result['symbol']}: {result['error']}")
+        else:
+            print(f"✅ {result['symbol']}: {result['records']} records saved to {result['filename']}")
+    
+    print("\nDone!")
