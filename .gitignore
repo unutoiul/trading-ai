@@ -2,13 +2,14 @@
 /find_patterns/data
 /find_patterns/data/*
 
-# Python cache files
+#/ Python cache files
 __pycache__/
 *.py[cod]
 *$py.class
 
 # Environment directories
 venv/
+.venv/
 env/
 .env
 
