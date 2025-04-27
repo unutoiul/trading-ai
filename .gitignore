@@ -1,6 +1,6 @@
 # Data directory
-/data
-/data/*
+/find_patterns/data
+/find_patterns/data/*
 
 # Python cache files
 __pycache__/
