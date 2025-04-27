@@ -671,7 +671,9 @@ class DirectionalImpactStrategies:
                     
                     <div class="col-md-8">
                         <h4>Performance Metrics</h4>
-                        <div class="d-flex flex-wrap">
+                        <div class="d-flex flex-wrap">"""
+                        
+            html += f"""
                             <div class="metric-box flex-fill">
                                 <div class="metric-title">Total Return</div>
                                 <div class="metric-value {'up-value' if results['total_return_pct'] > 0 else 'down-value'}">{results['total_return_pct']:.2f}%</div>
@@ -696,7 +698,9 @@ class DirectionalImpactStrategies:
                             <div class="metric-box flex-fill">
                                 <div class="metric-title">Max Drawdown</div>
                                 <div class="metric-value">{results.get('max_drawdown', 0):.2f}%</div>
-                            </div>
+                            </div>"""
+                            
+            html += """
                         </div>
                         
                         <h4 class="mt-4">Top Predictive Features</h4>
