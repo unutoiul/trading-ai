@@ -1,0 +1,191 @@
+DIRECTIONAL ML STRATEGIES FOR DOGE
+==================================================
+
+SUMMARY (6 strategies)
+------------------------------
+
+Backtest period: 1.0 months
+Data points analyzed: 43202
+
+Strategy               | Return %  | Win Rate | Trades | Holding Time
+---------------------------------------------------------------------------
+Down Strong          |    14.87% |   88.9% |     9 | 480 min
+Up Medium            |    11.42% |   50.0% |    12 | 120 min
+Down Medium          |    10.77% |  100.0% |     7 | 240 min
+Up Strong            |   -10.77% |    0.0% |     5 | 5 min
+Down Small           |   -31.09% |   45.2% |   347 | 480 min
+Up Small             |   -94.38% |   15.2% |  1313 | 1 min
+
+
+==================================================
+
+DETAILED STRATEGY REPORTS
+
+
+==================================================
+DOWN STRONG
+-----------
+
+STRATEGY SETUP:
+• Type: Short
+• Best prediction minute: 1
+• ML model accuracy: 96.4%
+• Stop loss: 6.0%
+• Take profit: 2.0%
+• Optimal holding time: 480 minutes
+
+PERFORMANCE METRICS:
+• Total return: 14.87% (over 1.0 months)
+• Win rate: 88.9%
+• Total trades: 9
+• Profit factor: 6.97
+• Sharpe ratio: 6.99
+• Max drawdown: -3.82%
+
+TOP PREDICTIVE FEATURES:
+  1. btc_macd_signal: 6.52%
+  2. doge_momentum_15m: 5.05%
+  3. btc_momentum_60m: 4.53%
+  4. doge_macd_histogram: 4.52%
+  5. volume_doge: 4.46%
+
+
+==================================================
+UP MEDIUM
+---------
+
+STRATEGY SETUP:
+• Type: Long
+• Best prediction minute: 1
+• ML model accuracy: 86.6%
+• Stop loss: 1.5%
+• Take profit: 4.5%
+• Optimal holding time: 120 minutes
+
+PERFORMANCE METRICS:
+• Total return: 11.42% (over 1.0 months)
+• Win rate: 50.0%
+• Total trades: 12
+• Profit factor: 2.08
+• Sharpe ratio: 4.22
+• Max drawdown: -8.25%
+
+TOP PREDICTIVE FEATURES:
+  1. btc_volatility_60m: 6.69%
+  2. btc_atr: 5.75%
+  3. btc_momentum_60m: 5.06%
+  4. doge_momentum_60m: 5.05%
+  5. btc_volatility_30m: 4.41%
+
+
+==================================================
+DOWN MEDIUM
+-----------
+
+STRATEGY SETUP:
+• Type: Short
+• Best prediction minute: 2
+• ML model accuracy: 86.9%
+• Stop loss: 4.5%
+• Take profit: 1.5%
+• Optimal holding time: 240 minutes
+
+PERFORMANCE METRICS:
+• Total return: 10.77% (over 1.0 months)
+• Win rate: 100.0%
+• Total trades: 7
+• Profit factor: inf
+• Sharpe ratio: 6.95
+• Max drawdown: -1.64%
+
+TOP PREDICTIVE FEATURES:
+  1. btc_volatility_60m: 5.54%
+  2. btc_momentum_60m: 3.84%
+  3. btc_atr: 3.82%
+  4. btc_volatility_30m: 3.80%
+  5. doge_volatility_60m: 3.72%
+
+
+==================================================
+UP STRONG
+---------
+
+STRATEGY SETUP:
+• Type: Long
+• Best prediction minute: 1
+• ML model accuracy: 96.1%
+• Stop loss: 2.0%
+• Take profit: 6.0%
+• Optimal holding time: 5 minutes
+
+PERFORMANCE METRICS:
+• Total return: -10.77% (over 1.0 months)
+• Win rate: 0.0%
+• Total trades: 5
+• Profit factor: 0.00
+• Sharpe ratio: -10.54
+• Max drawdown: -11.94%
+
+TOP PREDICTIVE FEATURES:
+  1. volume_doge: 6.15%
+  2. volume_btc: 5.12%
+  3. doge_macd: 5.10%
+  4. btc_volatility_15m: 4.70%
+  5. rsi_btc: 4.28%
+
+
+==================================================
+DOWN SMALL
+----------
+
+STRATEGY SETUP:
+• Type: Short
+• Best prediction minute: 1
+• ML model accuracy: 56.8%
+• Stop loss: 3.0%
+• Take profit: 1.0%
+• Optimal holding time: 480 minutes
+
+PERFORMANCE METRICS:
+• Total return: -31.09% (over 1.0 months)
+• Win rate: 45.2%
+• Total trades: 347
+• Profit factor: 0.73
+• Sharpe ratio: -6.94
+• Max drawdown: -40.51%
+
+TOP PREDICTIVE FEATURES:
+  1. doge_volatility_60m: 11.41%
+  2. doge_volatility_30m: 9.90%
+  3. doge_volatility_15m: 7.65%
+  4. btc_volatility_60m: 4.61%
+  5. btc_atr: 4.01%
+
+
+==================================================
+UP SMALL
+--------
+
+STRATEGY SETUP:
+• Type: Long
+• Best prediction minute: 7
+• ML model accuracy: 56.0%
+• Stop loss: 1.0%
+• Take profit: 3.0%
+• Optimal holding time: 1 minutes
+
+PERFORMANCE METRICS:
+• Total return: -94.38% (over 1.0 months)
+• Win rate: 15.2%
+• Total trades: 1313
+• Profit factor: 0.20
+• Sharpe ratio: -58.18
+• Max drawdown: -94.38%
+
+TOP PREDICTIVE FEATURES:
+  1. doge_volatility_60m: 14.43%
+  2. doge_volatility_30m: 10.43%
+  3. doge_volatility_15m: 8.22%
+  4. btc_atr: 4.41%
+  5. btc_volatility_60m: 4.05%
+

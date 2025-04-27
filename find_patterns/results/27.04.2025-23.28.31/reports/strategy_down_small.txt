@@ -1,0 +1,72 @@
+DETAILED BACKTEST RESULTS: DOWN SMALL
+==================================================
+
+STRATEGY SETUP
+------------------------------
+Type: Short
+Best prediction minute: 1
+Optimal holding time: 480 minutes
+ML model accuracy: 56.8%
+Stop loss: 3.0%
+Take profit: 1.0%
+
+PERFORMANCE METRICS
+------------------------------
+Total return: -31.09% (over 1.0 months)
+Win rate: 45.2%
+Total trades: 347
+Profit factor: 0.73
+Sharpe ratio: -6.94
+Max drawdown: -40.51%
+
+TOP PREDICTIVE FEATURES
+------------------------------
+doge_volatility_60m: 11.41%
+doge_volatility_30m: 9.90%
+doge_volatility_15m: 7.65%
+btc_volatility_60m: 4.61%
+btc_atr: 4.01%
+open_btc: 3.80%
+btc_volatility_30m: 3.76%
+high_btc: 3.66%
+close_btc: 3.29%
+low_btc: 3.26%
+
+HOLDING TIME ANALYSIS
+------------------------------
+Holding Time (min)Return %       Win Rate %     Trades    Sharpe    
+-----------------------------------------------------------------
+* 480          -31.09%         45.2%        347       -6.94
+  240          -38.64%         42.9%        382       -9.50
+  120          -39.07%         43.9%        417       -9.84
+  720          -40.73%         44.8%        346       -9.66
+  60           -44.29%         40.1%        466       -11.53
+  45           -48.66%         41.4%        486       -13.08
+  90           -48.84%         39.0%        420       -13.40
+  30           -55.58%         39.2%        513       -16.14
+  20           -61.19%         38.7%        569       -18.60
+  15           -61.42%         39.0%        608       -18.63
+  14           -64.38%         37.8%        624       -20.25
+  13           -65.25%         37.8%        625       -20.95
+  12           -66.78%         37.4%        641       -21.61
+  11           -68.65%         36.4%        675       -22.76
+  10           -69.55%         37.5%        683       -23.23
+  8            -69.60%         35.7%        736       -23.35
+  9            -70.56%         35.1%        696       -23.78
+  7            -73.89%         35.3%        776       -26.07
+  6            -75.96%         33.2%        825       -27.81
+  5            -77.11%         33.3%        868       -28.98
+  4            -79.51%         32.1%        927       -30.57
+  3            -82.10%         28.8%        1010      -33.51
+  2            -85.52%         27.3%        1134      -37.42
+  1            -90.69%         22.9%        1353      -45.17
+
+* Optimal holding time based on combined performance metrics
+
+TRADE STATISTICS
+------------------------------
+Average win: 45.2%
+Average trade duration: 52.3 minutes
+Average profit per trade: -8.96%
+Best trade: 164.19%
+Worst trade: -389.00%
