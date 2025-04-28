@@ -719,18 +719,8 @@ class DirectionalImpactStrategies:
                 </div>
                 
                 <div class="mt-4">
-                    <h4>Equity Curve</h4>"""
-                    
-            # Check if chart exists
-            equity_chart_path = os.path.join(charts_dir, f"{scenario}_equity_curve.png")
-            if os.path.exists(equity_chart_path):
-                html += f"""
-                    <img src="../charts/{scenario}_equity_curve.png" class="img-fluid" alt="Equity Curve" onerror="this.style.display='none'; this.parentElement.innerHTML += '<div class=\\'alert alert-warning\\'>Chart not available</div>';">"""
-            else:
-                html += """
-                    <div class="alert alert-warning">Equity curve chart not available</div>"""
-                    
-            html += """
+                    <h4>Equity Curve</h4>
+                    <img src="../charts/{scenario}_equity_curve.png" class="img-fluid" alt="Equity Curve" onerror="if(this && this.parentElement) { this.style.display='none'; this.parentElement.innerHTML += '<div class=\\'alert alert-warning\\'>Chart not available</div>'; }">
                 </div>
                 
                 <div class="mt-4">
