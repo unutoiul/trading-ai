@@ -1,0 +1,41 @@
+# Top-most EditorConfig file
+root = true
+
+# Default settings for all files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# Python specific settings
+[*.py]
+indent_style = space
+indent_size = 4
+max_line_length = 100
+
+# YAML files use 2 spaces
+[*.{yml,yaml}]
+indent_size = 2
+
+# Markdown files
+[*.md]
+trim_trailing_whitespace = false
+
+# JSON files
+[*.json]
+indent_size = 2
+
+# HTML/CSS/JS
+[*.{html,js,css}]
+indent_size = 2
+
+# Configuration files
+[*.{ini,cfg}]
+indent_size = 2
+
+# Make and Bash scripts
+[{Makefile,*.sh}]
+indent_style = tab
