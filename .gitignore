@@ -2,6 +2,9 @@
 # Add all these patterns to your .gitignore
 # Data files anywhere in the project
 
+find_patterns/results/
+find_patterns/data/
+
 
 #/ Python cache files
 __pycache__/

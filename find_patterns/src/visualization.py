@@ -478,7 +478,6 @@ def plot_feature_importance(model, feature_names, output_dir):
         return []  # Return empty list on error
     
 
-
 def update_index_html(results_dirs, altcoin_name):
     """Update or create index.html files for a specific analysis run.
     
@@ -916,7 +915,82 @@ def generate_pattern_html_reports(pattern_stats, output_dir, altcoin_name="altco
         <h2>Detected Patterns</h2>
         <div class="row">
 """
-    # Rest of the function remains the same...
+    
+    # Add pattern cards to the HTML
+    sorted_patterns = sorted(pattern_stats.items(), key=lambda x: abs(x[1]['correlation']), reverse=True)
+    
+    for pattern, stats in sorted_patterns:
+        if pattern == 'no_patterns_detected':
+            continue
+            
+        # Format pattern name for display
+        display_name = pattern.replace('_', ' ').title()
+        
+        # Pre-calculate values to avoid complex nesting in f-strings
+        correlation = stats['correlation']
+        avg_return = stats['avg_return']
+        win_rate = stats['win_rate']*100
+        instances = stats['instances']
+        optimal_lag = f"{stats['optimal_lag']} min"
+        
+        # Determine CSS classes based on values
+        corr_class = "up-value" if correlation > 0 else "down-value"
+        return_class = "up-value" if avg_return > 0 else "down-value"
+        
+        # Add the pattern card HTML
+        main_html_content += f"""
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="h5 mb-0">{display_name}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="metrics-row">
+                        <div class="metric-box">
+                            <div>Correlation</div>
+                            <div class="{corr_class}">{correlation:.4f}</div>
+                        </div>
+                        <div class="metric-box">
+                            <div>Avg Return</div>
+                            <div class="{return_class}">{avg_return:.6f}</div>
+                        </div>
+                        <div class="metric-box">
+                            <div>Win Rate</div>
+                            <div>{win_rate:.1f}%</div>
+                        </div>
+                        <div class="metric-box">
+                            <div>Instances</div>
+                            <div>{instances}</div>
+                        </div>
+                        <div class="metric-box">
+                            <div>Optimal Lag</div>
+                            <div>{optimal_lag}</div>
+                        </div>
+                    </div>
+                    
+                    <img src="../charts/lag_response_{pattern}.png" class="img-fluid mt-3" alt="Lag response chart">
+                    
+                    <a href="../reports/pattern_{pattern}_details.txt" class="btn btn-sm btn-outline-primary mt-3">View Detailed Analysis</a>
+                </div>
+            </div>
+        </div>"""
+    
+    # Close the row and container divs
+    main_html_content += """
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+"""
+    
+    # Write the completed HTML to file
+    main_output_file = os.path.join(output_dir, f"btc_{altcoin_name.lower()}_pattern_analysis.html")
+    with open(main_output_file, 'w', encoding='utf-8') as f:
+        f.write(main_html_content)
+    
+    print(f"Generated main pattern analysis HTML: {main_output_file}")
+    return main_output_file
 
 def generate_master_index():
     """Generate a master index.html file in the results directory that links to all analysis runs."""
