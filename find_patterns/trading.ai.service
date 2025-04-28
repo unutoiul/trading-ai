@@ -1,0 +1,13 @@
+[Unit]
+Description=Trading AI Flask Application
+After=network.target
+
+[Service]
+User=unutoiul
+WorkingDirectory=/home/unutoiul/trading-ai/find_patterns
+ExecStart=/usr/bin/python3 app.py
+Restart=always
+Environment=FLASK_ENV=production
+
+[Install]
+WantedBy=multi-user.target
