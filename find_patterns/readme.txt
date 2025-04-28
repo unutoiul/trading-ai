@@ -42,3 +42,20 @@ How long it typically takes for DOGE to respond (optimal lag)
 The expected magnitude and direction of DOGE's response
 The win rate (percentage of positive returns) for each pattern
 This information forms the foundation for developing a trading strategy, which you mentioned you'd like to focus on later.
+
+# Cross-platform Development Setup
+
+This project supports both Windows and Linux development environments.
+
+## Setup
+
+1. Clone the repository
+2. Install dependencies: `pip install -r requirements.txt`
+3. Ensure your editor respects .editorconfig settings
+4. Run platform check: `python platform_check.py`
+
+## Common Issues
+
+- **Line Endings**: Set Git to use LF with `git config core.autocrlf input`
+- **Path Separators**: Always use `os.path.join()` instead of hardcoded paths
+- **String Formatting**: For HTML templates, ensure f-strings are properly formatted

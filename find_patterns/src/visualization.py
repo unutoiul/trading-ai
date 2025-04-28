@@ -14,6 +14,16 @@ import numpy as np
 from datetime import datetime
 import glob
 
+def get_return_class(stats, lag=1):
+    """Get CSS class based on return value."""
+    return 'up-value' if stats['lags'].get(lag, {}).get('avg_return', 0) > 0 else 'down-value'
+
+def format_return_value(stats, lag=1):
+    """Format return value with win rate."""
+    avg_return = stats['lags'].get(lag, {}).get('avg_return', 0) * 100
+    win_rate = stats['lags'].get(lag, {}).get('win_rate', 0) * 100
+    return f"{avg_return:.4f}% ({win_rate:.1f}%)"
+
 def create_results_directory(base_dir):
     """
     Create a timestamped directory structure for analysis results.
@@ -857,9 +867,9 @@ def generate_pattern_html_reports(pattern_stats, output_dir, altcoin_name="altco
                         {"".join([f"""
                             <tr>
                                 <td><strong>{scenario.replace('btc_', '').replace('_', ' ').title()}</strong></td>
-                                <td class="{'up-value' if stats['lags'].get(1, {}).get('avg_return', 0) > 0 else 'down-value'}">{stats['lags'].get(1, {}).get('avg_return', 0)*100:.4f}% ({stats['lags'].get(1, {}).get('win_rate', 0)*100:.1f}%)</td>
-                                <td class="{'up-value' if stats['lags'].get(5, {}).get('avg_return', 0) > 0 else 'down-value'}">{stats['lags'].get(5, {}).get('avg_return', 0)*100:.4f}% ({stats['lags'].get(5, {}).get('win_rate', 0)*100:.1f}%)</td>
-                                <td class="{'up-value' if stats['lags'].get(15, {}).get('avg_return', 0) > 0 else 'down-value'}">{stats['lags'].get(15, {}).get('avg_return', 0)*100:.4f}% ({stats['lags'].get(15, {}).get('win_rate', 0)*100:.1f}%)</td>
+                                <td class="{get_return_class(stats, 1)}">{format_return_value(stats, 1)}</td>
+                                <td class="{get_return_class(stats, 5)}">{format_return_value(stats, 5)}</td>
+                                <td class="{get_return_class(stats, 15)}">{format_return_value(stats, 15)}</td>
                                 <td>{stats['instances']}</td>
                             </tr>
                         """ for scenario, stats in directional_impact.items()])}
