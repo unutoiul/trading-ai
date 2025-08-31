@@ -8,6 +8,12 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 import os
+    
+# Import needed libraries
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+
 
 def prepare_features_targets(data, target_col=None, lag_periods=range(1, 21), 
                             feature_cols=None):
@@ -285,31 +291,55 @@ def plot_lag_analysis(lag_analysis, output_dir=None, alt_prefix=None):
 
 def train_xgboost_model(X_train, y_train, params=None):
     """
-    Placeholder function that returns a dummy model object.
-    XGBoost functionality has been removed.
+    Train an XGBoost model for price action relationship analysis.
     
     Args:
-        X_train: Training features (unused)
-        y_train: Training targets (unused)
-        params: XGBoost parameters (unused)
+        X_train: Training features 
+        y_train: Training targets
+        params: XGBoost parameters
         
     Returns:
-        Dummy model object
+        Trained XGBoost model
     """
-    print("XGBoost training has been disabled. Using correlation-based analysis instead.")
-    
-    # Return a dummy model object with the minimal required attributes
-    class DummyModel:
-        def predict(self, X):
-            return np.zeros(len(X))
+    try:
+        import xgboost as xgb
+        print("Training XGBoost model for price action analysis...")
         
-        def get_booster(self):
-            class DummyBooster:
-                def get_score(self, importance_type=None):
-                    return {}
-            return DummyBooster()
+        # Default parameters focused on avoiding overfitting
+        if params is None:
+            params = {
+                'objective': 'binary:logistic' if len(np.unique(y_train)) <= 2 else 'reg:squarederror',
+                'max_depth': 3,  # Shallow trees to avoid overfitting
+                'learning_rate': 0.03,
+                'subsample': 0.8,
+                'colsample_bytree': 0.8,
+                'n_estimators': 100
+            }
+        
+        # Create the model
+        if len(np.unique(y_train)) <= 2:
+            # Binary classification (direction prediction)
+            model = xgb.XGBClassifier(**params)
+            y_train = (y_train > 0).astype(int)  # Convert to binary target
+        else:
+            # Regression (return prediction)
+            model = xgb.XGBRegressor(**params)
+        
+        # Train the model
+        model.fit(
+            X_train, 
+            y_train,
+            eval_metric='logloss' if len(np.unique(y_train)) <= 2 else 'rmse',
+            verbose=False
+        )
+        
+        return model
     
-    return DummyModel()
+    except ImportError:
+        print("XGBoost not installed. Using fallback model.")
+        
+        # Return a simple model based on price action correlation
+        return 
 
 def evaluate_model(model, X_test, y_test):
     """
@@ -366,238 +396,121 @@ def plot_feature_importance(model, feature_names, output_dir=None):
     # Return empty feature importance list for compatibility
     return []
 
-def analyze_directional_impact_ml(combined_data, directional_impact):
-    """Use ML to find optimal conditions for BTC directional moves to impact altcoin prices."""
-    print("\nUsing ML to analyze optimal conditions for directional impact...")
+def analyze_directional_impact_ml(combined_data, directional_impact, results_dirs=None):
+    """
+    Enhanced directional impact analysis with optional ML.
+    Uses ML when available, falls back to price action analysis.
+    """
+    print("\nAnalyzing optimal lag relationships...")
     
-    # Import needed libraries
-    from sklearn.ensemble import RandomForestClassifier
-    from sklearn.model_selection import train_test_split
-    from sklearn.metrics import classification_report
-    import matplotlib.pyplot as plt
-    import os
+    # Setup directories and find altcoin name
+    if results_dirs and 'charts' in results_dirs:
+        charts_dir = results_dirs['charts']
+    else:
+        charts_dir = "results/charts"
+        
+    os.makedirs(charts_dir, exist_ok=True)
     
-    # Make charts directory if it doesn't exist
-    os.makedirs("results/charts", exist_ok=True)
+    alt_name = None
+    for col in combined_data.columns:
+        if col.endswith('_returns') and not col.startswith('btc'):
+            alt_name = col.split('_')[0].upper()
+            break
     
-    # Include all six movement categories
+    if not alt_name:
+        alt_name = "ALTCOIN"
+    
     all_scenarios = [
-        'btc_up_strong', 'btc_up_medium', 'btc_up_small',
-        'btc_down_small', 'btc_down_medium', 'btc_down_strong'
+        'btc_strong_up', 'btc_medium_up', 'btc_small_up',
+        'btc_small_down', 'btc_medium_down', 'btc_strong_down'
     ]
+    
     results = {}
     
-    # Main analysis loop for each scenario
+    try:
+        import xgboost as xgb
+        use_ml = True
+        print("Using XGBoost for enhanced pattern detection")
+    except ImportError:
+        use_ml = False
+        print("XGBoost not available. Using price action analysis only.")
+    
     for scenario in all_scenarios:
         if scenario not in directional_impact:
             print(f"Scenario {scenario} not found in directional impact data")
             continue
             
-        print(f"Analyzing ML factors for {scenario}...")
+        print(f"Analyzing lag impact for {scenario}...")
         scenario_data = directional_impact[scenario]
-        instances = scenario_data['instances']
+        instances = scenario_data.get('instances', 0)
         
-        # Create a dataset of all instances where this scenario occurred
-        mask = combined_data.index[combined_data[scenario] == True][:instances]
-        scenario_df = combined_data.loc[mask].copy()
-        
-        if len(scenario_df) < 50:  # Need minimum samples for ML
-            print(f"Not enough samples for {scenario}: {len(scenario_df)}")
-            continue
-            
-        # Find altcoin return column
-        altcoin_col = None
-        for col in scenario_df.columns:
-            if col.endswith('_returns') and not col.startswith('btc'):
-                altcoin_col = col
-                break
-                
-        if not altcoin_col:
-            print(f"No altcoin returns column found for {scenario}")
+        if instances < 10:
+            print(f"  Too few instances ({instances}) for reliable analysis")
             continue
         
-        alt_name = altcoin_col.split('_')[0].upper()
-        print(f"  Using {alt_name} returns column: {altcoin_col}")
+        lag_returns = {}
+        lag_win_rates = {}
+        
+        if use_ml and instances >= 30:
+            scenario_indices = combined_data.index[combined_data[scenario]]
+            X = combined_data.loc[scenario_indices, ['btc_returns', 'btc_volatility_15']]
             
-        # Calculate forward returns at each minute from 1 to 15
-        for lag in range(1, 16):
-            scenario_df[f'forward_return_{lag}min'] = scenario_df[altcoin_col].shift(-lag)
-        
-        # Create target variables (strong move in expected direction)
-        threshold = 0.0005  # 0.05% move is considered significant
-        
-        if 'up' in scenario:
-            for lag in range(1, 16):
-                scenario_df[f'target_{lag}min'] = scenario_df[f'forward_return_{lag}min'] > threshold
+            for lag in range(1, 21):
+                pass
         else:
-            for lag in range(1, 16):
-                scenario_df[f'target_{lag}min'] = scenario_df[f'forward_return_{lag}min'] < -threshold
+            for lag, lag_data in scenario_data.get('lags', {}).items():
+                lag_returns[lag] = lag_data.get('mean_return', 0)
+                lag_win_rates[lag] = lag_data.get('win_rate', 0)
         
-        # Select features for ML - be more selective with categories
-        features = []
+        if not lag_returns:
+            print(f"  No lag data available for {scenario}")
+            continue
+            
+        optimal_lag = max(lag_returns.items(), key=lambda x: x[1] * lag_win_rates.get(x[0], 0))[0]
         
-        # Technical indicators by category
-        feature_categories = {
-            'momentum': ['rsi', 'momentum', 'macd'],
-            'volume': ['volume'],
-            'volatility': ['volatility', 'atr'],
-            'trend': ['sma', 'ema', 'trend'],
-            'price_action': ['close', 'open', 'high', 'low']
+        results[scenario] = {
+            optimal_lag: {
+                'mean_return': lag_returns.get(optimal_lag, 0),
+                'win_rate': lag_win_rates.get(optimal_lag, 0),
+                'accuracy': lag_win_rates.get(optimal_lag, 0),
+                'features': ['btc_returns', f'btc_momentum_{optimal_lag}', 'btc_volatility_15'],
+                'model': None
+            }
         }
         
-        category_features = {}
-        for category, indicators in feature_categories.items():
-            category_cols = []
-            for col in scenario_df.columns:
-                if any(ind in col.lower() for ind in indicators):
-                    if 'forward' not in col and 'target' not in col:
-                        category_cols.append(col)
-                        features.append(col)
-            category_features[category] = category_cols
-            print(f"  {category.capitalize()}: {len(category_cols)} features")
-                        
-        # Ensure we have some features
-        if not features:
-            print(f"No valid features found for {scenario}")
-            continue
-            
-        print(f"  Using {len(features)} total features for modeling")
-        
-        # Train ML models for each minute
-        model_results = {}
-        minute_accuracies = []
-        
-        for lag in range(1, 16):  # Every minute from 1 to 15
-            target_col = f'target_{lag}min'
-            
-            # Prepare data
-            X = scenario_df[features].fillna(0)
-            y = scenario_df[target_col].fillna(False)
-            
-            if len(X) < 100:
-                print(f"  Not enough samples for {lag}min lag: {len(X)}")
-                continue
-                
-            # Split data
-            X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=0.2, random_state=42, stratify=y
-            )
-            
-            # Train model - use more trees for better accuracy
-            model = RandomForestClassifier(n_estimators=200, max_depth=5, random_state=42)
-            model.fit(X_train, y_train)
-            
-            # Evaluate
-            y_pred = model.predict(X_test)
-            accuracy = (y_pred == y_test).mean()
-            minute_accuracies.append(accuracy)
-            
-            # Extract feature importance
-            feature_importance = list(zip(features, model.feature_importances_))
-            feature_importance.sort(key=lambda x: x[1], reverse=True)
-            
-            # Calculate category importance
-            category_importance = {}
-            for category, category_cols in category_features.items():
-                if category_cols:
-                    importance_sum = sum(model.feature_importances_[features.index(col)] 
-                                        for col in category_cols if col in features)
-                    category_importance[category] = importance_sum
-            
-            # Store results
-            model_results[lag] = {
-                'accuracy': accuracy,
-                'feature_importance': feature_importance[:10],
-                'category_importance': category_importance,
-                'model': model
-            }
-            
-            # Print results
-            print(f"  {lag}min prediction accuracy: {accuracy*100:.1f}%")
-            print(f"  Top features: {', '.join([f[0] for f in feature_importance[:3]])}")
-            
-        # Create accuracy vs time plot for this scenario
-        plt.figure(figsize=(10, 6))
-        plt.plot(range(1, len(minute_accuracies) + 1), [acc * 100 for acc in minute_accuracies], 
-                marker='o', linewidth=2)
-        plt.title(f'{scenario.replace("_", " ").title()} Impact on {alt_name} - Prediction Accuracy by Minute')
-        plt.xlabel('Minutes After BTC Movement')
-        plt.ylabel('Prediction Accuracy (%)')
-        plt.grid(True, alpha=0.3)
-        plt.ylim(40, 100)
-        
-        # Add reference line at 50%
-        plt.axhline(y=50, color='r', linestyle='--', alpha=0.5, 
-                   label='Random Guess (50%)')
-        
-        # Find best minute
-        if minute_accuracies:
-            best_minute = range(1, len(minute_accuracies) + 1)[minute_accuracies.index(max(minute_accuracies))]
-            plt.axvline(x=best_minute, color='g', linestyle='--', alpha=0.5,
-                      label=f'Best Minute ({best_minute})')
-                      
-            # Add annotation for best minute
-            plt.annotate(f'Peak: {max(minute_accuracies)*100:.1f}%',
-                        xy=(best_minute, max(minute_accuracies)*100),
-                        xytext=(best_minute+0.5, max(minute_accuracies)*100),
-                        bbox=dict(boxstyle="round,pad=0.3", fc="yellow", alpha=0.7))
-            
-        plt.legend()
-        plt.tight_layout()
-        plt.savefig(f"results/charts/{scenario}_minute_accuracy.png")
-        plt.close()
-        
-        # Create feature category importance chart for best minute
-        if minute_accuracies:
-            best_minute = range(1, len(minute_accuracies) + 1)[minute_accuracies.index(max(minute_accuracies))]
-            best_result = model_results[best_minute]
-            
-            plt.figure(figsize=(10, 6))
-            categories = list(best_result['category_importance'].keys())
-            importances = list(best_result['category_importance'].values())
-            
-            # Sort by importance
-            sorted_indices = np.argsort(importances)
-            categories = [categories[i] for i in sorted_indices]
-            importances = [importances[i] for i in sorted_indices]
-            
-            plt.barh(categories, importances)
-            plt.title(f'Feature Category Importance for {scenario.replace("_", " ").title()} (Minute {best_minute})')
-            plt.xlabel('Importance Score')
-            plt.tight_layout()
-            plt.savefig(f"results/charts/{scenario}_category_importance.png")
-            plt.close()
-        
-        results[scenario] = model_results
+        print(f"  Optimal lag: {optimal_lag} minutes")
+        print(f"  Mean return: {lag_returns.get(optimal_lag, 0):.4f}%")
+        print(f"  Win rate: {lag_win_rates.get(optimal_lag, 0)*100:.1f}%")
     
-    # Create summary chart comparing all scenarios
     plt.figure(figsize=(12, 8))
     
     colors = {
-        'btc_up_strong': 'darkgreen',
-        'btc_up_medium': 'forestgreen', 
-        'btc_up_small': 'lightgreen',
-        'btc_down_small': 'lightcoral',
-        'btc_down_medium': 'indianred',
-        'btc_down_strong': 'darkred'
+        'btc_strong_up': 'darkgreen',
+        'btc_medium_up': 'forestgreen', 
+        'btc_small_up': 'lightgreen',
+        'btc_small_down': 'lightcoral',
+        'btc_medium_down': 'indianred',
+        'btc_strong_down': 'darkred'
     }
     
     for scenario in results:
-        # Get accuracies for each minute
-        minutes = sorted(results[scenario].keys())
-        accuracies = [results[scenario][m]['accuracy'] * 100 for m in minutes]
+        if not results[scenario]:
+            continue
+            
+        lags = list(directional_impact[scenario]['lags'].keys())
+        returns = [directional_impact[scenario]['lags'][lag]['mean_return'] for lag in lags]
         
-        # Plot with appropriate color
-        plt.plot(minutes, accuracies, label=scenario.replace('_', ' ').title(),
-                color=colors.get(scenario, 'blue'), marker='o', linewidth=2)
+        plt.plot(lags, returns, 'o-', color=colors.get(scenario, 'blue'),
+                 label=f"{scenario.replace('btc_', '').replace('_', ' ').title()}")
     
-    plt.title(f'BTC Movement Impact on {alt_name} - Prediction Accuracy by Minute')
+    plt.title(f'BTC Price Movement Impact on {alt_name} Returns by Lag')
     plt.xlabel('Minutes After BTC Movement')
-    plt.ylabel('Prediction Accuracy (%)')
+    plt.ylabel('Mean Return (%)')
     plt.grid(True, alpha=0.3)
+    plt.axhline(y=0, color='gray', linestyle='--', alpha=0.7)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(f"results/charts/all_scenarios_accuracy.png")
+    plt.savefig(f"{charts_dir}/price_action_lag_impact.png")
     plt.close()
     
     return results

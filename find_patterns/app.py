@@ -21,9 +21,10 @@ import io
 
 import sys
 
+# Add debugging at the top of app.py
+print(f"Python path: {sys.path}")
+print(f"Python executable: {sys.executable}")
 
-# Use Claude AI to generate strategy
-from src.ai_analysis import ClaudeAnalyzer
 
 # Create global log queues for different operations
 fetch_log_queue = queue.Queue()    # For data fetching operations
@@ -40,8 +41,6 @@ app.config['DATA_DIR'] = os.path.join(os.path.dirname(os.path.abspath(__file__))
 app.config['RESULTS_DIR'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results')
 
 # Create directories if they don't exist
-os.makedirs(os.path.join(app.config['DATA_DIR'], 'btc'), exist_ok=True)
-os.makedirs(os.path.join(app.config['DATA_DIR'], 'altcoins'), exist_ok=True)
 os.makedirs(app.config['RESULTS_DIR'], exist_ok=True)
 
 app.config['FETCH_RESULTS'] = None  # Initialize the config variable
@@ -203,67 +202,6 @@ def download_file(filename):
 import sys
 import io
 
-# Modified run_analysis route to capture console output
-# @app.route('/run_analysis', methods=['POST'])
-# def run_analysis():
-#     try:
-#         data = request.json
-#         btc_file = data.get('btc_file')
-#         alt_file = data.get('alt_file')
-        
-#         # Add initial log
-#         add_log(f"Starting analysis with {btc_file} and {alt_file}")
-#         add_log(f"Strategy optimization: Enabled (automatic)")
-        
-#         # Create logging stream for console output
-#         class LoggingStream(io.StringIO):
-#             def write(self, text):
-#                 if text:
-#                     log_text = text.rstrip('\n')
-#                     if log_text:
-#                         add_log(log_text)
-#                 return super().write(text)
-                
-#             def flush(self):
-#                 return super().flush()
-        
-#         # Save original stdout/stderr
-#         original_stdout = sys.stdout
-#         original_stderr = sys.stderr
-        
-#         # Redirect to logging stream
-#         logging_stream = LoggingStream()
-#         sys.stdout = logging_stream
-#         sys.stderr = logging_stream
-        
-#         try:
-#             # Import the run_analysis module
-#             from src import run_analysis as run_analysis_module
-            
-#             # Call main with optimize_strategy always True
-#             result_dir = run_analysis_module.main(
-#                 btc_file=btc_file,
-#                 alt_file=alt_file,
-#                 use_ml=True,
-#                 optimize_strategy=True, 
-#                 return_results_dir=True
-#             )
-            
-#             # Set the last result directory
-#             app.config['LAST_RESULT_DIR'] = result_dir
-#             add_log("ANALYSIS_COMPLETE")
-            
-#             return jsonify({'status': 'complete', 'result_dir': result_dir})
-        
-#         finally:
-#             # Always restore original stdout/stderr
-#             sys.stdout = original_stdout
-#             sys.stderr = original_stderr
-    
-#     except Exception as e:
-#         add_log(f"ANALYSIS_ERROR: {str(e)}")
-#         return jsonify({'error': str(e)}), 500
-
 @app.route('/run_analysis', methods=['POST'])
 def run_analysis():
     try:
@@ -271,9 +209,18 @@ def run_analysis():
         btc_file = data.get('btc_file')
         alt_file = data.get('alt_file')
         
+        # Get condition filters if provided, otherwise use all available conditions
+        conditions = data.get('conditions')
+        condition_type = data.get('condition_type', 'any')
+        
         # Add initial log
         add_log(f"Starting directional analysis with {btc_file} and {alt_file}")
         add_log("Running only directional impact analysis and strategy generation")
+        
+        if conditions:
+            add_log(f"Applying {len(conditions)} condition filters ({condition_type})")
+        else:
+            add_log("Using all market conditions (no filters applied)")
         
         # Create logging stream for console output
         class LoggingStream(io.StringIO):
@@ -297,10 +244,12 @@ def run_analysis():
             # Import the run_analysis module
             from src import run_analysis as run_analysis_module
             
-            # Call our new focused function instead of the full analysis
+            # Call our function with condition filters
             result_dir = run_analysis_module.run_directional_analysis_only(
                 btc_file=btc_file,
-                alt_file=alt_file
+                alt_file=alt_file,
+                conditions=conditions,
+                condition_type=condition_type
             )
             
             # Set the last result directory
@@ -486,126 +435,6 @@ def serve_results_file(filename):
         return render_template('no_results.html',
                               message=f"Error loading file: {str(e)}"), 500
 
-@app.route('/generate_strategy', methods=['POST'])
-def generate_strategy():
-    """Generate a Pine Script strategy based on selected report."""
-    try:
-        data = request.json
-        
-        # Extract parameters
-        report_path = data.get('report_path')
-        strategy_type = data.get('strategy_type', 'momentum')
-        risk_per_trade = float(data.get('risk_per_trade', 1.0))
-        use_stop_loss = data.get('use_stop_loss', True)
-        stop_loss_percent = float(data.get('stop_loss_percent', 5.0))
-        use_take_profit = data.get('use_take_profit', True)
-        take_profit_percent = float(data.get('take_profit_percent', 10.0))
-        
-        # Check for Claude API key
-        if not os.environ.get("ANTHROPIC_API_KEY"):
-            return jsonify({'error': 'Claude API key is required. Please set the ANTHROPIC_API_KEY environment variable.'}), 400
-        
-        # Check if report exists
-        if not report_path:
-            return jsonify({'error': 'Please select an analysis report.'}), 400
-            
-        full_report_path = os.path.join(app.root_path, 'results', report_path)
-        if not os.path.exists(full_report_path):
-            return jsonify({'error': f'Report file not found: {report_path}'}), 404
-        
-        # Read the report content
-        with open(full_report_path, 'r') as f:
-            report_content = f.read()
-        
-
-        
-        try:
-            # Create strategies directory if it doesn't exist
-            strategies_dir = os.path.join(app.root_path, 'results', 'strategies')
-            if not os.path.exists(strategies_dir):
-                os.makedirs(strategies_dir)
-                
-            # Generate timestamp for filename
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            
-            # Generate Pine Script from report
-            analyzer = ClaudeAnalyzer()
-            
-            # Generate prompt for Claude based on the report
-            prompt = f"""
-# Generate Pine Script Strategy from Analysis Report
-
-Below is an analysis report of Bitcoin-Dogecoin trading patterns. Use this report to create a Pine Script strategy for TradingView.
-
-## Strategy Parameters:
-- Strategy Type: {strategy_type}
-- Risk Per Trade: {risk_per_trade}%
-- Use Stop Loss: {'Yes' if use_stop_loss else 'No'}
-- Stop Loss Percentage: {stop_loss_percent}%
-- Use Take Profit: {'Yes' if use_take_profit else 'No'}
-- Take Profit Percentage: {take_profit_percent}%
-
-## Analysis Report:
-{report_content}
-
-## Instructions:
-1. Create a Pine Script v5 strategy based on the patterns and insights in the report
-2. Implement the specific strategy type ({strategy_type}) requested
-3. Use the risk parameters provided
-4. Focus on generating actionable trading signals based on BTC patterns affecting DOGE
-5. Include appropriate comments explaining the strategy logic
-
-Respond with just the complete Pine Script code in a code block.
-"""
-            
-            # Call Claude API directly for this custom prompt
-            response = analyzer.client.messages.create(
-                model=analyzer.model,
-                max_tokens=4000,
-                temperature=0.1,
-                system="You are an expert Pine Script developer who specializes in creating algorithmic trading strategies for TradingView. You write clean, optimized, and well-commented code that follows Pine Script best practices.",
-                messages=[
-                    {"role": "user", "content": prompt}
-                ]
-            )
-            
-            # Extract code from response
-            full_response = response.content[0].text
-            
-
-            code_match = re.search(r'```pine\n(.*?)```', full_response, re.DOTALL)
-            if code_match:
-                pine_script = code_match.group(1)
-            else:
-                # If no code block, just use the whole response
-                pine_script = full_response
-            
-            # Save the strategy to file
-            strategy_filename = f"claude_strategy_{strategy_type}_{timestamp}.pine"
-            strategy_path = os.path.join(strategies_dir, strategy_filename)
-            with open(strategy_path, 'w') as f:
-                f.write(pine_script)
-                
-            # Create a plain text version for viewing in browser
-            view_filename = f"{strategy_filename}.txt"
-            view_path = os.path.join(strategies_dir, view_filename)
-            with open(view_path, 'w') as f:
-                f.write(pine_script)
-                
-            return jsonify({
-                'status': 'success',
-                'message': 'Strategy generated successfully',
-                'download_url': f'/results/strategies/{strategy_filename}',
-                'view_url': f'/results/strategies/{view_filename}',
-                'filename': strategy_filename
-            })
-            
-        except Exception as e:
-            return jsonify({'error': f"Error generating strategy: {str(e)}"}), 500
-            
-    except Exception as e:
-        return jsonify({'error': f'Strategy generation failed: {str(e)}'}), 500
-
 @app.route('/download_strategy/<path:filename>')
 def download_strategy(filename):
     """Download a generated Pine Script strategy."""
@@ -613,14 +442,6 @@ def download_strategy(filename):
         return send_from_directory('results/strategies', filename, as_attachment=True)
     except Exception as e:
         return jsonify({'error': f'Error downloading strategy: {str(e)}'}), 404
-
-@app.route('/check_claude_api')
-def check_claude_api():
-    """Check if Claude API key is set."""
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    return jsonify({
-        'available': bool(api_key)
-    })
 
 @app.route('/list_reports')
 def list_reports():
@@ -852,6 +673,115 @@ def available_files():
     
     files = get_available_files(directory)
     return jsonify(files)
+
+@app.route('/available_conditions', methods=['GET'])
+def available_conditions():
+    """Get available condition filters for the current dataset."""
+    try:
+        # Load the most recent analysis results
+        result_dirs = [d for d in os.listdir(app.config['RESULTS_DIR']) if os.path.isdir(os.path.join(app.config['RESULTS_DIR'], d))]
+        if not result_dirs:
+            return jsonify({'error': 'No analysis results found'}), 404
+            
+        # Sort by creation time (newest first)
+        result_dirs.sort(key=lambda d: os.path.getctime(os.path.join(app.config['RESULTS_DIR'], d)), reverse=True)
+        latest_dir = result_dirs[0]
+        
+        # Look for filter config
+        filter_config_path = os.path.join(app.config['RESULTS_DIR'], latest_dir, 'reports', 'filter_config.json')
+        if os.path.exists(filter_config_path):
+            with open(filter_config_path, 'r') as f:
+                filter_config = json.load(f)
+                
+            return jsonify({
+                'status': 'success',
+                'conditions': filter_config.get('conditions', []),
+                'condition_type': filter_config.get('condition_type', 'any')
+            })
+        
+        # If no filter config found, return standard conditions
+        return jsonify({
+            'status': 'success',
+            'conditions': [
+                'btc_strong_up', 'btc_medium_up', 'btc_small_up',
+                'btc_strong_down', 'btc_medium_down', 'btc_small_down',
+                'btc_sideways', 'btc_high_volatility', 'btc_low_volatility'
+            ],
+            'condition_type': 'any'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/apply_conditions', methods=['POST'])
+def apply_conditions():
+    """Apply condition filters to the analysis."""
+    try:
+        data = request.json
+        conditions = data.get('conditions', [])
+        condition_type = data.get('condition_type', 'any')
+        
+        # Get latest BTC and altcoin files
+        btc_file = None
+        alt_file = None
+        
+        # Scan data directory for files
+        for file in os.listdir('data'):
+            if file.lower().startswith('btc') and file.endswith('.csv'):
+                btc_file = os.path.join('data', file)
+            elif not file.lower().startswith('btc') and file.endswith('.csv'):
+                alt_file = os.path.join('data', file)
+        
+        if not btc_file or not alt_file:
+            return jsonify({'error': 'BTC or altcoin file not found'}), 400
+            
+        # Create logging stream to capture output
+        class LoggingStream(io.StringIO):
+            def write(self, text):
+                if text.strip():  # Only process non-empty lines
+                    add_log(text.strip())
+                
+            def flush(self):
+                pass
+        
+        # Save original stdout/stderr
+        original_stdout = sys.stdout
+        original_stderr = sys.stderr
+        
+        # Redirect to logging stream
+        logging_stream = LoggingStream()
+        sys.stdout = logging_stream
+        sys.stderr = logging_stream
+        
+        try:
+            # Import the run_analysis module
+            from src import run_analysis as run_analysis_module
+            
+            # Call main with the conditions
+            result_dir = run_analysis_module.main(
+                btc_file=btc_file,
+                alt_file=alt_file,
+                use_ml=True,
+                optimize_strategy=True,
+                conditions=conditions,
+                condition_type=condition_type,
+                return_results_dir=True
+            )
+            
+            # Set the last result directory
+            app.config['LAST_RESULT_DIR'] = result_dir
+            add_log("ANALYSIS_COMPLETE")
+            
+            return jsonify({'status': 'complete', 'result_dir': result_dir})
+            
+        finally:
+            # Always restore original stdout/stderr
+            sys.stdout = original_stdout
+            sys.stderr = original_stderr
+    
+    except Exception as e:
+        add_log(f"ANALYSIS_ERROR: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)

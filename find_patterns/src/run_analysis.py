@@ -22,7 +22,7 @@ from src import strategy_optimizer
 from src import pattern_analysis
 from src.data_processing import load_and_preprocess_data
 from src.pattern_analysis import classify_momentum_patterns, analyze_lag_relationships, analyze_cross_asset_relationships
-from src.ml_models import evaluate_model, prepare_features_targets, train_xgboost_model, plot_feature_importance, analyze_directional_impact_ml
+from src.ml_models import analyze_directional_impact_ml
 from src.visualization import (
     create_results_directory,
     generate_cross_asset_report,
@@ -39,33 +39,54 @@ from src.feature_engineering import (
     add_relationship_features,
     add_composite_features
 )
+from src.conditions_filter import ConditionsFilter
 
 # Update the ML report generation
 def generate_ml_report(ml_results, output_dir):
-    """Generate analysis of pattern-return relationships using XGBoost insights."""
-    output_file = os.path.join(output_dir, 'xgboost_analysis_report.txt')
+    """Generate analysis of pattern-return relationships using price action insights."""
+    output_file = os.path.join(output_dir, 'price_action_analysis_report.txt')
     
     with open(output_file, 'w') as f:
-        f.write("XGBOOST FEATURE ANALYSIS\n")
+        f.write("PRICE ACTION ANALYSIS\n")
         f.write("=======================\n\n")
         
-        # Feature importance analysis
-        f.write("PATTERN IMPORTANCE RANKING\n")
-        f.write("Which BTC patterns most strongly influence DOGE returns:\n\n")
-        for feature, importance in ml_results['feature_importance']:
-            f.write(f"{feature}: {importance:.6f}\n")
+        # Check if feature importance exists in results
+        if 'feature_importance' in ml_results:
+            # Feature importance analysis
+            f.write("PATTERN IMPORTANCE RANKING\n")
+            f.write("Which BTC patterns most strongly influence altcoin returns:\n\n")
+            for feature, importance in ml_results['feature_importance']:
+                f.write(f"{feature}: {importance:.6f}\n")
+        else:
+            # Handle price action scenarios
+            f.write("PRICE ACTION SCENARIOS\n")
+            f.write("How different BTC movements influence altcoin price:\n\n")
+            
+            # List all scenarios if available
+            scenarios = [s for s in ml_results.keys() if s.startswith('btc_')]
+            for scenario in scenarios:
+                f.write(f"\n{scenario.upper()}\n")
+                if isinstance(ml_results[scenario], dict):
+                    for lag, stats in sorted(ml_results[scenario].items()):
+                        if isinstance(stats, dict) and 'mean_return' in stats:
+                            f.write(f"  Lag {lag}: Return = {stats['mean_return']:.4f}%, "
+                                    f"Win Rate = {stats['win_rate']*100 if 'win_rate' in stats else 0:.1f}%\n")
         
         f.write("\n\nINTERPRETATION\n")
-        f.write("The feature importance shows which BTC patterns and indicators have the strongest\n")
-        f.write("relationship with future DOGE price movements. Higher values indicate stronger influence.\n\n")
+        f.write("The analysis shows which BTC price action patterns have the strongest\n")
+        f.write("relationship with future altcoin price movements.\n\n")
         
-        # Still include model performance metrics but de-emphasize them
-        f.write("\nMODEL VALIDATION METRICS\n")
-        f.write("(Used to verify the reliability of the feature importance analysis)\n")
-        f.write(f"Directional Accuracy: {ml_results['metrics']['directional_accuracy']:.2%}\n")
-        f.write(f"R² Score: {ml_results['metrics']['r2']:.4f}\n")
+        # Include performance metrics if available
+        if 'metrics' in ml_results:
+            f.write("\nPERFORMANCE METRICS\n")
+            metrics = ml_results['metrics']
+            for metric_name, metric_value in metrics.items():
+                if isinstance(metric_value, float):
+                    f.write(f"{metric_name}: {metric_value:.4f}\n")
+                else:
+                    f.write(f"{metric_name}: {metric_value}\n")
         
-    print(f"Saved XGBoost analysis report to {output_file}")
+    print(f"Saved price action analysis report to {output_file}")
     return output_file
 
 def ensure_html_reports_exist(results_dirs, pattern_stats, altcoin_name):
@@ -104,7 +125,31 @@ def ensure_html_reports_exist(results_dirs, pattern_stats, altcoin_name):
 </body>
 </html>""")
 
-def run_directional_analysis_only(btc_file, alt_file):
+def apply_condition_filters(combined_data, conditions=None):
+    """Apply condition filters to data for segmentation."""
+    print("\nApplying condition filters for data segmentation...")
+    
+    # Create condition filter
+    filter_manager = ConditionsFilter(combined_data)
+    
+    # Define standard conditions
+    available_conditions = filter_manager.define_standard_conditions()
+    
+    # Apply filters if provided
+    if conditions:
+        filtered_data = filter_manager.apply_filters(conditions)
+        print(f"Applied filters: {conditions}")
+    else:
+        filtered_data = combined_data
+        print("No filters applied, using complete dataset")
+    
+    # Report on filtered data size
+    print(f"Filtered dataset size: {len(filtered_data)} rows")
+    
+    # Return both the filtered data and the filter manager for further use
+    return filtered_data, filter_manager
+
+def run_directional_analysis_only(btc_file, alt_file, conditions=None, condition_type="any"):
     """Run only the directional impact ML analysis and strategy generation."""
     print("\n=== RUNNING DIRECTIONAL IMPACT ANALYSIS ONLY ===")
     
@@ -121,130 +166,178 @@ def run_directional_analysis_only(btc_file, alt_file):
             altcoin_name = col.split('_')[0]
             break
     
+    if not altcoin_name and 'altcoin_name' in combined_data.columns:
+        altcoin_name = combined_data['altcoin_name'].iloc[0]
+    
     if not altcoin_name:
         altcoin_name = "altcoin"
     
     print(f"\nRunning Directional Impact Analysis for BTC and {altcoin_name.upper()}")
     
-    # Add BTC directional impact scenarios to the data
-    for scenario in ['btc_up_strong', 'btc_up_medium', 'btc_up_small',
-                    'btc_down_small', 'btc_down_medium', 'btc_down_strong']:
-        combined_data[scenario] = False
+    # Fix column naming inconsistencies - this is crucial!
+    # Ensure all required columns exist with consistent naming
+    column_mappings = {
+        # Map price columns
+        'close_btc': 'btc_close',
+        'high_btc': 'btc_high',
+        'low_btc': 'btc_low',
+        'open_btc': 'btc_open',
+        'volume_btc': 'btc_volume',
+        
+        # Map altcoin columns
+        f'close_{altcoin_name}': f'{altcoin_name}_close',
+        f'high_{altcoin_name}': f'{altcoin_name}_high',
+        f'low_{altcoin_name}': f'{altcoin_name}_low',
+        f'open_{altcoin_name}': f'{altcoin_name}_open',
+        f'volume_{altcoin_name}': f'{altcoin_name}_volume'
+    }
     
-    min_price_move = 0.0015  # 0.15% move threshold
+    # Apply all column mappings if source exists and target doesn't
+    print("Standardizing column names...")
+    for source, target in column_mappings.items():
+        if source in combined_data.columns and target not in combined_data.columns:
+            combined_data[target] = combined_data[source]
+            print(f"  Mapped '{source}' to '{target}'")
     
-    # Define the different BTC move scenarios directly on the combined_data
-    combined_data['btc_up_strong'] = (combined_data['btc_returns'] > min_price_move)
-    combined_data['btc_up_medium'] = (combined_data['btc_returns'] > min_price_move/2) & (combined_data['btc_returns'] <= min_price_move)
-    combined_data['btc_up_small'] = (combined_data['btc_returns'] > 0) & (combined_data['btc_returns'] <= min_price_move/2)
-    combined_data['btc_down_small'] = (combined_data['btc_returns'] < 0) & (combined_data['btc_returns'] >= -min_price_move/2)
-    combined_data['btc_down_medium'] = (combined_data['btc_returns'] < -min_price_move/2) & (combined_data['btc_returns'] >= -min_price_move)
-    combined_data['btc_down_strong'] = (combined_data['btc_returns'] < -min_price_move)
+    # Add enhanced features to data - DON'T reassign the DataFrame!
+    print("Adding enhanced momentum features...")
+    add_enhanced_momentum_features(combined_data, prefix='btc')
     
-    # Step 3: Run directional impact analysis
-    print("\nAnalyzing BTC directional impact on altcoin...")
-    directional_impact = pattern_analysis.analyze_btc_directional_impact(
-        combined_data,
-        lags=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30],
-        min_price_move=min_price_move
-    )
+    print("Adding price action features...")
+    add_price_action_features(combined_data, prefix='btc')
     
-    # Generate directional impact report
-    if directional_impact:
-        output_file = os.path.join(results_dirs['reports'], 'btc_directional_impact_report.txt')
-        with open(output_file, 'w') as f:
-            f.write(f"BTC DIRECTIONAL IMPACT ON {altcoin_name.upper()}\n")
-            f.write("=" * 50 + "\n\n")
-            
-            for scenario, stats in directional_impact.items():
-                f.write(f"\n{scenario.upper()}\n")
-                f.write("-" * len(scenario) + "\n")
-                f.write(f"Total instances: {stats['instances']}\n\n")
-                
-                # Create a table of lag results
-                f.write(f"{'Lag (min)':<10}{'Avg Return %':<15}{'Win Rate %':<15}{'Sample Size':<10}\n")
-                f.write("-" * 50 + "\n")
-                
-                # Sort lags by minute value
-                for lag in sorted(stats['lags'].keys()):
-                    lag_stats = stats['lags'][lag]
-                    f.write(f"{lag:<10}{lag_stats['avg_return']*100:<15.4f}{lag_stats['win_rate']*100:<15.1f}{lag_stats['sample_size']:<10}\n")
-                
-                f.write("\n")
-        print(f"Generated directional impact report: {output_file}")
-
-    # Step 4: Apply ML to analyze directional impact
-    print("\nApplying machine learning to directional impact analysis...")
+    print("Adding relationship features...")
+    add_relationship_features(combined_data, btc_prefix='btc', alt_prefix=altcoin_name)
+    
+    print("Adding composite features...")
+    add_composite_features(combined_data, btc_prefix='btc', alt_prefix=altcoin_name)
+    
+    # Apply condition filters if provided
+    if conditions:
+        filtered_data, filter_manager = apply_condition_filters(combined_data, conditions)
+        # Save the filter configuration
+        filter_report = os.path.join(results_dirs['reports'], 'filter_config.json')
+        with open(filter_report, 'w') as f:
+            json.dump({
+                'conditions': conditions,
+                'condition_type': condition_type,
+                'filtered_size': len(filtered_data),
+                'original_size': len(combined_data),
+                'percentage': len(filtered_data) / len(combined_data) * 100
+            }, f, indent=2)
+    else:
+        # If no conditions provided, use all data
+        filtered_data = combined_data
+        print("No filters applied, using complete dataset")
+    
+    # Step 3: Run directional impact ML analysis
+    print("\nRunning directional impact ML analysis...")
     try:
-        directional_impact_ml = ml_models.analyze_directional_impact_ml(
-            combined_data,
-            directional_impact
+        # First, analyze BTC directional impact on altcoin
+        print("Analyzing BTC directional impact on altcoin...")
+        directional_impact = pattern_analysis.analyze_btc_directional_impact(filtered_data)
+        
+        # Now use the directional impact results in ML analysis
+        print("Running ML analysis with directional impact data...")
+        directional_impact_results = analyze_directional_impact_ml(
+            filtered_data, 
+            directional_impact=directional_impact,
+            results_dirs=results_dirs
         )
         
-        # Save ML analysis results
-        ml_report_path = os.path.join(results_dirs['reports'], 'directional_impact_ml_report.txt')
-        with open(ml_report_path, 'w') as f:
-            f.write(f"ML ANALYSIS OF BTC-{altcoin_name.upper()} DIRECTIONAL IMPACT\n")
-            f.write("=" * 50 + "\n\n")
-            
-            for scenario, lag_results in directional_impact_ml.items():
-                f.write(f"\n{scenario.upper()}\n")
-                f.write("-" * len(scenario) + "\n\n")
-                
-                for lag, results in lag_results.items():
-                    f.write(f"Lag: {lag} minutes\n")
-                    f.write(f"Prediction accuracy: {results['accuracy']*100:.1f}%\n\n")
-                    
-                    f.write("Top predictive factors:\n")
-                    for feature, importance in results['feature_importance'][:7]:
-                        f.write(f"  {feature}: {importance*100:.2f}%\n")
-                    
-                    f.write("\n")
+        # Step 4: Generate trading strategies based on directional impact
+        print("\nGenerating trading strategies...")
+        strategy_generator = DirectionalImpactStrategies(
+            filtered_data, 
+            directional_impact_results,
+            altcoin_name
+        )
         
-        print(f"Generated ML directional impact report: {ml_report_path}")
+        # Generate strategies
+        strategy_generator.generate_strategies()
         
-        # Step 5: Generate and backtest trading strategies
-        try:
-            print("\nGenerating trading strategies from directional impact analysis...")
-            from src.strategy_generator import DirectionalImpactStrategies
-            
-            strategy_generator = DirectionalImpactStrategies(
-                combined_data, 
-                directional_impact_ml, 
-                altcoin_name
-            )
-
-            # Generate strategies
-            strategies = strategy_generator.generate_strategies()
-
-            # Backtest strategies
-            backtest_results = strategy_generator.backtest_strategies()
-
-            # Generate reports
-            strategy_reports = strategy_generator.generate_strategy_reports(results_dirs)
-
-            print(f"\nGenerated strategy reports at {strategy_reports['txt_report']}")
-            print(f"Generated HTML strategy dashboard at {strategy_reports['html_report']}")
-            update_index_html(results_dirs, altcoin_name)
-
-            # Generate/update master index of all reports
-            from src.visualization import generate_master_index
-            generate_master_index()
-
-        except Exception as e:
-            print(f"Error in strategy generation: {e}")
-            traceback.print_exc()
+        # Backtest strategies
+        strategy_generator.backtest_strategies()
+        
+        # Generate reports
+        strategy_generator.generate_strategy_reports(results_dirs)
+        
+        print("\nDirectional analysis and strategy generation complete!")
+        print(f"Results saved to: {results_dirs['base']}")
+        
     except Exception as e:
-        print(f"Error in ML directional impact analysis: {e}")
+        print(f"Error in directional analysis: {str(e)}")
         traceback.print_exc()
+        print("Continuing with basic analysis...")
     
-    print("\n======= DIRECTIONAL ANALYSIS COMPLETE =======")
-    print(f"Results saved to: {results_dirs['base']}")
-    print(f"Main dashboard: {os.path.join(results_dirs['base'], 'index.html')}")
+    # Generate index.html
+    try:
+        update_index_html(results_dirs, altcoin_name)
+    except Exception as e:
+        print(f"Error generating index HTML: {str(e)}")
     
+    # Return the results directory
     return results_dirs['base']
 
-def main(btc_file=None, alt_file=None, use_ml=True, optimize_strategy=True, serve=False, port=8000, return_results_dir=False):
+def run_price_action_optimization(btc_file, alt_file, optimize_count=100):
+    """Run price action optimization process to find the best strategy parameters."""
+    print("\n=== RUNNING PRICE ACTION STRATEGY OPTIMIZATION ===")
+    
+    # Step 1: Create results directory structure
+    results_dirs = create_results_directory(RESULTS_DIR)
+    
+    # Step 2: Load and preprocess data
+    combined_data = load_and_preprocess_data(btc_file, alt_file)
+    
+    # Extract altcoin name
+    altcoin_name = None
+    for col in combined_data.columns:
+        if col.endswith('_returns') and not col.startswith('btc'):
+            altcoin_name = col.split('_')[0]
+            break
+    
+    if not altcoin_name and 'altcoin_name' in combined_data.columns:
+        altcoin_name = combined_data['altcoin_name'].iloc[0]
+    
+    if not altcoin_name:
+        altcoin_name = "altcoin"
+    
+    print(f"\nRunning Price Action Strategy Optimization for BTC and {altcoin_name.upper()}")
+    
+    # Add price action features
+    print("Adding price action features...")
+    add_price_action_features(combined_data, prefix='btc')
+    add_price_action_features(combined_data, prefix=altcoin_name)
+    add_enhanced_momentum_features(combined_data, prefix='btc')
+    add_relationship_features(combined_data, btc_prefix='btc', alt_prefix=altcoin_name)
+    
+    # Step 3: Identify patterns using price action only
+    print("\nIdentifying price action patterns...")
+    patterns = classify_momentum_patterns(combined_data)
+    
+    # Step 4: Run strategy optimization
+    print("\nRunning strategy optimization...")
+    optimizer = strategy_optimizer.StrategyOptimizer(combined_data, patterns)
+    
+    # Run optimization with focus on price action
+    optimization_results = optimizer.ml_optimization(price_action_focus=True, optimize_count=optimize_count)
+    
+    # Generate HTML report
+    html_output = os.path.join(results_dirs['html'], 'strategy_optimization_results.html')
+    optimizer.generate_html_report(html_output, results_dirs['charts'])
+    
+    # Update index HTML
+    try:
+        update_index_html(results_dirs, altcoin_name)
+    except Exception as e:
+        print(f"Error updating index HTML: {str(e)}")
+    
+    # Return results directory
+    print(f"\nStrategy optimization complete! Results saved to: {results_dirs['base']}")
+    return results_dirs['base']
+
+def main(btc_file=None, alt_file=None, use_ml=True, optimize_strategy=True, serve=False, port=8000, 
+         return_results_dir=False, conditions=None, condition_type='any'):
     """
     Main entry point that can be called directly or via command line.
     
@@ -256,6 +349,8 @@ def main(btc_file=None, alt_file=None, use_ml=True, optimize_strategy=True, serv
         serve: Whether to start a web server
         port: Port for web server
         return_results_dir: Whether to return results directory
+        conditions: List of market conditions to filter data by
+        condition_type: 'any' or 'all' - whether any or all conditions must be met
     """
     # If called from command line, parse arguments
     if btc_file is None or alt_file is None:
@@ -266,6 +361,8 @@ def main(btc_file=None, alt_file=None, use_ml=True, optimize_strategy=True, serv
         parser.add_argument('--optimize-strategy', action='store_true', default=True, help='Optimize strategy parameters')
         parser.add_argument('--serve', action='store_true', help='Start web server')
         parser.add_argument('--port', type=int, default=8000, help='Port for web server')
+        parser.add_argument('--condition', action='append', help='Market conditions to filter by (can be used multiple times)')
+        parser.add_argument('--condition-type', choices=['any', 'all'], default='any', help='Whether any or all conditions must be met')
         args = parser.parse_args()
         
         btc_file = args.btc
@@ -274,6 +371,8 @@ def main(btc_file=None, alt_file=None, use_ml=True, optimize_strategy=True, serv
         optimize_strategy = args.optimize_strategy
         serve = args.serve
         port = args.port
+        conditions = args.condition
+        condition_type = args.condition_type
     
     # Step 1: Create results directory structure - make sure it exists
     results_dirs = create_results_directory(RESULTS_DIR)
@@ -281,428 +380,157 @@ def main(btc_file=None, alt_file=None, use_ml=True, optimize_strategy=True, serv
     # Step 2: Load and preprocess data
     combined_data = load_and_preprocess_data(btc_file, alt_file)
     
-    # Add enhanced features to data
-    print("Adding enhanced momentum features...")
-    btc_momentum_features = add_enhanced_momentum_features(combined_data, prefix='btc')
-    alt_momentum_features = add_enhanced_momentum_features(combined_data, prefix=altcoin_name)
-
-    print("Adding price action features...")
-    btc_price_features = add_price_action_features(combined_data, prefix='btc')
-    alt_price_features = add_price_action_features(combined_data, prefix=altcoin_name)
-
-    print("Adding relationship features...")
-    relationship_features = add_relationship_features(combined_data, btc_prefix='btc', alt_prefix=altcoin_name)
-
-    print("Adding composite features...")
-    composite_features = add_composite_features(combined_data, btc_prefix='btc', alt_prefix=altcoin_name)
-
-    # Log the number of features added
-    total_features = len(btc_momentum_features) + len(alt_momentum_features) + \
-                    len(btc_price_features) + len(alt_price_features) + \
-                    len(relationship_features) + len(composite_features)
-    print(f"Added {total_features} new features to enhance pattern detection")
-    
-    # Extract altcoin name from combined_data directly
-    altcoin_name = getattr(combined_data, 'altcoin_name', None)
-
-    # With this correct approach:
-    if 'altcoin_name' in combined_data.columns:
-        # Get the first non-null value from the column
-        altcoin_name = combined_data['altcoin_name'].iloc[0] if not combined_data['altcoin_name'].isna().all() else None
-    else:
-        altcoin_name = None
-        
-    if not altcoin_name:
-        print("WARNING: Could not detect altcoin name from data. Using default.")
-        return
-
-    print(f"\nAnalyzing relationship between BTC and {altcoin_name.upper()}")
-
-    # Make sure the altcoin name is available to all analysis functions
-    combined_data['altcoin_name'] = altcoin_name
-    
-    # Step 3: Identify patterns - use our enhanced pattern detection
-    patterns = classify_momentum_patterns(combined_data)
-    combined_data = pd.concat([combined_data, patterns], axis=1)
-    
-    # Step 4: Traditional pattern analysis - use both old and new analysis
-    pattern_stats = analyze_lag_relationships(combined_data, patterns, max_lag_seconds=600, lag_step_seconds=10)
-    
-    # New: Add cross-asset relationship analysis
-    print("\nAnalyzing cross-asset relationships...")
-    cross_asset_results = analyze_cross_asset_relationships(
-        combined_data, 
-        patterns,
-        max_lag_minutes=20,
-        lag_step_minutes=1
-    )
-
-    # Generate cross-asset report
-    if cross_asset_results:
-        print("\nGenerating cross-asset relationship report...")
-        cross_asset_report = generate_cross_asset_report(
-            cross_asset_results, 
-            results_dirs['reports'], 
-            altcoin_name
-        )
-        print(f"Cross-asset report generated: {cross_asset_report}")
-    
-    # Add directional impact analysis
-    print("\nAnalyzing BTC directional impact on altcoin...")
-    directional_impact = pattern_analysis.analyze_btc_directional_impact(
-        combined_data,
-        lags=[1, 2, 3, 5, 10, 15, 20, 30],
-        min_price_move=0.0015  # 0.15% move is significant
-    )
-
-    # Generate directional impact report
-    directional_impact_report = None
-    if directional_impact:
-        output_file = os.path.join(results_dirs['reports'], 'btc_directional_impact_report.txt')
-        with open(output_file, 'w') as f:
-            f.write(f"BTC DIRECTIONAL IMPACT ON {altcoin_name.upper()}\n")
-            f.write("=" * 50 + "\n\n")
-            
-            for scenario, stats in directional_impact.items():
-                f.write(f"\n{scenario.upper()}\n")
-                f.write("-" * len(scenario) + "\n")
-                f.write(f"Total instances: {stats['instances']}\n\n")
-                
-                # Create a table of lag results
-                f.write(f"{'Lag (min)':<10}{'Avg Return %':<15}{'Win Rate %':<15}{'Sample Size':<10}\n")
-                f.write("-" * 50 + "\n")
-                
-                # Sort lags by minute value
-                for lag in sorted(stats['lags'].keys()):
-                    lag_stats = stats['lags'][lag]
-                    f.write(f"{lag:<10}{lag_stats['avg_return']*100:<15.4f}{lag_stats['win_rate']*100:<15.1f}{lag_stats['sample_size']:<10}\n")
-                
-                f.write("\n")
-        directional_impact_report = output_file
-        print(f"Generated directional impact report: {directional_impact_report}")
-    
-    # Apply ML to analyze directional impact
-    print("\nApplying machine learning to directional impact analysis...")
-    directional_impact_ml = analyze_directional_impact_ml(
-        combined_data,
-        directional_impact
-    )
-
-    # Save ML analysis results
-    if directional_impact_ml:
-        ml_report_path = os.path.join(results_dirs['reports'], 'directional_impact_ml_report.txt')
-        with open(ml_report_path, 'w') as f:
-            f.write(f"ML ANALYSIS OF BTC-{altcoin_name.upper()} DIRECTIONAL IMPACT\n")
-            f.write("=" * 50 + "\n\n")
-            
-            for scenario, lag_results in directional_impact_ml.items():
-                f.write(f"\n{scenario.upper()}\n")
-                f.write("-" * len(scenario) + "\n\n")
-                
-                for lag, results in lag_results.items():
-                    f.write(f"Lag: {lag} minutes\n")
-                    f.write(f"Prediction accuracy: {results['accuracy']*100:.1f}%\n\n")
-                    
-                    f.write("Top predictive factors:\n")
-                    for feature, importance in results['feature_importance'][:7]:
-                        f.write(f"  {feature}: {importance*100:.2f}%\n")
-                    
-                    f.write("\n")
-        
-        print(f"Generated ML directional impact report: {ml_report_path}")
-    
-    # Generate and backtest trading strategies based on directional impact ML
-    print("\nGenerating trading strategies from directional impact analysis...")
-    strategy_generator = DirectionalImpactStrategies(
-        combined_data, 
-        directional_impact_ml, 
-        altcoin_name
-    )
-
-    # Generate strategies
-    strategies = strategy_generator.generate_strategies()
-
-    # Backtest strategies
-    backtest_results = strategy_generator.backtest_strategies()
-
-    # Generate reports
-    strategy_reports = strategy_generator.generate_strategy_reports(results_dirs)
-
-    print(f"\nGenerated strategy reports at {strategy_reports['txt_report']}")
-    print(f"Generated HTML strategy dashboard at {strategy_reports['html_report']}")
-
-    # Add link to home page
-    with open(os.path.join(results_dirs['html'], 'index.html'), 'r') as f:
-        index_content = f.read()
-
-    # Add strategy link if not already present
-    if 'directional_strategies.html' not in index_content:
-        new_link = """<div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="mb-0">Directional Trading Strategies</h5>
-                        </div>
-                        <div class="card-body">
-                            <p>View ML-based strategies from directional impact analysis</p>
-                            <a href="directional_strategies.html" class="btn btn-info">View Strategies</a>
-                        </div>
-                    </div>
-                </div>"""
-                
-        # Insert after the pattern analysis card
-        index_content = index_content.replace('</div>\n            \n            <div class="col-md-6">', 
-                                             f'</div>\n            \n            {new_link}\n            \n            <div class="col-md-6">')
-        
-        # Write updated index
-        with open(os.path.join(results_dirs['html'], 'index.html'), 'w') as f:
-            f.write(index_content)
-
-    # Step 5: Machine learning analysis (if enabled)
-    ml_results = None
-    if use_ml:
-        print("\nRunning XGBoost analysis...")
-
-        # First detect altcoin name to use as target column
-        print("\nDetecting altcoin for ML target...")
-        target_col = None
-        # Fix: Explicitly iterate over column names to avoid Series comparison
-        for col in [c for c in combined_data.columns]:
-            if col.endswith('_returns') and not col.startswith('btc'):
-                target_col = col
-                break
-
-        if not target_col:
-            print("WARNING: Could not detect altcoin returns column. Using default.")
-            target_col = 'alt_returns'
-        else:
-            print(f"Using {target_col} as ML target")
-        
-        # Prepare features and target with the detected column
-        X, y, feature_names = prepare_features_targets(
-            combined_data, 
-            target_col=target_col,  # Now dynamic, not hardcoded to 'doge_returns'
-            lag_periods=range(1, MAX_LAG+1)
-        )
-        
-        # Split data chronologically (respect time series nature)
-        split_idx = int(len(X) * 0.8)
-        X_train, X_test = X.iloc[:split_idx], X.iloc[split_idx:]
-        y_train, y_test = y.iloc[:split_idx], y.iloc[split_idx:]
-        
-        print(f"Training data shape: {X_train.shape}, Test data shape: {X_test.shape}")
-        
-        # Train XGBoost model
-        model = train_xgboost_model(X_train, y_train)
-        
-        # Evaluate model
-        metrics = evaluate_model(model, X_test, y_test)
-        
-        # Plot feature importance
-        feature_importance = plot_feature_importance(model, feature_names, results_dirs['charts'])
-        
-        
-        # Generate ML report
-        ml_report = generate_ml_report({
-            'model': model,
-            'metrics': metrics,
-            'feature_importance': feature_importance,
-            'feature_names': feature_names
-        }, results_dirs['reports'])
-        
-        # Store ML results for including in other reports
-        ml_results = {
-            'model': model,
-            'metrics': metrics,
-            'feature_importance': feature_importance,
-            'report_path': ml_report
-        }
-    
-    # Step 6: First detect altcoin name to use in all reports
-    print("\nDetecting altcoin name from data columns...")
+    # Extract altcoin name
     altcoin_name = None
     for col in combined_data.columns:
         if col.endswith('_returns') and not col.startswith('btc'):
             altcoin_name = col.split('_')[0]
             break
-    
+            
+    if not altcoin_name and 'altcoin_name' in combined_data.columns:
+        altcoin_name = combined_data['altcoin_name'].iloc[0]
+        
     if not altcoin_name:
-        altcoin_name = "alt"  # Default fallback
+        altcoin_name = "altcoin"
+        
+    print(f"Running analysis for BTC and {altcoin_name.upper()}")
     
-    print(f"Detected altcoin: {altcoin_name.upper()}")
+    # Fix column naming inconsistencies - this is crucial!
+    # Ensure all required columns exist with consistent naming
+    column_mappings = {
+        # Map price columns
+        'close_btc': 'btc_close',
+        'high_btc': 'btc_high',
+        'low_btc': 'btc_low',
+        'open_btc': 'btc_open',
+        'volume_btc': 'btc_volume',
+        
+        # Map altcoin columns
+        f'close_{altcoin_name}': f'{altcoin_name}_close',
+        f'high_{altcoin_name}': f'{altcoin_name}_high',
+        f'low_{altcoin_name}': f'{altcoin_name}_low',
+        f'open_{altcoin_name}': f'{altcoin_name}_open',
+        f'volume_{altcoin_name}': f'{altcoin_name}_volume'
+    }
     
-    # Now that we have the altcoin name, ensure all required charts exist
-    print("\nVerifying chart files exist...")
-   
+    # Apply all column mappings if source exists and target doesn't
+    print("Standardizing column names...")
+    for source, target in column_mappings.items():
+        if source in combined_data.columns and target not in combined_data.columns:
+            combined_data[target] = combined_data[source]
+            print(f"  Mapped '{source}' to '{target}'")
+            
+    # Add enhanced features to data - DON'T reassign the DataFrame!
+    print("Adding enhanced momentum features...")
+    add_enhanced_momentum_features(combined_data, prefix='btc')
     
-    # Ensure HTML reports exist even if visualization functions failed
-    ensure_html_reports_exist(results_dirs, pattern_stats, altcoin_name)
+    # Apply condition filters if requested
+    if conditions:
+        filtered_data, filter_manager = apply_condition_filters(combined_data, conditions)
+        # Save the filter configuration
+        filter_report = os.path.join(results_dirs['reports'], 'filter_config.json')
+        with open(filter_report, 'w') as f:
+            json.dump({
+                'conditions': conditions,
+                'condition_type': condition_type,
+                'filtered_size': len(filtered_data),
+                'original_size': len(combined_data),
+                'percentage': len(filtered_data) / len(combined_data) * 100
+            }, f, indent=2)
+    else:
+        filtered_data = combined_data
+        filter_manager = None
     
-    # Step 6b: Run Strategy Optimization if enabled
-    if optimize_strategy:
-        print("\nOptimizing trading strategy parameters...")
+    # Step 3: Identify patterns
+    print("\nIdentifying momentum patterns...")
+    patterns = classify_momentum_patterns(filtered_data)
+    filtered_data = pd.concat([filtered_data, patterns], axis=1)
+    
+    # Step 4: Pattern analysis
+    print("\nAnalyzing lag relationships between patterns...")
+    pattern_stats = analyze_lag_relationships(filtered_data, patterns, max_lag_seconds=600, lag_step_seconds=10)
+    
+    # Step 5: ML analysis (optional)
+    ml_results = None
+    if use_ml:
         try:
-            print(f"\nRunning strategy optimization for {altcoin_name}...")
-            strategy_results = pattern_analysis.optimize_strategy_parameters(
-                combined_data, patterns, max_lag=20, altcoin_name=altcoin_name,
-                results_dirs=results_dirs  # Pass the directories explicitly
+            print("\nApplying machine learning to pattern analysis...")
+            # Additional price action features for ML
+            add_price_action_features(filtered_data, prefix='btc')
+            add_relationship_features(filtered_data, btc_prefix='btc', alt_prefix=altcoin_name)
+            
+            # Run directional impact analysis
+            directional_impact = pattern_analysis.analyze_btc_directional_impact(filtered_data)
+            
+            ml_results = ml_models.analyze_directional_impact_ml(
+                filtered_data,
+                directional_impact=directional_impact,
+                results_dirs=results_dirs
             )
             
-            if strategy_results and 'best_params' in strategy_results and strategy_results['best_params']:
-                print(f"Strategy optimization successful. Win rate: {strategy_results['performance_metrics']['win_rate']*100:.1f}%")
-            else:
-                print("Strategy optimization failed or returned no results. Using default parameters.")
-                # Create default parameters
-                strategy_results = {
-                    'best_params': {
-                        'use_pattern': patterns.columns[0] if not patterns.empty and len(patterns.columns) > 0 else 'strong_up',
-                        'pattern_lag': 5,
-                        'stop_loss_pct': 2.0,
-                        'take_profit_pct': 1.0,
-                        'max_holding_time': 60,
-                        'position_size_pct': 10,
-                        'entry_threshold': 0.0001
-                    },
-                    'performance_metrics': {
-                        'win_rate': 0.5,
-                        'total_trades': 0,
-                        'profit_factor': 1.0,
-                        'sharpe_ratio': 0,
-                        'max_drawdown': 0,
-                        'total_return_pct': 0
-                    },
-                    'strategy_summary': "Default strategy (no optimization performed)",
-                }
-            
-            # Save strategy parameters JSON
-            strategy_output = os.path.join(results_dirs['reports'], 'strategy_params.json')
-            with open(strategy_output, 'w') as f:
-                # Convert non-serializable objects to strings
-                serializable_results = {
-                    'best_params': strategy_results.get('best_params', {}),
-                    'performance_summary': {
-                        'total_trades': strategy_results.get('performance_metrics', {}).get('total_trades', 0),
-                        'win_rate': float(strategy_results.get('performance_metrics', {}).get('win_rate', 0)),
-                        'profit_factor': float(strategy_results.get('performance_metrics', {}).get('profit_factor', 1.0)),
-                        'sharpe_ratio': float(strategy_results.get('performance_metrics', {}).get('sharpe_ratio', 0)),
-                        'max_drawdown': float(strategy_results.get('performance_metrics', {}).get('max_drawdown', 0)),
-                        'total_return_pct': float(strategy_results.get('performance_metrics', {}).get('total_return_pct', 0))
-                    },
-                    'strategy_summary': strategy_results.get('strategy_summary', 'No summary available')
-                }
-                json.dump(serializable_results, f, indent=2)
-                
-            # Generate HTML report
-            html_output = os.path.join(results_dirs['html'], 'strategy_optimization_results.html')
-            charts_dir = os.path.join(results_dirs['base'], 'charts')
-            os.makedirs(charts_dir, exist_ok=True)
-            if 'optimizer' in strategy_results and hasattr(strategy_results['optimizer'], 'generate_html_report'):
-                strategy_results['optimizer'].generate_html_report(html_output, charts_dir)
-                print(f"Generated strategy optimization HTML report: {html_output}")
-            else:
-                # Create basic HTML report
-                print("Creating basic strategy optimization report")
-                with open(html_output, 'w') as f:
-                    f.write(f"""<!DOCTYPE html>
-<html>
-<head>
-    <title>Strategy Optimization Results</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {{ font-family: Arial, sans-serif; margin: 20px; }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1 class="mb-4">Trading Strategy Optimization Results</h1>
-        
-        <div class="alert alert-info">
-            <h4>Strategy Parameters</h4>
-            <ul>
-                <li><strong>Pattern:</strong> {strategy_results['best_params'].get('use_pattern', 'N/A')}</li>
-                <li><strong>Stop Loss:</strong> {strategy_results['best_params'].get('stop_loss_pct', 0.0):.1f}%</li>
-                <li><strong>Take Profit:</strong> {strategy_results['best_params'].get('take_profit_pct', 0.0):.1f}%</li>
-                <li><strong>Pattern Lag:</strong> {strategy_results['best_params'].get('pattern_lag', 0)} minutes</li>
-                <li><strong>Position Size:</strong> {strategy_results['best_params'].get('position_size_pct', 0.0)}%</li>
-            </ul>
-        </div>
-        
-        <div class="alert alert-success">
-            <h4>Performance Metrics</h4>
-            <ul>
-                <li><strong>Win Rate:</strong> {strategy_results.get('performance_metrics', {}).get('win_rate', 0.0)*100:.1f}%</li>
-                <li><strong>Profit Factor:</strong> {strategy_results.get('performance_metrics', {}).get('profit_factor', 0.0):.2f}</li>
-                <li><strong>Total Return:</strong> {strategy_results.get('performance_metrics', {}).get('total_return_pct', 0.0):.2f}%</li>
-                <li><strong>Max Drawdown:</strong> {strategy_results.get('performance_metrics', {}).get('max_drawdown', 0.0):.2f}%</li>
-                <li><strong>Sharpe Ratio:</strong> {strategy_results.get('performance_metrics', {}).get('sharpe_ratio', 0.0):.2f}</li>
-            </ul>
-        </div>
-        
-        <div class="mt-4">
-            <h4>Strategy Summary</h4>
-            <pre class="bg-light p-3">{strategy_results.get('strategy_summary', 'No summary available')}</pre>
-        </div>
-        
-        <div class="mt-4">
-            <a href="../reports/strategy_params.json" class="btn btn-primary" target="_blank">View Raw JSON Data</a>
-            <a href="../charts/" class="btn btn-secondary">View Strategy Charts</a>
-        </div>
-    </div>
-</body>
-</html>""")
-            
-            # Generate visualization files directly to the charts directory
-            if 'optimizer' in strategy_results and hasattr(strategy_results['optimizer'], 'visualize_results'):
-                viz_files = strategy_results['optimizer'].visualize_results(results_dirs['base'])
-                print(f"Strategy visualization files saved directly to charts directory")
-                    
-            print(f"Strategy optimization results saved to {strategy_output}")
+            # Generate ML report
+            generate_ml_report(ml_results, results_dirs['reports'])
             
         except Exception as e:
-            print(f"Error in strategy optimization: {e}")
-            import traceback
+            print(f"Error in ML analysis: {str(e)}")
             traceback.print_exc()
-            # Create default parameters
-            strategy_results = {
-                'best_params': {
-                    'use_pattern': patterns.columns[0] if not patterns.empty and len(patterns.columns) > 0 else 'strong_up',
-                    'pattern_lag': 5,
-                    'stop_loss_pct': 2.0,
-                    'take_profit_pct': 1.0,
-                    'max_holding_time': 60,
-                    'position_size_pct': 10,
-                    'entry_threshold': 0.0001
-                },
-                'performance_metrics': {
-                    'win_rate': 0.5,
-                    'total_trades': 0,
-                    'profit_factor': 1.0,
-                    'sharpe_ratio': 0,
-                    'max_drawdown': 0,
-                    'total_return_pct': 0
-                },
-                'strategy_summary': "Default strategy (no optimization performed)",
-            }
+            print("Continuing with pattern analysis only...")
     
-    # Generate results index LAST after all other files are created
-    # generate_results_index(results_dirs['base'], pattern_stats, altcoin_name)
+    # Step 6: Strategy optimization (optional)
+    if optimize_strategy:
+        try:
+            print("\nOptimizing trading strategy parameters...")
+            optimizer = strategy_optimizer.StrategyOptimizer(filtered_data, pattern_stats)
+            
+            # Run ML optimization if ML results are available
+            if ml_results:
+                optimizer.ml_optimization()
+            else:
+                # Otherwise run standard backtest with default params
+                test_params = {
+                    'trailing_stop': 0.02,
+                    'take_profit': 0.03,
+                    'stop_loss': 0.015,
+                    'entry_threshold': 0.7,
+                    'position_size': 0.1
+                }
+                optimizer.backtest_strategy(test_params)
+            
+            # Generate charts and reports
+            optimizer.generate_strategy_charts(results_dirs['charts'])
+            optimizer.generate_html_report(
+                os.path.join(results_dirs['html'], f'strategy_optimization_{altcoin_name}.html'),
+                results_dirs['charts']
+            )
+            
+        except Exception as e:
+            print(f"Error in strategy optimization: {str(e)}")
+            traceback.print_exc()
+            print("Continuing without strategy optimization...")
     
-    # Generate the main index.html file with links to all results
-    all_result_dirs = [d for d in os.listdir(RESULTS_DIR) if os.path.isdir(os.path.join(RESULTS_DIR, d))]
-    generate_index_html(all_result_dirs, RESULTS_DIR)
+    # Step 7: Generate visual reports
+    try:
+        # Generate cross-asset report
+        cross_asset_results = analyze_cross_asset_relationships(filtered_data, patterns)
+        generate_cross_asset_report(cross_asset_results, results_dirs['html'], altcoin_name)
+        
+        # Make sure all HTML reports are created
+        ensure_html_reports_exist(results_dirs, pattern_stats, altcoin_name)
+        
+        # Create main index.html
+        generate_index_html(results_dirs, altcoin_name)
+        
+    except Exception as e:
+        print(f"Error generating reports: {str(e)}")
+        traceback.print_exc()
     
-    # Print final analysis completion message
-    print("\n======= ANALYSIS COMPLETE =======")
-    print(f"Results saved to: {results_dirs['base']}")
+    # Step 8: Serve results (optional)
     if serve:
-        print(f"Starting web server on port {port}...")
-        start_server(RESULTS_DIR, port)
-    else:
-        print("To view results, run:")
-        print(f"  python -m src.server {RESULTS_DIR}")
+        print(f"\nStarting web server on port {port}...")
+        start_server(results_dirs['base'], port=port)
+    
+    print(f"\nAnalysis complete! Results saved to: {results_dirs['base']}")
     
     # Return results directory if requested (for API usage)
     if return_results_dir:
         return results_dirs['base']
-
-if __name__ == "__main__":
-    main()
