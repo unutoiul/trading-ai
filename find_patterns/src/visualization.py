@@ -323,23 +323,53 @@ def generate_index_html(results_dirs, altcoin_name):
             for vectorbt_folder, file_size in vectorbt_reports:
                 size_kb = file_size / 1024
                 
+                # Check what data files actually exist
+                data_dir = results_dirs['data']
+                available_data_files = []
+                
+                if os.path.exists(data_dir):
+                    # Define potential data files with their display info
+                    potential_files = {
+                        'all_results.csv': ('📊 All Results CSV', 'btn-outline-primary'),
+                        'top_100_strategies.csv': ('🏆 Top 100 CSV', 'btn-outline-success'), 
+                        'parameter_analysis.csv': ('⚙️ Parameters CSV', 'btn-outline-info'),
+                        'trailing_stop_analysis.csv': ('📈 Trailing Stop CSV', 'btn-outline-dark'),
+                        'individual_trades.csv': ('📝 Individual Trades CSV', 'btn-outline-warning'),
+                        'trades_summary.csv': ('📋 Trades Summary CSV', 'btn-outline-secondary')
+                    }
+                    
+                    for filename, (display_name, btn_class) in potential_files.items():
+                        if os.path.exists(os.path.join(data_dir, filename)):
+                            available_data_files.append((filename, display_name, btn_class))
+                
+                # Build download links HTML
+                download_links = ""
+                if available_data_files:
+                    download_links = '<small class="text-muted">Download data:</small><br>'
+                    
+                    # Split into two rows for better layout
+                    first_row_files = available_data_files[:3]
+                    second_row_files = available_data_files[3:]
+                    
+                    # First row
+                    for filename, display_name, btn_class in first_row_files:
+                        download_links += f'<a href="../data/{filename}" class="{btn_class} btn-sm me-1">{display_name}</a>'
+                    
+                    # Second row if needed
+                    if second_row_files:
+                        download_links += '<br>'
+                        for filename, display_name, btn_class in second_row_files:
+                            download_links += f'<a href="../data/{filename}" class="{btn_class} btn-sm me-1 mt-1">{display_name}</a>'
+                
                 html_content += f"""
-                    <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="col-md-12 col-lg-12 mb-3">
                         <div class="card analysis-card border-0 shadow-sm h-100">
                             <div class="card-body">
                                 <h5 class="card-title">Strategy Optimization</h5>
                                 <p class="card-text">Advanced parameter optimization and backtesting results</p>
                                 <p class="small text-muted">Size: {size_kb:.1f} KB</p>
                                 <a href="../optimization_report.html" class="btn btn-warning">View Optimization</a>
-                                <div class="mt-2">
-                                    <small class="text-muted">Download data:</small><br>
-                                    <a href="../data/all_results.csv" class="btn btn-outline-primary btn-sm me-1">📊 All Results CSV</a>
-                                    <a href="../data/top_100_strategies.csv" class="btn btn-outline-success btn-sm me-1">🏆 Top 100 CSV</a>
-                                    <a href="../data/parameter_analysis.csv" class="btn btn-outline-info btn-sm">⚙️ Parameters CSV</a>
-                                    <br>
-                                    <a href="../data/individual_trades.csv" class="btn btn-outline-warning btn-sm me-1 mt-1">📝 Individual Trades CSV</a>
-                                    <a href="../data/trades_summary.csv" class="btn btn-outline-secondary btn-sm mt-1">📋 Trades Summary CSV</a>
-                                </div>
+                                {f'<div class="mt-2">{download_links}</div>' if download_links else ''}
                             </div>
                         </div>
                     </div>"""
@@ -537,7 +567,7 @@ def update_master_index():
                     
                     # Check what files exist in this directory
                     dir_path = os.path.join(results_base, timestamp_dir)
-                    has_index = os.path.exists(os.path.join(dir_path, "reports", "index.html"))
+                    has_index = os.path.exists(os.path.join(dir_path, "optimization_report.html"))
                     has_charts = os.path.exists(os.path.join(dir_path, "charts")) and len(os.listdir(os.path.join(dir_path, "charts"))) > 0
                     has_html = os.path.exists(os.path.join(dir_path, "html"))
                     
@@ -573,7 +603,7 @@ def update_master_index():
                     
                     if has_index:
                         card_html += f'''
-                                <a href="{timestamp_dir}/reports/index.html" class="btn btn-primary btn-lg">
+                                <a href="{timestamp_dir}/optimization_report.html" class="btn btn-primary btn-lg">
                                     <i class="fas fa-chart-line me-2"></i>View Results
                                 </a>'''
                     else:

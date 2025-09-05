@@ -2029,7 +2029,9 @@ class VectorBTOptimizer:
         self._generate_parameter_analysis_report(data_dir)
         
         # Generate individual trades data
+        print("🔄 Starting trades data generation...")
         self._generate_trades_data(data_dir)
+        print("✅ Trades data generation completed")
         
         return html_file
     
@@ -2119,8 +2121,7 @@ class VectorBTOptimizer:
                             <div class="card border-0 shadow-sm mb-4">
                                 <div class="card-body">
                                     <h5 class="mb-3">Navigation</h5>
-                                    <a href="../reports/index.html" class="btn btn-outline-primary me-2">← Back to Main Analysis</a>
-                                    <a href="../../index.html" class="btn btn-outline-secondary">View All Results</a>
+                                    <a href="../index.html" class="btn btn-primary btn-lg">← View All Analysis Results</a>
                                 </div>
                             </div>
                         </div>
@@ -2150,7 +2151,7 @@ class VectorBTOptimizer:
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Enhanced Strategy Optimization Report - {self.altcoin_name.upper()}</title>
+            <title>Comprehensive Trading Strategy Analysis - {self.altcoin_name.upper()}</title>
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
             <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
             <style>
@@ -2213,7 +2214,7 @@ class VectorBTOptimizer:
                 <div class="row">
                     <div class="col-12">
                         <div class="d-flex justify-content-between align-items-center py-3">
-                            <h1 class="display-4"><i class="fas fa-chart-line text-primary"></i> Enhanced Strategy Optimization Report</h1>
+                            <h1 class="display-4"><i class="fas fa-chart-line text-primary"></i> Comprehensive Trading Strategy Analysis</h1>
                             <div class="text-muted">
                                 <i class="fas fa-coins"></i> {self.altcoin_name.upper()}
                                 <br>
@@ -2269,6 +2270,7 @@ class VectorBTOptimizer:
                         <h2 class="mb-4"><i class="fas fa-star text-warning"></i> Top Performing Strategies</h2>
                     </div>
                 </div>
+                <div class="row">
         """
         
         # Top strategies by different metrics
@@ -2322,6 +2324,11 @@ class VectorBTOptimizer:
                     </div>
                 </div>
                 """
+        
+        # Close the row for strategy cards
+        html_content += """
+                </div>
+        """
         
         # Add trailing stop analysis if enabled
         if enable_trailing_stop and hasattr(self, 'trailing_stop_analysis') and self.trailing_stop_analysis:
@@ -2387,6 +2394,7 @@ class VectorBTOptimizer:
                         <h2 class="mb-4"><i class="fas fa-lightbulb text-warning"></i> Parameter Insights</h2>
                     </div>
                 </div>
+                <div class="row">
             """
             
             optimal_ranges = self.optimization_results['optimal_ranges']
@@ -2404,6 +2412,102 @@ class VectorBTOptimizer:
                     </div>
                 </div>
                 """
+            
+            # Close the row for parameter insights
+            html_content += """
+                </div>
+            """
+        
+        # Add data downloads section
+        html_content += """
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <h2 class="mb-4"><i class="fas fa-download text-success"></i> Data Downloads</h2>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-chart-bar"></i> Analysis Results</h5>
+                                <p class="card-text text-muted">Comprehensive strategy performance data</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="data/all_results.csv" class="btn btn-outline-primary btn-sm">📊 All Results</a>
+                                    <a href="data/top_100_strategies.csv" class="btn btn-outline-success btn-sm">🏆 Top 100</a>
+                                    <a href="data/parameter_analysis.csv" class="btn btn-outline-info btn-sm">⚙️ Parameters</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-exchange-alt"></i> Trading Data</h5>
+                                <p class="card-text text-muted">Individual trades and detailed analysis</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="data/individual_trades.csv" class="btn btn-outline-warning btn-sm">📝 Individual Trades</a>
+                                    <a href="data/trades_summary.csv" class="btn btn-outline-secondary btn-sm">📋 Summary</a>
+                                    <a href="data/trailing_stop_analysis.csv" class="btn btn-outline-dark btn-sm">📈 Trailing Stop</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        """
+        
+        # Add charts section
+        html_content += """
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <h2 class="mb-4"><i class="fas fa-chart-bar text-info"></i> Analysis Charts</h2>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="chart-container">
+                            <h4><i class="fas fa-chart-line"></i> Return Analysis</h4>
+                            <p class="text-muted">Distribution of strategy returns and risk-return analysis</p>
+                            <img src="charts/return_analysis.png" class="img-fluid w-100 border rounded" alt="Return Analysis" style="max-height: 600px; object-fit: contain;">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="chart-container">
+                            <h4><i class="fas fa-sliders-h"></i> Parameter Impact Analysis</h4>
+                            <p class="text-muted">Impact of different parameter values on strategy performance</p>
+                            <img src="charts/parameter_impact.png" class="img-fluid w-100 border rounded" alt="Parameter Impact" style="max-height: 600px; object-fit: contain;">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="chart-container">
+                            <h4><i class="fas fa-clock"></i> Price Action Lag Impact</h4>
+                            <p class="text-muted">Analysis of how price action lag affects strategy performance</p>
+                            <img src="charts/price_action_lag_impact.png" class="img-fluid w-100 border rounded" alt="Price Action Lag Impact" style="max-height: 600px; object-fit: contain;">
+                        </div>
+                    </div>
+                </div>
+        """
+        
+        # Add trailing stop chart if enabled
+        if enable_trailing_stop:
+            html_content += """
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="chart-container">
+                            <h4><i class="fas fa-chart-area"></i> Trailing Stop Analysis</h4>
+                            <p class="text-muted">Impact of different trailing stop percentages on strategy performance</p>
+                            <img src="charts/trailing_stop_analysis.png" class="img-fluid w-100 border rounded" alt="Trailing Stop Analysis" style="max-height: 600px; object-fit: contain;">
+                        </div>
+                    </div>
+                </div>
+            """
         
         # Add footer with navigation
         html_content += f"""
@@ -2413,14 +2517,14 @@ class VectorBTOptimizer:
                             <div class="card border-0 shadow-sm mb-4">
                                 <div class="card-body">
                                     <h5 class="mb-3">Navigation</h5>
-                                    <a href="../reports/index.html" class="btn btn-outline-primary me-2">← Back to Main Analysis</a>
-                                    <a href="../../index.html" class="btn btn-outline-secondary">View All Results</a>
+                                    <a href="../index.html" class="btn btn-primary btn-lg">← View All Analysis Results</a>
                                 </div>
                             </div>
                         </div>
                         <div class="text-center text-muted">
                             <hr>
-                            <p><i class="fas fa-robot"></i> Enhanced Strategy Optimization Report Generated on {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
+                            <p><i class="fas fa-robot"></i> Comprehensive Trading Strategy Analysis Report</p>
+                            <p><i class="fas fa-chart-line"></i> Generated on {datetime.now().strftime("%B %d, %Y at %H:%M")}</p>
                             <p>{'<i class="fas fa-chart-area"></i> Trailing Stop Analysis Enabled' if enable_trailing_stop else '<i class="fas fa-ban"></i> Trailing Stop Analysis Disabled'}</p>
                         </div>
                     </div>
@@ -2662,6 +2766,9 @@ class VectorBTOptimizer:
 
     def _generate_trades_data(self, data_dir):
         """Generate individual trades data for the best strategies."""
+        import pandas as pd
+        import vectorbt as vbt
+        
         try:
             print("🔄 Generating individual trades data...")
             
@@ -2670,51 +2777,101 @@ class VectorBTOptimizer:
                 return
             
             # Get top 10 strategies for trades export
-            sorted_results = sorted(self.results, key=lambda x: x.get('total_return', 0), reverse=True)
+            sorted_results = sorted(self.results, key=lambda x: x.get('metrics', {}).get('total_return', 0), reverse=True)
             top_strategies = sorted_results[:10]
             
             trades_data = []
             
             for i, result in enumerate(top_strategies):
                 try:
-                    # Get the vectorbt portfolio from result
-                    if 'portfolio' in result:
-                        pf = result['portfolio']
-                        trades = pf.trades.records_readable
-                        
-                        # Add strategy info to each trade
-                        for _, trade in trades.iterrows():
-                            trade_data = {
-                                'strategy_rank': i + 1,
-                                'pattern': result.get('pattern', 'unknown'),
-                                'lag': result.get('lag', 0),
-                                'stop_loss': result.get('stop_loss', 0),
-                                'take_profit': result.get('take_profit', 0),
-                                'trailing_stop': result.get('trailing_stop', 0),
-                                'position_size': result.get('position_size', 0),
-                                'holding_time': result.get('holding_time', 0),
-                                'strategy_total_return': result.get('total_return', 0),
-                                'strategy_win_rate': result.get('win_rate', 0),
-                                'trade_id': trade.get('Id', ''),
-                                'entry_timestamp': trade.get('Entry Timestamp', ''),
-                                'exit_timestamp': trade.get('Exit Timestamp', ''),
-                                'entry_price': trade.get('Avg Entry Price', 0),
-                                'exit_price': trade.get('Avg Exit Price', 0),
-                                'size': trade.get('Size', 0),
-                                'pnl': trade.get('PnL', 0),
-                                'return_pct': trade.get('Return', 0) * 100,
-                                'duration_minutes': trade.get('Duration', 0),
-                                'direction': 'Long' if trade.get('Size', 0) > 0 else 'Short',
-                                'status': trade.get('Status', ''),
-                            }
-                            trades_data.append(trade_data)
+                    # Regenerate portfolio for this strategy
+                    params = result['params']
+                    pattern = params['pattern']
+                    lag = params['lag']
+                    stop_loss = params['stop_loss']
+                    take_profit = params['take_profit']
+                    trailing_stop = params['trailing_stop']
+                    position_size = params['position_size']
+                    holding_time = params['holding_time']
+                    
+                    print(f"📊 Regenerating portfolio for strategy {i+1}: {pattern}")
+                    
+                    # Get signal data for this pattern from data columns
+                    if pattern not in self.data.columns:
+                        print(f"⚠️ Pattern {pattern} not found in data columns")
+                        continue
+                    
+                    signal_data = self.data[pattern]
+                    if signal_data.sum() == 0:
+                        print(f"⚠️ No signals found for pattern {pattern}")
+                        continue
+                    
+                    # Apply lag to signals
+                    signal_data_lagged = signal_data.shift(lag).fillna(False) if lag > 0 else signal_data
+                    
+                    # Regenerate the portfolio using VectorBT
+                    pf = vbt.Portfolio.from_signals(
+                        self.data[self.price_column],
+                        signal_data_lagged,
+                        False,  # No sell signals (use exit conditions)
+                        init_cash=10000,
+                        size=position_size,
+                        size_type='percent',
+                        sl_stop=stop_loss,
+                        tp_stop=take_profit,
+                        sl_trail=trailing_stop,
+                        upon_stop_exit='Close',
+                        stop_exit_price='Close',
+                        max_logs=0
+                    )
+                    
+                    # Extract trades
+                    trades = pf.trades.records_readable
+                    
+                    if len(trades) == 0:
+                        print(f"⚠️ No trades found for strategy {i+1}")
+                        continue
+                    
+                    # Add strategy info to each trade
+                    for _, trade in trades.iterrows():
+                        duration_value = trade.get('Duration', pd.Timedelta(0))
+                        if hasattr(duration_value, 'total_seconds'):
+                            duration_minutes = duration_value.total_seconds() / 60
+                        else:
+                            duration_minutes = 0
+                            
+                        trade_data = {
+                            'strategy_rank': i + 1,
+                            'pattern': pattern,
+                            'lag': lag,
+                            'stop_loss': stop_loss,
+                            'take_profit': take_profit,
+                            'trailing_stop': trailing_stop,
+                            'position_size': position_size,
+                            'holding_time': holding_time,
+                            'strategy_total_return': result['metrics']['total_return'],
+                            'strategy_win_rate': result['metrics']['win_rate'],
+                            'trade_id': trade.get('Id', ''),
+                            'entry_timestamp': trade.get('Entry Timestamp', ''),
+                            'exit_timestamp': trade.get('Exit Timestamp', ''),
+                            'entry_price': trade.get('Avg Entry Price', 0),
+                            'exit_price': trade.get('Avg Exit Price', 0),
+                            'size': trade.get('Size', 0),
+                            'pnl': trade.get('PnL', 0),
+                            'return_pct': trade.get('Return', 0) * 100,
+                            'duration_minutes': duration_minutes,
+                            'direction': 'Long' if trade.get('Size', 0) > 0 else 'Short',
+                            'status': trade.get('Status', ''),
+                        }
+                        trades_data.append(trade_data)
                 
                 except Exception as e:
                     print(f"⚠️ Could not extract trades for strategy {i+1}: {str(e)}")
+                    import traceback
+                    traceback.print_exc()
                     continue
             
             if trades_data:
-                import pandas as pd
                 trades_df = pd.DataFrame(trades_data)
                 
                 # Save individual trades
