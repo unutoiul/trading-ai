@@ -273,9 +273,14 @@ class StrategyOptimizer:
             traceback.print_exc()
             return {'total_trades': 0, 'win_rate': 0, 'total_return_pct': 0}
             
-    def ml_optimization(self, price_action_focus=True, optimize_count=100):
-        """Enhanced optimization process with price action focus."""
+    def ml_optimization(self, price_action_focus=True, optimize_count=100, ml_results=None):
+        """Enhanced optimization process with price action focus and ML guidance."""
         print(f"Optimizing strategy parameters for {self.altcoin_name}...")
+        
+        # If ML results are provided, use them to guide optimization
+        if ml_results:
+            print("Using ML results to guide optimization...")
+            self._apply_ml_guidance(ml_results)
         
         # Verify we have patterns to test
         if not self.param_space['use_pattern']:
@@ -654,6 +659,10 @@ class StrategyOptimizer:
         </div>
 """
             
+            # Add ML guidance section if available
+            if hasattr(self, 'ml_guidance_report') and self.ml_guidance_report:
+                html_content += self._generate_ml_guidance_html()
+            
             # Add equity curve chart
             html_content += f"""
         <div class="chart-container">
@@ -870,3 +879,133 @@ class StrategyOptimizer:
             print(f"  Avg Win Rate: {trailing_stop_metrics[best_ts]['avg_win_rate']*100:.1f}%")
         
         return best_ts
+
+    def _apply_ml_guidance(self, ml_results):
+        """Apply ML findings to guide strategy optimization."""
+        print("Applying ML guidance to strategy optimization...")
+        
+        # Parse ML results to extract optimal patterns and lags
+        ml_guided_patterns = []
+        ml_guided_lags = []
+        
+        # ml_results structure: {scenario_name: {lag: {mean_return, win_rate, ...}}}
+        # Extract patterns that showed positive returns and good win rates
+        for scenario_name, scenario_data in ml_results.items():
+            if not isinstance(scenario_data, dict):
+                continue
+                
+            # Get the optimal lag data (should be only one key-value pair per scenario)
+            for optimal_lag, lag_data in scenario_data.items():
+                if isinstance(lag_data, dict):
+                    mean_return = lag_data.get('mean_return', 0)
+                    win_rate = lag_data.get('win_rate', 0.5)
+                    
+                    # Only include scenarios with decent performance
+                    if mean_return > 0 or win_rate > 0.52:
+                        # Convert scenario name to pattern name format
+                        pattern_name = scenario_name.lower().replace('_', '_')
+                        if pattern_name and pattern_name in self.data.columns:
+                            ml_guided_patterns.append(pattern_name)
+                            ml_guided_lags.append(optimal_lag)
+                            print(f"  ML recommends {scenario_name} with {optimal_lag}min lag: {mean_return:.4f}% return, {win_rate*100:.1f}% win rate")
+        
+        # Update parameter space with ML guidance
+        if ml_guided_patterns:
+            print(f"ML identified {len(ml_guided_patterns)} promising patterns")
+            # Prioritize ML-identified patterns
+            self.param_space['use_pattern'] = ml_guided_patterns + [
+                p for p in self.param_space['use_pattern'] if p not in ml_guided_patterns
+            ]
+        
+        if ml_guided_lags:
+            print(f"ML suggested optimal lags: {set(ml_guided_lags)}")
+            # Add ML-suggested lags to parameter space
+            unique_lags = list(set(ml_guided_lags + self.param_space['pattern_lag']))
+            self.param_space['pattern_lag'] = sorted(unique_lags)
+        
+        # Generate ML guidance report
+        self._generate_ml_guidance_report(ml_results)
+    
+    def _generate_ml_guidance_report(self, ml_results):
+        """Generate a report showing how ML results guided the optimization."""
+        if not hasattr(self, 'ml_guidance_report'):
+            self.ml_guidance_report = []
+        
+        # ml_results structure: {scenario_name: {lag: {mean_return, win_rate, ...}}}
+        for scenario_name, scenario_data in ml_results.items():
+            if not isinstance(scenario_data, dict):
+                continue
+                
+            # Get the optimal lag data (should be only one key-value pair per scenario)
+            for optimal_lag, lag_data in scenario_data.items():
+                if isinstance(lag_data, dict):
+                    mean_return = lag_data.get('mean_return', 0)
+                    win_rate = lag_data.get('win_rate', 0.5)
+                    
+                    self.ml_guidance_report.append({
+                        'scenario': scenario_name,
+                        'optimal_lag_minutes': optimal_lag,
+                        'expected_return_pct': mean_return * 100,
+                        'expected_win_rate_pct': win_rate * 100,
+                        'recommendation': 'Use' if (mean_return > 0 or win_rate > 0.52) else 'Avoid'
+                    })
+        
+        print(f"Generated ML guidance for {len(self.ml_guidance_report)} scenarios")
+    
+    def _generate_ml_guidance_html(self):
+        """Generate HTML section for ML guidance information."""
+        html = f"""
+        <div class="chart-container">
+            <h2>Machine Learning Guidance</h2>
+            <div class="card">
+                <div class="card-header">
+                    <h4>ML Analysis Results Used for Optimization</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">The following ML analysis results were used to guide the strategy optimization process:</p>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>BTC Pattern</th>
+                                    <th>Optimal Lag (min)</th>
+                                    <th>Expected Return (%)</th>
+                                    <th>Expected Win Rate (%)</th>
+                                    <th>Recommendation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+"""
+        
+        for scenario in self.ml_guidance_report:
+            return_class = "positive" if scenario['expected_return_pct'] > 0 else "negative"
+            win_rate_class = "positive" if scenario['expected_win_rate_pct'] > 52 else "negative"
+            rec_class = "positive" if scenario['recommendation'] == 'Use' else "negative"
+            
+            html += f"""
+                                <tr>
+                                    <td><strong>{scenario['scenario']}</strong></td>
+                                    <td>{scenario['optimal_lag_minutes']}</td>
+                                    <td class="{return_class}">{scenario['expected_return_pct']:.4f}%</td>
+                                    <td class="{win_rate_class}">{scenario['expected_win_rate_pct']:.1f}%</td>
+                                    <td class="{rec_class}"><strong>{scenario['recommendation']}</strong></td>
+                                </tr>
+"""
+        
+        html += """
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="alert alert-info mt-3">
+                        <strong>How ML Guidance Works:</strong>
+                        <ul class="mb-0">
+                            <li>Patterns with positive returns or win rates > 52% are prioritized</li>
+                            <li>Optimal lag times from ML analysis are included in parameter testing</li>
+                            <li>Strategy optimization focuses on ML-identified promising patterns first</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+"""
+        return html

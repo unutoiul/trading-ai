@@ -287,83 +287,167 @@ def plot_lag_analysis(lag_analysis, output_dir=None, alt_prefix=None):
         plt.close()
         print(f"Saved lag analysis plot to {output_file}")
     else:
-        plt.show()
+                                plt.show()
 
-def train_xgboost_model(X_train, y_train, params=None):
+
+def evaluate_sklearn_model(model, X_test, y_test):
     """
-    Train an XGBoost model for price action relationship analysis.
+    Evaluate sklearn model performance with proper metrics.
     
     Args:
-        X_train: Training features 
-        y_train: Training targets
-        params: XGBoost parameters
+        model: Trained sklearn model
+        X_test: Test features
+        y_test: Test targets
         
     Returns:
-        Trained XGBoost model
+        Dictionary with evaluation metrics
     """
     try:
-        import xgboost as xgb
-        print("Training XGBoost model for price action analysis...")
+        # Make predictions
+        y_pred = model.predict(X_test)
         
-        # Default parameters focused on avoiding overfitting
-        if params is None:
-            params = {
-                'objective': 'binary:logistic' if len(np.unique(y_train)) <= 2 else 'reg:squarederror',
-                'max_depth': 3,  # Shallow trees to avoid overfitting
-                'learning_rate': 0.03,
-                'subsample': 0.8,
-                'colsample_bytree': 0.8,
-                'n_estimators': 100
+        # Determine if classification or regression
+        is_classification = hasattr(model, 'predict_proba') or hasattr(model, 'classes_')
+        
+        if is_classification:
+            from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+            
+            # Convert to binary if needed
+            if len(np.unique(y_test)) == 2:
+                y_test_binary = (y_test > 0).astype(int) if not all(isinstance(val, (int, bool, np.integer, np.bool_)) for val in y_test) else y_test
+                y_pred_binary = (y_pred > 0).astype(int) if not all(isinstance(val, (int, bool, np.integer, np.bool_)) for val in y_pred) else y_pred
+            else:
+                y_test_binary = y_test
+                y_pred_binary = y_pred
+            
+            metrics = {
+                'accuracy': accuracy_score(y_test_binary, y_pred_binary),
+                'precision': precision_score(y_test_binary, y_pred_binary, average='weighted', zero_division=0),
+                'recall': recall_score(y_test_binary, y_pred_binary, average='weighted', zero_division=0),
+                'f1_score': f1_score(y_test_binary, y_pred_binary, average='weighted', zero_division=0),
+                'directional_accuracy': accuracy_score(y_test_binary, y_pred_binary)
+            }
+        else:
+            from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+            
+            metrics = {
+                'mse': mean_squared_error(y_test, y_pred),
+                'rmse': np.sqrt(mean_squared_error(y_test, y_pred)),
+                'mae': mean_absolute_error(y_test, y_pred),
+                'r2': r2_score(y_test, y_pred),
+                'directional_accuracy': np.mean((y_test > 0) == (y_pred > 0)) if len(y_test) > 0 else 0.5
             }
         
-        # Create the model
-        if len(np.unique(y_train)) <= 2:
-            # Binary classification (direction prediction)
-            model = xgb.XGBClassifier(**params)
-            y_train = (y_train > 0).astype(int)  # Convert to binary target
-        else:
-            # Regression (return prediction)
-            model = xgb.XGBRegressor(**params)
+        print(f"Model evaluation completed. Accuracy: {metrics.get('accuracy', metrics.get('directional_accuracy', 0)):.3f}")
+        return metrics
         
-        # Train the model
-        model.fit(
-            X_train, 
-            y_train,
-            eval_metric='logloss' if len(np.unique(y_train)) <= 2 else 'rmse',
-            verbose=False
-        )
-        
-        return model
-    
-    except ImportError:
-        print("XGBoost not installed. Using fallback model.")
-        
-        # Return a simple model based on price action correlation
-        return 
+    except Exception as e:
+        print(f"Error evaluating model: {e}")
+        return {
+            'accuracy': 0.5,
+            'directional_accuracy': 0.5
+        }
 
-def evaluate_model(model, X_test, y_test):
+
+def analyze_directional_impact_ml(combined_data, directional_impact, results_dirs=None):
     """
-    Placeholder function that returns dummy metrics.
-    XGBoost evaluation has been removed.
+    Analyze directional impact using machine learning models.
+    Focus on correlation analysis instead of XGBoost.
     
     Args:
-        model: Model object (unused)
-        X_test: Test features (unused)
-        y_test: Test targets (unused)
+        combined_data: DataFrame with combined BTC and altcoin data
+        directional_impact: DataFrame with directional impact analysis
+        results_dirs: Dictionary with result directories
         
     Returns:
-        Dictionary with dummy metrics
+        Dictionary with analysis results
     """
-    print("XGBoost evaluation has been disabled. Using correlation-based analysis instead.")
+    print("Analyzing directional impact using correlation-based methods...")
     
-    # Return dummy metrics
-    return {
-        'mse': 0.0,
-        'rmse': 0.0,
-        'mae': 0.0,
-        'r2': 0.0,
-        'directional_accuracy': 0.5
-    }
+    try:
+        if combined_data.empty or directional_impact.empty:
+            print("No data available for ML analysis")
+            return {}
+        
+        # Create correlation-based analysis instead of ML
+        correlation_results = {}
+        
+        # Analyze correlation between BTC signals and altcoin responses
+        if 'btc_direction' in combined_data.columns and 'price_change' in combined_data.columns:
+            correlation = combined_data['btc_direction'].corr(combined_data['price_change'])
+            correlation_results['btc_altcoin_correlation'] = correlation
+            
+        print(f"Correlation analysis completed. BTC-Altcoin correlation: {correlation_results.get('btc_altcoin_correlation', 0):.3f}")
+        
+        return {
+            'correlation_results': correlation_results,
+            'method': 'correlation_analysis',
+            'status': 'completed'
+        }
+        
+    except Exception as e:
+        print(f"Error in directional impact analysis: {e}")
+        return {
+            'error': str(e),
+            'status': 'failed'
+        }
+
+
+def ensure_dir_exists(directory):
+    """
+    Ensure that a directory exists, creating it if necessary.
+    
+    Args:
+        directory: Path to directory
+    """
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+
+def create_lag_features(data, target_col, lag_range=(1, 10)):
+    """
+    Create lag features for time series analysis.
+    
+    Args:
+        data: DataFrame with time series data
+        target_col: Column to create lags for
+        lag_range: Tuple of (min_lag, max_lag)
+        
+    Returns:
+        DataFrame with lag features added
+    """
+    df = data.copy()
+    
+    for lag in range(lag_range[0], lag_range[1] + 1):
+        df[f'{target_col}_lag_{lag}'] = df[target_col].shift(lag)
+    
+    return df.dropna()
+
+
+def perform_correlation_analysis(data, target_col='price_change', feature_cols=None):
+    """
+    Perform correlation analysis instead of complex ML models.
+    
+    Args:
+        data: DataFrame with features and target
+        target_col: Target column for correlation
+        feature_cols: List of feature columns
+        
+    Returns:
+        Dictionary with correlation results
+    """
+    if feature_cols is None:
+        feature_cols = [col for col in data.columns if col != target_col and data[col].dtype in ['float64', 'int64']]
+    
+    correlations = {}
+    for col in feature_cols:
+        if col in data.columns and target_col in data.columns:
+            corr = data[col].corr(data[target_col])
+            if not np.isnan(corr):
+                correlations[col] = corr
+    
+    return correlations
+
 
 def plot_feature_importance(model, feature_names, output_dir=None):
     """
@@ -427,13 +511,8 @@ def analyze_directional_impact_ml(combined_data, directional_impact, results_dir
     
     results = {}
     
-    try:
-        import xgboost as xgb
-        use_ml = True
-        print("Using XGBoost for enhanced pattern detection")
-    except ImportError:
-        use_ml = False
-        print("XGBoost not available. Using price action analysis only.")
+    # Use direct correlation analysis instead of ML models
+    print("Using direct correlation analysis for BTC-altcoin relationship detection")
     
     for scenario in all_scenarios:
         if scenario not in directional_impact:
@@ -451,16 +530,10 @@ def analyze_directional_impact_ml(combined_data, directional_impact, results_dir
         lag_returns = {}
         lag_win_rates = {}
         
-        if use_ml and instances >= 30:
-            scenario_indices = combined_data.index[combined_data[scenario]]
-            X = combined_data.loc[scenario_indices, ['btc_returns', 'btc_volatility_15']]
-            
-            for lag in range(1, 21):
-                pass
-        else:
-            for lag, lag_data in scenario_data.get('lags', {}).items():
-                lag_returns[lag] = lag_data.get('mean_return', 0)
-                lag_win_rates[lag] = lag_data.get('win_rate', 0)
+        # Use direct correlation analysis from existing data
+        for lag, lag_data in scenario_data.get('lags', {}).items():
+            lag_returns[lag] = lag_data.get('mean_return', 0)
+            lag_win_rates[lag] = lag_data.get('win_rate', 0)
         
         if not lag_returns:
             print(f"  No lag data available for {scenario}")

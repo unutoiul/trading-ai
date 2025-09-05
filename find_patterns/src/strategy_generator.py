@@ -32,21 +32,29 @@ class DirectionalImpactStrategies:
         print(f"Using price column: {self.price_column}")
 
     def generate_strategies(self):
-        """Generate strategies based on directional impact analysis."""
-        print("Generating price action strategies from directional impact analysis...")
+        """Generate strategies based on real-time synchronous directional impact analysis."""
+        print("Generating real-time strategies from synchronous directional impact analysis...")
         
         for scenario in self.ml_results:
-            # Find best minute with highest return * win rate
-            best_minute = max(self.ml_results[scenario].keys())
+            # Use synchronous data (lag=0)
+            if 0 not in self.ml_results[scenario]:
+                print(f"No synchronous data available for {scenario}")
+                continue
+                
+            sync_data = self.ml_results[scenario][0]
             
             # Get metrics
-            mean_return = self.ml_results[scenario][best_minute]['mean_return']
-            win_rate = self.ml_results[scenario][best_minute]['win_rate']
+            mean_return = sync_data['mean_return']
+            win_rate = sync_data['win_rate']
+            correlation = sync_data.get('correlation', 0)
+            total_trades = sync_data.get('total_trades', 0)
             
             print(f"\nStrategy for {scenario}:")
-            print(f"  Best lag: {best_minute} minutes")
+            print(f"  Real-time synchronous analysis")
             print(f"  Mean return: {mean_return:.4f}%")
             print(f"  Win rate: {win_rate*100:.1f}%")
+            print(f"  BTC correlation: {correlation:.3f}")
+            print(f"  Total trades: {total_trades}")
             
             # Create strategy parameters based on scenario
             is_long = mean_return > 0
@@ -71,10 +79,12 @@ class DirectionalImpactStrategies:
                 'entry_signals': self.data[scenario],
                 'exit_signals': pd.Series(False, index=self.data.index),
                 'is_long': is_long,
-                'best_minute': best_minute,
-                'lag': best_minute,
+                'synchronous': True,  # Flag for real-time analysis
+                'lag': 0,  # No lag for synchronous
                 'mean_return': mean_return,
                 'win_rate': win_rate,
+                'correlation': correlation,
+                'total_trades': total_trades,
                 'stop_loss': sl_pct,
                 'take_profit': tp_pct,
                 'trailing_stop': ts_pct
@@ -151,9 +161,6 @@ class DirectionalImpactStrategies:
                 for holding_time in holding_times:
                     for trailing_stop in trailing_stops:
                         try:
-                            # Calculate exit timestamps based on holding time
-                            exits = pd.Series(False, index=self.data.index)
-                            
                             # Use proper vectorized backtesting with stop-loss, take-profit, and trailing stop
                             tp_pct = strategy['take_profit'] / 100.0
                             sl_pct = strategy['stop_loss'] / 100.0
@@ -162,30 +169,60 @@ class DirectionalImpactStrategies:
                             import vectorbt as vbt
                             from vectorbt.portfolio.enums import SizeType
                             
-                            # Run backtest with proper parameters including trailing stop
+                            # Run backtest with proper parameters - remove exits to avoid conflicts
                             pf = vbt.Portfolio.from_signals(
                                 price,
                                 entries,
-                                exits,
                                 size=0.1,  # Use 10% of capital per trade
-                                size_type=SizeType.ValuePercent,
+                                size_type=SizeType.Percent,
                                 init_cash=initial_capital,
                                 fees=0.001,  # 0.1% trading fee
                                 freq=f"{holding_time}min",  # Set proper frequency
                                 sl_stop=sl_pct,
                                 tp_stop=tp_pct,
-                                trail_stop=ts_pct  # Use trailing stop
+                                sl_trail=ts_pct  # Use trailing stop
                             )
                             
                             # Calculate equity curve
-                            try:
-                                equity_curve = pf.equity_curve()
-                            except:
-                                equity_curve = pf.cum_profit() + initial_capital
+                            equity_curve = pf.value()
                                 
                             # Calculate performance metrics
                             total_return = pf.total_return() * 100
                             win_rate = pf.trades.win_rate() if pf.trades.count() > 0 else 0
+                            total_trades = pf.trades.count()
+                            max_drawdown = pf.max_drawdown() * 100 if pf.trades.count() > 0 else 0
+                            profit_factor = pf.trades.profit_factor() if pf.trades.count() > 0 else 0
+                            sharpe_ratio = pf.sharpe_ratio() if pf.trades.count() > 0 else 0
+                            final_value = pf.final_value()
+                            
+                            # Calculate additional trade details
+                            avg_trade_return = 0
+                            avg_win_return = 0
+                            avg_loss_return = 0
+                            avg_trade_duration = 0
+                            winning_trades = 0
+                            losing_trades = 0
+                            
+                            if total_trades > 0:
+                                trade_returns = pf.trades.returns
+                                avg_trade_return = trade_returns.mean() * 100
+                                
+                                # Separate winning and losing trades
+                                winning_returns = trade_returns[trade_returns > 0]
+                                losing_returns = trade_returns[trade_returns <= 0]
+                                
+                                winning_trades = len(winning_returns)
+                                losing_trades = len(losing_returns)
+                                
+                                if len(winning_returns) > 0:
+                                    avg_win_return = winning_returns.mean() * 100
+                                if len(losing_returns) > 0:
+                                    avg_loss_return = losing_returns.mean() * 100
+                                
+                                # Average trade duration
+                                trade_durations = pf.trades.duration
+                                if len(trade_durations) > 0:
+                                    avg_trade_duration = trade_durations.mean().total_seconds() / 60  # in minutes
                             
                             # Store results for this combination
                             combo_key = (holding_time, trailing_stop)
@@ -194,13 +231,31 @@ class DirectionalImpactStrategies:
                                 'equity_curve': equity_curve,
                                 'total_return_pct': total_return,
                                 'win_rate': win_rate,
-                                'total_trades': pf.trades.count(),
-                                'profit_factor': pf.trades.profit_factor() if pf.trades.count() > 0 else 0,
+                                'total_trades': total_trades,
+                                'profit_factor': profit_factor,
                                 'holding_time': holding_time,
-                                'trailing_stop_pct': trailing_stop
+                                'trailing_stop_pct': trailing_stop,
+                                'max_drawdown_pct': max_drawdown,
+                                'sharpe_ratio': sharpe_ratio,
+                                'final_value': final_value,
+                                'avg_trade_return_pct': avg_trade_return,
+                                'avg_win_return_pct': avg_win_return,
+                                'avg_loss_return_pct': avg_loss_return,
+                                'avg_trade_duration_min': avg_trade_duration,
+                                'winning_trades': winning_trades,
+                                'losing_trades': losing_trades
                             }
                             
-                            print(f"    Hold: {holding_time} min, Trail: {trailing_stop}%: {total_return:.2f}% return, {win_rate*100:.1f}% win rate, {pf.trades.count()} trades")
+                            # Enhanced logging with much more detail
+                            print(f"    ╭─ Hold: {holding_time:>3}min, Trail: {trailing_stop:>4.1f}% ─────────────────────────────────────────╮")
+                            print(f"    │ 💰 Return: {total_return:>8.2f}% | Final Value: ${final_value:>10,.0f} | Drawdown: {max_drawdown:>6.2f}% │")
+                            print(f"    │ 🎯 Win Rate: {win_rate*100:>6.1f}% | Trades: {total_trades:>3} | Sharpe: {sharpe_ratio:>7.2f} | PF: {profit_factor:>6.2f} │")
+                            if total_trades > 0:
+                                print(f"    │ 📊 Avg Trade: {avg_trade_return:>6.2f}% | Wins: {winning_trades:>2}({avg_win_return:>6.2f}%) | Loss: {losing_trades:>2}({avg_loss_return:>6.2f}%) │")
+                                print(f"    │ ⏱️  Avg Duration: {avg_trade_duration:>6.1f}min                                           │")
+                            else:
+                                print(f"    │ ❌ No trades executed - insufficient signals or conditions not met      │")
+                            print(f"    ╰─────────────────────────────────────────────────────────────────────────────╯")
                             
                             # Score based on return * win rate, only if we have enough trades
                             if pf.trades.count() >= 5:
@@ -257,6 +312,7 @@ class DirectionalImpactStrategies:
                 }
         
         # Generate trailing stop analysis visualization
+        # Note: Chart will be generated later in generate_strategy_reports with proper path
         self._generate_trailing_stop_analysis()
         
         return self.backtest_results
@@ -311,10 +367,13 @@ class DirectionalImpactStrategies:
         html_output = os.path.join(html_dir, 'directional_strategies.html')
         self._generate_html_report(html_output, charts_dir)
         
+        # Generate trailing stop analysis chart with correct path
+        self._generate_trailing_stop_analysis(charts_dir)
+        
         print(f"Strategy reports generated at {html_output}")
         return html_output
 
-    def _generate_trailing_stop_analysis(self):
+    def _generate_trailing_stop_analysis(self, charts_dir=None):
         """Generate analysis of trailing stop impact across all strategies."""
         import matplotlib.pyplot as plt
         import numpy as np
@@ -359,8 +418,8 @@ class DirectionalImpactStrategies:
         # Store for reporting
         self.trailing_stop_analysis = ts_analysis
         
-        # Generate visualization if we have data
-        if ts_analysis:
+        # Generate visualization if we have data and charts_dir is provided
+        if ts_analysis and charts_dir:
             try:
                 plt.figure(figsize=(10, 8))
                 
@@ -383,11 +442,19 @@ class DirectionalImpactStrategies:
                 ax2.grid(True, alpha=0.3)
                 
                 plt.tight_layout()
-                plt.savefig('results/charts/trailing_stop_impact.png')
+                
+                # Save to the correct charts directory
+                chart_path = os.path.join(charts_dir, 'trailing_stop_impact.png')
+                plt.savefig(chart_path)
+                print(f"Trailing stop analysis chart saved to: {chart_path}")
+                
                 plt.close()
                 
             except Exception as e:
-                print(f"Error generating trailing stop analysis: {e}")
+                print(f"Error generating trailing stop chart: {str(e)}")
+        elif ts_analysis and not charts_dir:
+            # If no charts_dir provided, still store the analysis but don't generate chart
+            print("Trailing stop analysis data collected, chart will be generated later with proper path")
     
     def _generate_html_report(self, output_file, charts_dir, strategy_reports=None, trade_detail_reports=None):
         """Generate HTML report for strategies."""

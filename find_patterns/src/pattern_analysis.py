@@ -218,20 +218,31 @@ def analyze_lag_relationships(combined_data, patterns, max_lag_seconds=600, lag_
         print("Using data frequency as the minimum lag step")
         lag_step_seconds = max(int(data_frequency), 1)  # Ensure it's at least 1 second
     
-    # Analyze each pattern
+    # Merge patterns into combined_data, avoiding duplicates
     for pattern in pattern_cols:
-        # First add the pattern to combined_data if it's not already there
         if pattern not in combined_data.columns:
-            print(f"Warning: Pattern '{pattern}' not found in combined_data columns, adding it")
-            # Merge the pattern column from patterns to combined_data
             if pattern in patterns.columns:
                 combined_data[pattern] = patterns[pattern]
             else:
                 print(f"Warning: Pattern '{pattern}' not found in patterns DataFrame, skipping")
                 continue
+        else:
+            # Pattern already exists in combined_data, verify it matches
+            if pattern in patterns.columns:
+                # Use patterns version if it exists (it might be more up-to-date)
+                combined_data[pattern] = patterns[pattern]
+    
+    # Analyze each pattern
+    for pattern in pattern_cols:
         
-        # Find rows where pattern is True
-        pattern_instances = combined_data[combined_data[pattern] == True]
+        # Find rows where pattern is True - fix the indexing issue
+        if pattern in patterns.columns:
+            pattern_indices = patterns[patterns[pattern] == True].index
+            pattern_instances = combined_data.loc[pattern_indices]
+        else:
+            print(f"Pattern '{pattern}' not found in patterns DataFrame.")
+            continue
+            
         if len(pattern_instances) == 0:
             print(f"No instances of pattern '{pattern}' found in the data.")
             continue
@@ -246,8 +257,11 @@ def analyze_lag_relationships(combined_data, patterns, max_lag_seconds=600, lag_
             # Convert lag from seconds to data rows
             lag_rows = max(round(lag_seconds / data_frequency), 1)
             
-            # Get indices where the pattern occurs
-            pattern_indices = combined_data.index[combined_data[pattern] == True].tolist()
+            # Get indices where the pattern occurs - fix the indexing issue
+            if pattern in patterns.columns:
+                pattern_indices = patterns.index[patterns[pattern] == True].tolist()
+            else:
+                continue
             
             # Skip if no pattern instances
             if not pattern_indices:
@@ -255,6 +269,8 @@ def analyze_lag_relationships(combined_data, patterns, max_lag_seconds=600, lag_
                 
             # Calculate returns after pattern occurs
             future_returns = []
+            positive_returns = []
+            negative_returns = []
             win_count = 0
             
             for idx in pattern_indices:
@@ -270,6 +286,9 @@ def analyze_lag_relationships(combined_data, patterns, max_lag_seconds=600, lag_
                         future_returns.append(future_return)
                         if future_return > 0:
                             win_count += 1
+                            positive_returns.append(future_return)
+                        else:
+                            negative_returns.append(future_return)
                 except Exception as e:
                     pass  # Skip any index errors
             
@@ -277,21 +296,28 @@ def analyze_lag_relationships(combined_data, patterns, max_lag_seconds=600, lag_
             if future_returns:
                 avg_return = sum(future_returns) / len(future_returns)
                 win_rate = win_count / len(future_returns)
+                positive_count = len(positive_returns)
+                negative_count = len(negative_returns)
+                avg_positive_return = sum(positive_returns) / len(positive_returns) if positive_returns else 0
+                avg_negative_return = sum(negative_returns) / len(negative_returns) if negative_returns else 0
                 
                 # Calculate correlation between pattern and future returns
-                pattern_series = combined_data[pattern].astype(int)
-                shifted_returns = combined_data[altcoin_returns_col].shift(-lag_rows)
-                
-                # Only calculate correlation where we have valid data
-                valid_data = ~(pattern_series.isna() | shifted_returns.isna())
-                if valid_data.sum() > 10:  # Need enough data points
-                    try:
-                        from scipy.stats import pearsonr
-                        correlation = pearsonr(
-                            pattern_series[valid_data], 
-                            shifted_returns[valid_data]
-                        )[0]
-                    except:
+                if pattern in patterns.columns:
+                    pattern_series = patterns[pattern].astype(int)
+                    shifted_returns = combined_data[altcoin_returns_col].shift(-lag_rows)
+                    
+                    # Only calculate correlation where we have valid data
+                    valid_data = ~(pattern_series.isna() | shifted_returns.isna())
+                    if valid_data.sum() > 10:  # Need enough data points
+                        try:
+                            from scipy.stats import pearsonr
+                            correlation = pearsonr(
+                                pattern_series[valid_data], 
+                                shifted_returns[valid_data]
+                            )[0]
+                        except:
+                            correlation = 0
+                    else:
                         correlation = 0
                 else:
                     correlation = 0
@@ -299,6 +325,17 @@ def analyze_lag_relationships(combined_data, patterns, max_lag_seconds=600, lag_
                 lag_correlations[lag_seconds] = correlation
                 lag_win_rates[lag_seconds] = win_rate
                 lag_returns[lag_seconds] = avg_return
+                
+                # Store detailed metrics for display
+                if not hasattr(lag_returns, 'detailed_metrics'):
+                    lag_returns.detailed_metrics = {}
+                lag_returns.detailed_metrics[lag_seconds] = {
+                    'positive_count': positive_count,
+                    'negative_count': negative_count,
+                    'avg_positive_return': avg_positive_return,
+                    'avg_negative_return': avg_negative_return,
+                    'total_count': len(future_returns)
+                }
         
         # Find optimal lag based on return
         if lag_returns:
@@ -314,13 +351,128 @@ def analyze_lag_relationships(combined_data, patterns, max_lag_seconds=600, lag_
                 'win_rate': lag_win_rates.get(optimal_lag_seconds, 0),
                 'returns': lag_returns,
                 'win_rates': lag_win_rates,
-                'altcoin_name': altcoin_prefix
+                'altcoin_name': altcoin_prefix,
+                'detailed_metrics': getattr(lag_returns, 'detailed_metrics', {})
             }
             
             # Print some stats
             print(f"Pattern {pattern} - {len(pattern_instances)} instances, optimal lag: {optimal_lag_seconds/60:.2f} minutes ({optimal_lag_seconds} seconds)")
     
     return pattern_stats
+
+def analyze_synchronous_movements(combined_data, min_price_move=0.001):
+    """
+    Analyze synchronous BTC-altcoin movements without lag.
+    Check if altcoin moves in same direction as BTC at the same timestamp.
+    
+    Args:
+        combined_data: DataFrame with BTC and altcoin data
+        min_price_move: Minimum price move threshold to consider as a signal
+        
+    Returns:
+        Dictionary with synchronous movement analysis results
+    """
+    print("Analyzing synchronous BTC-altcoin movements...")
+    
+    # Find altcoin prefix from column names
+    alt_prefix = None
+    for col in combined_data.columns:
+        if col.endswith('_returns') and not col.startswith('btc'):
+            alt_prefix = col.split('_')[0]
+            break
+    
+    if not alt_prefix:
+        print("Warning: Could not detect altcoin prefix")
+        return {}
+    
+    print(f"Analyzing BTC and {alt_prefix.upper()} synchronous movements")
+    
+    # Define BTC movement categories based on returns
+    scenarios = {
+        'btc_strong_up': combined_data['btc_returns'] > 0.0015,
+        'btc_medium_up': (combined_data['btc_returns'] > 0.00075) & (combined_data['btc_returns'] <= 0.0015),
+        'btc_small_up': (combined_data['btc_returns'] > 0) & (combined_data['btc_returns'] <= 0.00075),
+        'btc_small_down': (combined_data['btc_returns'] < 0) & (combined_data['btc_returns'] >= -0.00075),
+        'btc_medium_down': (combined_data['btc_returns'] < -0.00075) & (combined_data['btc_returns'] >= -0.0015),
+        'btc_strong_down': combined_data['btc_returns'] < -0.0015
+    }
+    
+    results = {}
+    alt_returns_col = f'{alt_prefix}_returns'
+    
+    if alt_returns_col not in combined_data.columns:
+        print(f"Warning: {alt_returns_col} not found in data")
+        return {}
+    
+    for scenario_name, btc_condition in scenarios.items():
+        print(f"\nAnalyzing {scenario_name.replace('btc_', '').replace('_', ' ').title()}...")
+        
+        # Get BTC signals
+        btc_signals = btc_condition
+        signal_count = btc_signals.sum()
+        
+        if signal_count < 5:
+            print(f"  Insufficient signals: {signal_count} (need at least 5)")
+            results[scenario_name] = {
+                'total_signals': signal_count,
+                'synchronous_same_direction': 0,
+                'synchronous_opposite_direction': 0,
+                'mean_alt_return_when_same': 0,
+                'mean_alt_return_when_opposite': 0,
+                'win_rate_same_direction': 0,
+                'win_rate_opposite_direction': 0,
+                'same_direction_percentage': 0
+            }
+            continue
+        
+        # Get altcoin returns when BTC signals occur (same timestamp)
+        alt_returns_at_signal = combined_data.loc[btc_signals, alt_returns_col]
+        
+        # Determine if altcoin moved in same direction as BTC
+        btc_direction = 'up' if 'up' in scenario_name else 'down'
+        
+        if btc_direction == 'up':
+            same_direction = alt_returns_at_signal > 0
+            opposite_direction = alt_returns_at_signal <= 0
+        else:
+            same_direction = alt_returns_at_signal < 0
+            opposite_direction = alt_returns_at_signal >= 0
+        
+        # Calculate statistics
+        same_direction_count = same_direction.sum()
+        opposite_direction_count = opposite_direction.sum()
+        same_direction_percentage = (same_direction_count / signal_count) * 100
+        
+        # Calculate mean returns
+        mean_alt_return_same = alt_returns_at_signal[same_direction].mean() if same_direction_count > 0 else 0
+        mean_alt_return_opposite = alt_returns_at_signal[opposite_direction].mean() if opposite_direction_count > 0 else 0
+        
+        # Calculate win rates (positive returns for altcoin)
+        win_rate_same = (alt_returns_at_signal[same_direction] > 0).mean() if same_direction_count > 0 else 0
+        win_rate_opposite = (alt_returns_at_signal[opposite_direction] > 0).mean() if opposite_direction_count > 0 else 0
+        
+        results[scenario_name] = {
+            'total_signals': signal_count,
+            'synchronous_same_direction': same_direction_count,
+            'synchronous_opposite_direction': opposite_direction_count,
+            'mean_alt_return_when_same': mean_alt_return_same,
+            'mean_alt_return_when_opposite': mean_alt_return_opposite,
+            'win_rate_same_direction': win_rate_same,
+            'win_rate_opposite_direction': win_rate_opposite,
+            'same_direction_percentage': same_direction_percentage
+        }
+        
+        # Enhanced logging
+        print(f"    Total BTC signals: {signal_count:>4}")
+        print(f"    Same direction:    {same_direction_count:>4} ({same_direction_percentage:>5.1f}%)")
+        print(f"    Opposite direction: {opposite_direction_count:>4} ({100-same_direction_percentage:>5.1f}%)")
+        print(f"    Mean return (same):     {mean_alt_return_same*100:>7.4f}%")
+        print(f"    Mean return (opposite): {mean_alt_return_opposite*100:>7.4f}%")
+        print(f"    Win rate (same):        {win_rate_same*100:>7.1f}%")
+        print(f"    Win rate (opposite):    {win_rate_opposite*100:>7.1f}%")
+    
+    return results
+
 
 def analyze_btc_directional_impact(combined_data, lags=[1, 2, 3, 4, 5, 10, 15, 30], min_price_move=0.001):
     """Analyze what happens to altcoin when BTC moves up or down at various time lags."""
@@ -376,10 +528,23 @@ def analyze_btc_directional_impact(combined_data, lags=[1, 2, 3, 4, 5, 10, 15, 3
                     avg_return = valid_returns.mean() * 100  # as percent
                     win_rate = (valid_returns > 0).mean()
                     
+                    # Calculate positive and negative breakdowns
+                    positive_returns = valid_returns[valid_returns > 0]
+                    negative_returns = valid_returns[valid_returns <= 0]
+                    
+                    positive_count = len(positive_returns)
+                    negative_count = len(negative_returns)
+                    avg_positive_return = positive_returns.mean() if len(positive_returns) > 0 else 0
+                    avg_negative_return = negative_returns.mean() if len(negative_returns) > 0 else 0
+                    
                     results[scenario_name]['lags'][lag] = {
                         'mean_return': avg_return,
                         'win_rate': win_rate,
-                        'count': len(valid_returns)
+                        'count': len(valid_returns),
+                        'positive_count': positive_count,
+                        'negative_count': negative_count,
+                        'avg_positive_return': avg_positive_return,
+                        'avg_negative_return': avg_negative_return
                     }
     
     # Print summary of findings
@@ -396,15 +561,29 @@ def analyze_btc_directional_impact(combined_data, lags=[1, 2, 3, 4, 5, 10, 15, 3
             mean_return = lag_data.get('mean_return', 0)
             win_rate = lag_data.get('win_rate', 0) * 100
             count = lag_data.get('count', 0)
+            positive_count = lag_data.get('positive_count', 0)
+            negative_count = lag_data.get('negative_count', 0)
+            avg_positive_return = lag_data.get('avg_positive_return', 0) * 100
+            avg_negative_return = lag_data.get('avg_negative_return', 0) * 100
             
-            print(f"  Lag {lag}: Mean Return = {mean_return:.4f}%, Win Rate = {win_rate:.1f}%, Count = {count}")
+            # Enhanced logging with altcoin response breakdown
+            if count > 0:
+                print(f"    Lag {lag:>2}min: {mean_return:>7.4f}% altcoin response | Pos Rate: {win_rate:>5.1f}% | "
+                      f"Signals: {count:>3} | Pos: {positive_count:>2}({avg_positive_return:>6.2f}%) | "
+                      f"Neg: {negative_count:>2}({avg_negative_return:>6.2f}%)")
+            else:
+                print(f"    Lag {lag:>2}min: No valid BTC signals")
             
             if mean_return > best_return and count >= 5:
                 best_return = mean_return
                 best_lag = lag
         
         if best_lag:
-            print(f"  Best lag: {best_lag} with {best_return:.4f}% return")
+            best_data = scenario_data['lags'][best_lag]
+            print(f"  🏆 Best correlation lag: {best_lag}min with {best_return:.4f}% altcoin response")
+            print(f"     Positive rate: {best_data.get('win_rate', 0)*100:.1f}%, Total BTC signals: {best_data.get('count', 0)}")
+        else:
+            print(f"  ❌ No profitable lags found with sufficient trades (>=5)")
     
     return results
 
@@ -441,13 +620,37 @@ def analyze_cross_asset_relationships(combined_data, patterns, max_lag_minutes=2
     alt_returns_col = f'{alt_prefix}_returns'
     print(f"Analyzing relationship between {btc_returns_col} and {alt_returns_col}")
     
-    # Define BTC price movement thresholds
-    small_threshold = 0.0005  # 0.05%
-    medium_threshold = 0.001  # 0.1%
-    large_threshold = 0.002   # 0.2%
+    # Define multi-timeframe BTC price movement thresholds
+    # Base thresholds for 1-minute data
+    base_thresholds = {
+        'small': 0.0005,   # 0.05%
+        'medium': 0.001,   # 0.1%
+        'large': 0.002     # 0.2%
+    }
     
-    # Define the price action scenarios
-    scenarios = {
+    # Timeframe-specific threshold adjustments (1-10 minutes)
+    timeframe_multipliers = {
+        1: 1.0,      # Base timeframe
+        2: 1.4,      # √2 scaling for 2-minute moves
+        3: 1.7,      # √3 scaling for 3-minute moves
+        4: 2.0,      # √4 scaling for 4-minute moves
+        5: 2.2,      # √5 scaling for 5-minute moves
+        6: 2.4,      # √6 scaling for 6-minute moves
+        7: 2.6,      # √7 scaling for 7-minute moves
+        8: 2.8,      # √8 scaling for 8-minute moves
+        9: 3.0,      # √9 scaling for 9-minute moves
+        10: 3.2      # √10 scaling for 10-minute moves
+    }
+    
+    # Create multi-timeframe scenarios
+    scenarios = {}
+    
+    # Add 1-minute base scenarios
+    small_threshold = base_thresholds['small']
+    medium_threshold = base_thresholds['medium'] 
+    large_threshold = base_thresholds['large']
+    
+    scenarios.update({
         'btc_strong_up': combined_data[btc_returns_col] > large_threshold,
         'btc_medium_up': (combined_data[btc_returns_col] > medium_threshold) & (combined_data[btc_returns_col] <= large_threshold),
         'btc_small_up': (combined_data[btc_returns_col] > small_threshold) & (combined_data[btc_returns_col] <= medium_threshold),
@@ -455,7 +658,31 @@ def analyze_cross_asset_relationships(combined_data, patterns, max_lag_minutes=2
         'btc_small_down': (combined_data[btc_returns_col] < -small_threshold) & (combined_data[btc_returns_col] >= -medium_threshold),
         'btc_medium_down': (combined_data[btc_returns_col] < -medium_threshold) & (combined_data[btc_returns_col] >= -large_threshold),
         'btc_strong_down': combined_data[btc_returns_col] < -large_threshold
-    }
+    })
+    
+    # Add multi-timeframe scenarios (2-10 minutes)
+    for tf in range(2, 11):
+        tf_col = f'btc_return_{tf}m'
+        
+        if tf_col in combined_data.columns:
+            multiplier = timeframe_multipliers[tf]
+            tf_small = base_thresholds['small'] * multiplier
+            tf_medium = base_thresholds['medium'] * multiplier  
+            tf_large = base_thresholds['large'] * multiplier
+            
+            scenarios.update({
+                f'btc_strong_up_{tf}m': combined_data[tf_col] > tf_large,
+                f'btc_medium_up_{tf}m': (combined_data[tf_col] > tf_medium) & (combined_data[tf_col] <= tf_large),
+                f'btc_small_up_{tf}m': (combined_data[tf_col] > tf_small) & (combined_data[tf_col] <= tf_medium),
+                f'btc_flat_{tf}m': (combined_data[tf_col] >= -tf_small) & (combined_data[tf_col] <= tf_small),
+                f'btc_small_down_{tf}m': (combined_data[tf_col] < -tf_small) & (combined_data[tf_col] >= -tf_medium),
+                f'btc_medium_down_{tf}m': (combined_data[tf_col] < -tf_medium) & (combined_data[tf_col] >= -tf_large),
+                f'btc_strong_down_{tf}m': combined_data[tf_col] < -tf_large
+            })
+            
+            print(f"Added {tf}-minute timeframe thresholds: Small={tf_small:.5f}, Medium={tf_medium:.5f}, Large={tf_large:.5f}")
+    
+    print(f"Total BTC scenarios created: {len([k for k in scenarios.keys() if k.startswith('btc')])}")
     
     # Calculate data frequency in minutes
     if isinstance(combined_data.index, pd.DatetimeIndex) and len(combined_data) > 1:

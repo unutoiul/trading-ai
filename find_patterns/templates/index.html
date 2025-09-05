@@ -8,6 +8,7 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <style>
       body {
         padding-top: 20px;
@@ -200,146 +201,398 @@
             </div>
           </div>
 
-          <!-- Market Conditions Filter Section -->
-          <div class="row mb-3">
+          <!-- Enhanced Market Conditions Filter Section -->
+          <div class="row mb-4">
             <div class="col-12">
-              <h5>Filter by Market Conditions</h5>
+              <h5>🎯 Smart Market Conditions Filter</h5>
               <p class="text-muted small">
-                All conditions are selected by default. Uncheck to exclude
-                specific market conditions.
+                Customize BTC movement thresholds and timeframes for precise
+                pattern analysis.
+                <span class="badge bg-info">Live Preview Available</span>
               </p>
             </div>
+
+            <!-- Customizable Thresholds Panel -->
             <div class="col-md-6">
-              <h6>BTC Conditions</h6>
-              <div class="form-check">
-                <input
-                  class="form-check-input condition-checkbox"
-                  type="checkbox"
-                  id="btc_strong_up"
-                  checked
-                />
-                <label class="form-check-label" for="btc_strong_up"
-                  >Strong Up (>0.15%)</label
-                >
-              </div>
-              <div class="form-check">
-                <input
-                  class="form-check-input condition-checkbox"
-                  type="checkbox"
-                  id="btc_medium_up"
-                  checked
-                />
-                <label class="form-check-label" for="btc_medium_up"
-                  >Medium Up (0.075-0.15%)</label
-                >
-              </div>
-              <div class="form-check">
-                <input
-                  class="form-check-input condition-checkbox"
-                  type="checkbox"
-                  id="btc_small_up"
-                  checked
-                />
-                <label class="form-check-label" for="btc_small_up"
-                  >Small Up (0-0.075%)</label
-                >
-              </div>
-              <div class="form-check">
-                <input
-                  class="form-check-input condition-checkbox"
-                  type="checkbox"
-                  id="btc_small_down"
-                  checked
-                />
-                <label class="form-check-label" for="btc_small_down"
-                  >Small Down (0 to -0.075%)</label
-                >
-              </div>
-              <div class="form-check">
-                <input
-                  class="form-check-input condition-checkbox"
-                  type="checkbox"
-                  id="btc_medium_down"
-                  checked
-                />
-                <label class="form-check-label" for="btc_medium_down"
-                  >Medium Down (-0.075 to -0.15%)</label
-                >
-              </div>
-              <div class="form-check">
-                <input
-                  class="form-check-input condition-checkbox"
-                  type="checkbox"
-                  id="btc_strong_down"
-                  checked
-                />
-                <label class="form-check-label" for="btc_strong_down"
-                  >Strong Down (< -0.15%)</label
-                >
-              </div>
-              <div class="form-check">
-                <input
-                  class="form-check-input condition-checkbox"
-                  type="checkbox"
-                  id="btc_sideways"
-                  checked
-                />
-                <label class="form-check-label" for="btc_sideways"
-                  >Sideways (< ±0.0375%)</label
-                >
+              <div class="card border-primary">
+                <div class="card-header bg-light">
+                  <h6 class="mb-0">📊 Customize Thresholds</h6>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-6">
+                      <label for="strongThreshold" class="form-label"
+                        >Strong Movement %</label
+                      >
+                      <input
+                        type="range"
+                        class="form-range"
+                        id="strongThreshold"
+                        min="0.1"
+                        max="1.0"
+                        step="0.05"
+                        value="0.15"
+                      />
+                      <div
+                        class="d-flex justify-content-between small text-muted"
+                      >
+                        <span>0.1%</span>
+                        <span id="strongValue">0.15%</span>
+                        <span>1.0%</span>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <label for="mediumThreshold" class="form-label"
+                        >Medium Movement %</label
+                      >
+                      <input
+                        type="range"
+                        class="form-range"
+                        id="mediumThreshold"
+                        min="0.05"
+                        max="0.5"
+                        step="0.025"
+                        value="0.075"
+                      />
+                      <div
+                        class="d-flex justify-content-between small text-muted"
+                      >
+                        <span>0.05%</span>
+                        <span id="mediumValue">0.075%</span>
+                        <span>0.5%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mt-3">
+                    <label class="form-label">Active Timeframes</label>
+                    <div class="btn-group btn-group-sm w-100" role="group">
+                      <input
+                        type="checkbox"
+                        class="btn-check timeframe-check"
+                        id="tf1m"
+                        checked
+                      />
+                      <label class="btn btn-outline-primary" for="tf1m"
+                        >1m</label
+                      >
+
+                      <input
+                        type="checkbox"
+                        class="btn-check timeframe-check"
+                        id="tf2m"
+                        checked
+                      />
+                      <label class="btn btn-outline-primary" for="tf2m"
+                        >2m</label
+                      >
+
+                      <input
+                        type="checkbox"
+                        class="btn-check timeframe-check"
+                        id="tf3m"
+                        checked
+                      />
+                      <label class="btn btn-outline-primary" for="tf3m"
+                        >3m</label
+                      >
+
+                      <input
+                        type="checkbox"
+                        class="btn-check timeframe-check"
+                        id="tf4m"
+                        checked
+                      />
+                      <label class="btn btn-outline-primary" for="tf4m"
+                        >4m</label
+                      >
+
+                      <input
+                        type="checkbox"
+                        class="btn-check timeframe-check"
+                        id="tf5m"
+                        checked
+                      />
+                      <label class="btn btn-outline-primary" for="tf5m"
+                        >5m</label
+                      >
+
+                      <input
+                        type="checkbox"
+                        class="btn-check timeframe-check"
+                        id="tf6m"
+                        checked
+                      />
+                      <label class="btn btn-outline-primary" for="tf6m"
+                        >6m</label
+                      >
+
+                      <input
+                        type="checkbox"
+                        class="btn-check timeframe-check"
+                        id="tf7m"
+                        checked
+                      />
+                      <label class="btn btn-outline-primary" for="tf7m"
+                        >7m</label
+                      >
+
+                      <input
+                        type="checkbox"
+                        class="btn-check timeframe-check"
+                        id="tf8m"
+                        checked
+                      />
+                      <label class="btn btn-outline-primary" for="tf8m"
+                        >8m</label
+                      >
+
+                      <input
+                        type="checkbox"
+                        class="btn-check timeframe-check"
+                        id="tf9m"
+                        checked
+                      />
+                      <label class="btn btn-outline-primary" for="tf9m"
+                        >9m</label
+                      >
+
+                      <input
+                        type="checkbox"
+                        class="btn-check timeframe-check"
+                        id="tf10m"
+                        checked
+                      />
+                      <label class="btn btn-outline-primary" for="tf10m"
+                        >10m</label
+                      >
+                    </div>
+                  </div>
+
+                  <div class="mt-3">
+                    <button
+                      class="btn btn-outline-info btn-sm"
+                      id="previewConditions"
+                    >
+                      🔍 Preview Conditions
+                    </button>
+                    <button
+                      class="btn btn-outline-success btn-sm"
+                      id="applyCustomSettings"
+                    >
+                      ✅ Apply Settings
+                    </button>
+                    <button
+                      class="btn btn-outline-secondary btn-sm"
+                      id="resetToDefaults"
+                    >
+                      🔄 Reset
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
+
+            <!-- Dynamic Conditions Display -->
             <div class="col-md-6">
-              <h6>Additional Options</h6>
-              <div class="form-check">
-                <input
-                  class="form-check-input condition-checkbox"
-                  type="checkbox"
-                  id="btc_high_volatility"
-                  checked
-                />
-                <label class="form-check-label" for="btc_high_volatility"
-                  >High Volatility</label
-                >
-              </div>
-              <div class="form-check">
-                <input
-                  class="form-check-input condition-checkbox"
-                  type="checkbox"
-                  id="btc_low_volatility"
-                  checked
-                />
-                <label class="form-check-label" for="btc_low_volatility"
-                  >Low Volatility</label
-                >
-              </div>
-              <div class="form-group mt-3">
-                <label>Condition Match Type:</label>
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    name="conditionType"
-                    id="conditionTypeAny"
-                    value="any"
-                    checked
-                  />
-                  <label class="form-check-label" for="conditionTypeAny"
-                    >Match ANY selected condition</label
+              <div class="card border-success">
+                <div class="card-header bg-light">
+                  <h6 class="mb-0">✅ Active BTC Conditions</h6>
+                  <small class="text-muted"
+                    >Select/deselect conditions to include</small
                   >
                 </div>
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    name="conditionType"
-                    id="conditionTypeAll"
-                    value="all"
-                  />
-                  <label class="form-check-label" for="conditionTypeAll"
-                    >Match ALL selected conditions</label
-                  >
+                <div
+                  class="card-body"
+                  style="max-height: 300px; overflow-y: auto"
+                >
+                  <div id="dynamicConditions">
+                    <!-- Will be populated by JavaScript -->
+                  </div>
+
+                  <div class="mt-3 pt-2 border-top">
+                    <div class="row">
+                      <div class="col-6">
+                        <button
+                          class="btn btn-outline-primary btn-sm w-100"
+                          id="selectAllConditions"
+                        >
+                          ☑️ Select All
+                        </button>
+                      </div>
+                      <div class="col-6">
+                        <button
+                          class="btn btn-outline-warning btn-sm w-100"
+                          id="clearAllConditions"
+                        >
+                          ☐ Clear All
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Advanced Optimization Settings -->
+          <div class="card mt-4 mb-3" style="border-left: 4px solid #6f42c1">
+            <div class="card-header bg-light">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-rocket text-primary"></i> Advanced Optimization
+                Settings
+                <span class="badge bg-info ms-2">Professional</span>
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <label for="maxCombinations" class="form-label">
+                      <i class="fas fa-vials"></i> Max Parameter Combinations
+                    </label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="maxCombinations"
+                      name="maxCombinations"
+                      value="2000"
+                      min="500"
+                      max="10000"
+                      step="500"
+                    />
+                    <small class="form-text text-muted">
+                      Reduced default for browser stability. Higher values =
+                      more thorough testing but longer execution time
+                    </small>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <label for="parallelJobs" class="form-label">
+                      <i class="fas fa-microchip"></i> Parallel Jobs
+                    </label>
+                    <select
+                      class="form-control"
+                      id="parallelJobs"
+                      name="parallelJobs"
+                    >
+                      <option value="1">1 Job (Single-threaded)</option>
+                      <option value="2">2 Jobs</option>
+                      <option value="4" selected>4 Jobs (Recommended)</option>
+                      <option value="6">6 Jobs</option>
+                      <option value="8">8 Jobs (High CPU)</option>
+                    </select>
+                    <small class="form-text text-muted">
+                      More jobs = faster execution (if you have multiple CPU
+                      cores)
+                    </small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <div class="form-check form-switch">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="enableTrailingStop"
+                        name="enableTrailingStop"
+                        checked
+                      />
+                      <label class="form-check-label" for="enableTrailingStop">
+                        <i class="fas fa-chart-area"></i>
+                        <strong>Enable Trailing Stop Testing</strong>
+                      </label>
+                    </div>
+                    <small class="form-text text-muted">
+                      <strong>⚡ Performance Impact:</strong> Disabling reduces
+                      testing time by ~60-70%
+                    </small>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <div class="form-check form-switch">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="detailedReports"
+                        name="detailedReports"
+                        checked
+                      />
+                      <label class="form-check-label" for="detailedReports">
+                        <i class="fas fa-chart-pie"></i>
+                        <strong>Generate Detailed Reports</strong>
+                      </label>
+                    </div>
+                    <small class="form-text text-muted">
+                      Includes comprehensive charts and analysis
+                    </small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <label for="winRateThreshold" class="form-label">
+                      <i class="fas fa-percentage"></i>
+                      <strong>Win Rate Threshold (%)</strong>
+                    </label>
+                    <input
+                      type="range"
+                      class="form-range"
+                      id="winRateThreshold"
+                      min="30"
+                      max="70"
+                      step="5"
+                      value="50"
+                    />
+                    <div
+                      class="d-flex justify-content-between small text-muted"
+                    >
+                      <span>30%</span>
+                      <span id="winRateValue">50%</span>
+                      <span>70%</span>
+                    </div>
+                    <small class="form-text text-muted">
+                      <strong>⚠️ Optimization Skip Threshold:</strong> If no
+                      scenario exceeds this win rate, advanced testing will be
+                      skipped to save time
+                    </small>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <!-- Placeholder for future settings -->
+                </div>
+              </div>
+
+              <div class="alert alert-info" role="alert">
+                <h6 class="alert-heading">
+                  <i class="fas fa-lightbulb"></i> Advanced Optimization
+                  Features:
+                </h6>
+                <ul class="mb-0">
+                  <li>
+                    <strong>Parameter Testing:</strong> Stop Loss (0.5%-10%),
+                    Take Profit (1%-30%), Trailing Stop (0.3%-5%)
+                  </li>
+                  <li>
+                    <strong>Smart Sampling:</strong> ML-guided combinations +
+                    high-frequency patterns + random sampling
+                  </li>
+                  <li>
+                    <strong>Comprehensive Analysis:</strong> Risk-adjusted
+                    returns, Sharpe ratios, parameter impact analysis
+                  </li>
+                  <li>
+                    <strong>Performance Reports:</strong> HTML reports with
+                    interactive charts and CSV exports
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
@@ -375,138 +628,12 @@
             <div class="card-body">
               <pre
                 id="analysisLogs"
-                style="max-height: 300px; overflow-y: auto"
+                style="min-height: 640px; overflow-y: auto"
               ></pre>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Add this after the "Run Analysis" card -->
-      <!-- <div class="card mb-4">
-        <div class="card-header">
-          <h2 class="h5 mb-0">4. Strategy Builder</h2>
-        </div>
-        <div class="card-body">
-          <div class="alert alert-info">
-            <strong>Note:</strong> Generate a Pine Script strategy based on
-            pattern and ML analysis results
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Analysis Report:</label>
-            <select class="form-select" id="reportSelect">
-              <option value="">Loading reports...</option>
-            </select>
-            <button
-              id="loadReportsBtn"
-              class="btn btn-sm btn-outline-secondary mt-2"
-            >
-              Refresh Reports List
-            </button>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Strategy Type:</label>
-                <select class="form-select" id="strategyType">
-                  <option value="momentum">BTC Momentum Strategy</option>
-                  <option value="pattern">Pattern Recognition</option>
-                  <option value="ml">ML-Based Strategy</option>
-                </select>
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Risk Per Trade (%):</label>
-                <input
-                  type="range"
-                  class="form-range"
-                  id="riskPerTrade"
-                  min="1"
-                  max="100"
-                  step="1"
-                  value="1"
-                />
-                <div class="d-flex justify-content-between">
-                  <small>1%</small>
-                  <small id="riskValue">1%</small>
-                  <small>100%</small>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Strategy Parameters:</label>
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="useStopLoss"
-                    checked
-                  />
-                  <label class="form-check-label">Use Stop Loss</label>
-                </div>
-                <div class="input-group mb-2">
-                  <span class="input-group-text">SL %</span>
-                  <input
-                    type="number"
-                    class="form-control"
-                    id="stopLossPercent"
-                    value="5"
-                    min="1"
-                    max="20"
-                  />
-                </div>
-
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="useTakeProfit"
-                    checked
-                  />
-                  <label class="form-check-label">Use Take Profit</label>
-                </div>
-                <div class="input-group mb-2">
-                  <span class="input-group-text">TP %</span>
-                  <input
-                    type="number"
-                    class="form-control"
-                    id="takeProfitPercent"
-                    value="10"
-                    min="1"
-                    max="50"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="d-flex gap-2">
-            <button
-              id="generateStrategyBtn"
-              class="btn btn-primary mt-3"
-              disabled
-            >
-              Generate Pine Script Strategy
-            </button>
-            <div class="form-check form-switch mt-4 ms-3">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                id="useClaudeAI"
-                checked
-              />
-              <label class="form-check-label">Use AI Claude 3.7 Sonnet</label>
-            </div>
-          </div>
-
-          <div class="loader" id="strategyLoader" style="display: none"></div>
-          <div id="strategyResult" class="mt-3"></div>
-        </div>
-      </div> -->
     </div>
 
     <script>
@@ -1147,15 +1274,57 @@
             return;
           }
 
-          // Get selected conditions
-          const selectedConditions = Array.from(
-            document.querySelectorAll(".condition-checkbox:checked")
-          ).map((checkbox) => checkbox.id);
+          // Get selected conditions (use custom if available, otherwise fall back to standard)
+          let selectedConditions;
+          let customSettings = null;
 
-          // Get condition type (any or all)
-          const conditionType = document.querySelector(
-            'input[name="conditionType"]:checked'
-          ).value;
+          if (window.customConditionSettings) {
+            selectedConditions =
+              window.customConditionSettings.selectedConditions;
+            customSettings = window.customConditionSettings;
+
+            console.log("Using custom condition settings:", customSettings);
+
+            // Show info about custom settings being used
+            const infoDiv = document.createElement("div");
+            infoDiv.className = "alert alert-info alert-dismissible fade show";
+            infoDiv.innerHTML = `
+              <strong>🎯 Using Custom Settings:</strong><br>
+              • Strong threshold: ${customSettings.strongThreshold}%<br>
+              • Medium threshold: ${customSettings.mediumThreshold}%<br>
+              • Timeframes: ${customSettings.timeframes.join(", ")}<br>
+              • Conditions: ${selectedConditions.length} selected<br>
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            const analysisCard = document.querySelector(
+              ".card:last-child .card-body"
+            );
+            analysisCard.insertBefore(infoDiv, analysisCard.firstChild);
+
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+              if (infoDiv.parentNode) {
+                const alert = new bootstrap.Alert(infoDiv);
+                alert.close();
+              }
+            }, 5000);
+          } else {
+            // Fall back to legacy condition checkboxes if they exist
+            selectedConditions = Array.from(
+              document.querySelectorAll(".condition-checkbox:checked")
+            ).map((checkbox) => checkbox.id);
+
+            // If no legacy checkboxes, use dynamic conditions
+            if (selectedConditions.length === 0) {
+              selectedConditions = getSelectedDynamicConditions();
+            }
+          }
+
+          if (selectedConditions.length === 0) {
+            alert("Please select at least one market condition to analyze");
+            return;
+          }
 
           const loader = document.getElementById("analysisLoader");
           const resultDiv = document.getElementById("analysisResult");
@@ -1203,18 +1372,65 @@
             logSource.close();
           };
 
+          // Prepare request payload
+          const requestPayload = {
+            btc_file: btcFile,
+            alt_file: altFile,
+            conditions: selectedConditions,
+          };
+
+          // Add advanced optimization settings
+          const optimizationSettings = {
+            max_combinations:
+              parseInt(document.getElementById("maxCombinations").value) ||
+              2000, // Reduced default for browser stability
+            parallel_jobs:
+              parseInt(document.getElementById("parallelJobs").value) || 4,
+            enable_trailing_stop:
+              document.getElementById("enableTrailingStop").checked,
+            detailed_reports:
+              document.getElementById("detailedReports").checked,
+            win_rate_threshold:
+              parseInt(document.getElementById("winRateThreshold").value) /
+                100 || 0.5,
+          };
+
+          requestPayload.optimization_settings = optimizationSettings;
+
+          // Add custom settings if available
+          if (customSettings) {
+            requestPayload.custom_settings = customSettings;
+            logsDiv.textContent += `🎯 Using custom analysis settings:\n`;
+            logsDiv.textContent += `   • Strong threshold: ${customSettings.strongThreshold}%\n`;
+            logsDiv.textContent += `   • Medium threshold: ${customSettings.mediumThreshold}%\n`;
+            logsDiv.textContent += `   • Timeframes: ${customSettings.timeframes.join(
+              ", "
+            )}\n`;
+            logsDiv.textContent += `   • Selected conditions: ${selectedConditions.length}\n`;
+          }
+
+          // Log optimization settings
+          logsDiv.textContent += `🚀 Advanced Optimization Settings:\n`;
+          logsDiv.textContent += `   • Max Combinations: ${optimizationSettings.max_combinations.toLocaleString()}\n`;
+          logsDiv.textContent += `   • Parallel Jobs: ${optimizationSettings.parallel_jobs}\n`;
+          logsDiv.textContent += `   • Trailing Stop Testing: ${
+            optimizationSettings.enable_trailing_stop ? "ENABLED" : "DISABLED"
+          }\n`;
+          logsDiv.textContent += `   • Detailed Reports: ${
+            optimizationSettings.detailed_reports ? "ENABLED" : "DISABLED"
+          }\n`;
+          logsDiv.textContent += `   • Win Rate Threshold: ${(
+            optimizationSettings.win_rate_threshold * 100
+          ).toFixed(0)}%\n`;
+          logsDiv.textContent += `------------------------------------------------\n`;
+
           // Run the analysis
           fetch("/run_analysis", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              btc_file: btcFile,
-              alt_file: altFile,
-              conditions: selectedConditions,
-              condition_type: conditionType,
-            }),
+            body: JSON.stringify(requestPayload),
           })
             .then((response) => response.json())
             .then((data) => {
@@ -1236,7 +1452,6 @@
 
         const loader = document.getElementById("analysisLoader");
         const resultDiv = document.getElementById("analysisResult");
-        const strategyBtn = document.getElementById("generateStrategyBtn");
 
         fetch("/analysis_result")
           .then((response) => response.json())
@@ -1247,33 +1462,9 @@
               // Success message
               resultDiv.innerHTML = `
                 <div class="alert alert-success">
-                  Analysis complete! You can now view the results or generate a strategy.
+                  Analysis complete! You can now view the results.
                 </div>
               `;
-
-              // Check for strategy_params.json to enable the strategy button
-              fetch("/get_optimized_strategy")
-                .then((response) => response.json())
-                .then((stratData) => {
-                  if (stratData.exists) {
-                    // Enable the generate strategy button
-                    strategyBtn.disabled = false;
-
-                    // Add strategy metrics if available
-                    resultDiv.innerHTML += `
-                      <div class="alert alert-info mt-3">
-                        <strong>Strategy Optimization Results:</strong><br>
-                        Win Rate: ${stratData.metrics.win_rate}<br>
-                        Profit Factor: ${stratData.metrics.profit_factor}<br>
-                        Stop Loss: ${stratData.metrics.stop_loss}<br>
-                        Take Profit: ${stratData.metrics.take_profit}
-                      </div>
-                    `;
-                  }
-                })
-                .catch((err) =>
-                  console.error("Error checking for optimized strategy:", err)
-                );
             } else {
               resultDiv.innerHTML = `<div class="alert alert-warning">${data.message}</div>`;
             }
@@ -1501,6 +1692,354 @@
           window.open("/results/", "_blank");
         });
 
+      // ===================== DYNAMIC CONDITIONS SYSTEM =====================
+
+      // Initialize dynamic conditions system
+      function initializeDynamicConditions() {
+        updateThresholdDisplays();
+        generateDynamicConditions();
+        setupDynamicEventListeners();
+      }
+
+      // Update threshold value displays
+      function updateThresholdDisplays() {
+        document
+          .getElementById("strongThreshold")
+          .addEventListener("input", function () {
+            document.getElementById("strongValue").textContent =
+              this.value + "%";
+            generateDynamicConditions();
+          });
+
+        document
+          .getElementById("mediumThreshold")
+          .addEventListener("input", function () {
+            document.getElementById("mediumValue").textContent =
+              this.value + "%";
+            generateDynamicConditions();
+          });
+
+        document
+          .getElementById("winRateThreshold")
+          .addEventListener("input", function () {
+            document.getElementById("winRateValue").textContent =
+              this.value + "%";
+          });
+      }
+
+      // Generate dynamic conditions based on current settings
+      function generateDynamicConditions() {
+        const strongThreshold = parseFloat(
+          document.getElementById("strongThreshold").value
+        );
+        const mediumThreshold = parseFloat(
+          document.getElementById("mediumThreshold").value
+        );
+        const enabledTimeframes = getEnabledTimeframes();
+
+        const conditionsContainer =
+          document.getElementById("dynamicConditions");
+        conditionsContainer.innerHTML = "";
+
+        // Calculate small threshold (half of medium)
+        const smallThreshold = mediumThreshold / 2;
+
+        // Generate conditions for each enabled timeframe
+        enabledTimeframes.forEach((tf) => {
+          const tfGroup = document.createElement("div");
+          tfGroup.className = "mb-3";
+          tfGroup.innerHTML = `
+            <h6 class="text-primary border-bottom pb-1">${tf} Timeframe</h6>
+          `;
+
+          // Basic directional conditions
+          const basicConditions = [
+            {
+              id: `btc_strong_up_${tf}`,
+              label: `🚀 Strong Up (>${strongThreshold}%)`,
+              type: "up",
+              strength: "strong",
+            },
+            {
+              id: `btc_medium_up_${tf}`,
+              label: `📈 Medium Up (${mediumThreshold}%-${strongThreshold}%)`,
+              type: "up",
+              strength: "medium",
+            },
+            {
+              id: `btc_small_up_${tf}`,
+              label: `↗️ Small Up (0%-${mediumThreshold}%)`,
+              type: "up",
+              strength: "small",
+            },
+            {
+              id: `btc_small_down_${tf}`,
+              label: `↘️ Small Down (0%-${mediumThreshold}%)`,
+              type: "down",
+              strength: "small",
+            },
+            {
+              id: `btc_medium_down_${tf}`,
+              label: `📉 Medium Down (${mediumThreshold}%-${strongThreshold}%)`,
+              type: "down",
+              strength: "medium",
+            },
+            {
+              id: `btc_strong_down_${tf}`,
+              label: `💥 Strong Down (>${strongThreshold}%)`,
+              type: "down",
+              strength: "strong",
+            },
+          ];
+
+          basicConditions.forEach((condition) => {
+            const conditionDiv = document.createElement("div");
+            conditionDiv.className = "form-check form-check-inline me-3 mb-2";
+            conditionDiv.innerHTML = `
+              <input class="form-check-input dynamic-condition-checkbox" type="checkbox" 
+                     id="${condition.id}" data-timeframe="${tf}" 
+                     data-type="${condition.type}" data-strength="${condition.strength}" checked>
+              <label class="form-check-label small" for="${condition.id}">
+                ${condition.label}
+              </label>
+            `;
+            tfGroup.appendChild(conditionDiv);
+          });
+
+          conditionsContainer.appendChild(tfGroup);
+        });
+
+        // Update condition count display
+        updateConditionCount();
+      }
+
+      // Get enabled timeframes
+      function getEnabledTimeframes() {
+        const timeframes = [];
+        document
+          .querySelectorAll(".timeframe-check:checked")
+          .forEach((checkbox) => {
+            timeframes.push(checkbox.id.replace("tf", ""));
+          });
+        return timeframes;
+      }
+
+      // Setup event listeners for dynamic controls
+      function setupDynamicEventListeners() {
+        // Timeframe toggles
+        document.querySelectorAll(".timeframe-check").forEach((checkbox) => {
+          checkbox.addEventListener("change", generateDynamicConditions);
+        });
+
+        // Control buttons
+        document
+          .getElementById("previewConditions")
+          .addEventListener("click", previewConditions);
+        document
+          .getElementById("applyCustomSettings")
+          .addEventListener("click", applyCustomSettings);
+        document
+          .getElementById("resetToDefaults")
+          .addEventListener("click", resetToDefaults);
+        document
+          .getElementById("selectAllConditions")
+          .addEventListener("click", selectAllConditions);
+        document
+          .getElementById("clearAllConditions")
+          .addEventListener("click", clearAllConditions);
+      }
+
+      // Preview conditions (show what will be generated)
+      function previewConditions() {
+        const selectedConditions = getSelectedDynamicConditions();
+        const enabledTimeframes = getEnabledTimeframes();
+
+        const modal = document.createElement("div");
+        modal.className = "modal fade";
+        modal.innerHTML = `
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">🔍 Conditions Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <div class="alert alert-info">
+                  <strong>Selected Conditions:</strong> ${
+                    selectedConditions.length
+                  }<br>
+                  <strong>Active Timeframes:</strong> ${enabledTimeframes.join(
+                    ", "
+                  )}<br>
+                  <strong>Total Combinations:</strong> ~${
+                    selectedConditions.length * enabledTimeframes.length
+                  }
+                </div>
+                <div class="row">
+                  <div class="col-6">
+                    <h6>📈 Upward Conditions (${
+                      selectedConditions.filter((c) => c.includes("up")).length
+                    })</h6>
+                    <ul class="list-group list-group-flush small">
+                      ${selectedConditions
+                        .filter((c) => c.includes("up"))
+                        .map(
+                          (c) => `<li class="list-group-item py-1">${c}</li>`
+                        )
+                        .join("")}
+                    </ul>
+                  </div>
+                  <div class="col-6">
+                    <h6>📉 Downward Conditions (${
+                      selectedConditions.filter((c) => c.includes("down"))
+                        .length
+                    })</h6>
+                    <ul class="list-group list-group-flush small">
+                      ${selectedConditions
+                        .filter((c) => c.includes("down"))
+                        .map(
+                          (c) => `<li class="list-group-item py-1">${c}</li>`
+                        )
+                        .join("")}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="applyCustomSettings()" data-bs-dismiss="modal">Apply These Settings</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(modal);
+        const bootstrapModal = new bootstrap.Modal(modal);
+        bootstrapModal.show();
+
+        // Clean up modal after it's hidden
+        modal.addEventListener("hidden.bs.modal", () => {
+          document.body.removeChild(modal);
+        });
+      }
+
+      // Apply custom settings to analysis
+      function applyCustomSettings() {
+        const selectedConditions = getSelectedDynamicConditions();
+
+        // Store custom settings for analysis
+        window.customConditionSettings = {
+          strongThreshold: parseFloat(
+            document.getElementById("strongThreshold").value
+          ),
+          mediumThreshold: parseFloat(
+            document.getElementById("mediumThreshold").value
+          ),
+          timeframes: getEnabledTimeframes(),
+          selectedConditions: selectedConditions,
+        };
+
+        // Show confirmation
+        const toast = document.createElement("div");
+        toast.className = "toast position-fixed top-0 end-0 m-3";
+        toast.innerHTML = `
+          <div class="toast-header bg-success text-white">
+            <strong class="me-auto">✅ Settings Applied</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+          </div>
+          <div class="toast-body">
+            Custom conditions ready! Use "Run Pattern Analysis" to analyze with these settings.
+          </div>
+        `;
+
+        document.body.appendChild(toast);
+        const bootstrapToast = new bootstrap.Toast(toast);
+        bootstrapToast.show();
+
+        // Clean up toast after it's hidden
+        toast.addEventListener("hidden.bs.toast", () => {
+          document.body.removeChild(toast);
+        });
+
+        console.log("Applied custom settings:", window.customConditionSettings);
+      }
+
+      // Reset to default settings
+      function resetToDefaults() {
+        document.getElementById("strongThreshold").value = 0.15;
+        document.getElementById("mediumThreshold").value = 0.075;
+
+        // Reset timeframes
+        document.querySelectorAll(".timeframe-check").forEach((checkbox) => {
+          checkbox.checked = true;
+        });
+
+        updateThresholdDisplays();
+        generateDynamicConditions();
+
+        delete window.customConditionSettings;
+
+        alert("✅ Settings reset to defaults");
+      }
+
+      // Select all conditions
+      function selectAllConditions() {
+        document
+          .querySelectorAll(".dynamic-condition-checkbox")
+          .forEach((checkbox) => {
+            checkbox.checked = true;
+          });
+        updateConditionCount();
+      }
+
+      // Clear all conditions
+      function clearAllConditions() {
+        document
+          .querySelectorAll(".dynamic-condition-checkbox")
+          .forEach((checkbox) => {
+            checkbox.checked = false;
+          });
+        updateConditionCount();
+      }
+
+      // Get selected dynamic conditions
+      function getSelectedDynamicConditions() {
+        const selected = [];
+        document
+          .querySelectorAll(".dynamic-condition-checkbox:checked")
+          .forEach((checkbox) => {
+            selected.push(checkbox.id);
+          });
+        return selected;
+      }
+
+      // Update condition count display
+      function updateConditionCount() {
+        const total = document.querySelectorAll(
+          ".dynamic-condition-checkbox"
+        ).length;
+        const selected = document.querySelectorAll(
+          ".dynamic-condition-checkbox:checked"
+        ).length;
+
+        // Add or update count badge
+        let badge = document.querySelector("#conditionCountBadge");
+        if (!badge) {
+          badge = document.createElement("span");
+          badge.id = "conditionCountBadge";
+          badge.className = "badge bg-primary ms-2";
+          document.querySelector(".card-header h6").appendChild(badge);
+        }
+        badge.textContent = `${selected}/${total} selected`;
+      }
+
+      // Initialize the dynamic system when page loads
+      document.addEventListener("DOMContentLoaded", function () {
+        initializeDynamicConditions();
+      });
+
+      // ===================== END DYNAMIC CONDITIONS SYSTEM =====================
+
       // Override the checkAnalysisResult function to also update the strategy button
       checkAnalysisResult = function () {
         if (!analysisComplete) return;
@@ -1542,367 +2081,6 @@
             if (logSource) logSource.close();
           });
       };
-
-      // Add tooltips for strategy options
-      const tooltips = {
-        momentum: "Focuses on rapid price changes following BTC movements",
-        pattern:
-          "Uses technical chart patterns from BTC to predict altcoin movements",
-        ml: "Leverages machine learning model results for most accurate predictions",
-      };
-
-      document
-        .getElementById("strategyType")
-        .addEventListener("change", function () {
-          const strategyType = this.value;
-          const infoElement = document.createElement("div");
-          infoElement.className = "alert alert-info mt-2";
-          infoElement.innerHTML = tooltips[strategyType];
-
-          // Remove existing info element if present
-          const existingInfo = this.parentNode.querySelector(".alert");
-          if (existingInfo) existingInfo.remove();
-
-          // Add new info element
-          this.parentNode.appendChild(infoElement);
-        });
-
-      // Replace the Claude API check section with this:
-      fetch("/check_claude_api")
-        .then((response) => response.json())
-        .then((data) => {
-          const claudeCheckbox = document.getElementById("useClaudeAI");
-          const generateBtn = document.getElementById("generateStrategyBtn");
-
-          if (!data.available) {
-            // Disable both the checkbox and generate button
-            claudeCheckbox.disabled = true;
-            claudeCheckbox.checked = false;
-            generateBtn.disabled = true;
-
-            // Add warning to the strategy card
-            const strategyResult = document.getElementById("strategyResult");
-            strategyResult.innerHTML = `
-              <div class="alert alert-warning">
-                <strong>API Key Required:</strong> Claude AI is required for strategy generation. 
-                Please set the ANTHROPIC_API_KEY environment variable to enable this feature.
-              </div>
-            `;
-          }
-        })
-        .catch(() => {
-          // Handle error case
-          const claudeCheckbox = document.getElementById("useClaudeAI");
-          const generateBtn = document.getElementById("generateStrategyBtn");
-
-          claudeCheckbox.disabled = true;
-          claudeCheckbox.checked = false;
-          generateBtn.disabled = true;
-
-          const warningElement = document.createElement("div");
-          warningElement.className = "text-danger small mt-1";
-          warningElement.textContent =
-            "Claude API connection failed. Please check your server configuration.";
-          claudeCheckbox.parentNode.appendChild(warningElement);
-        });
-
-      // Save strategy preferences in localStorage
-      function saveStrategyPreferences() {
-        const preferences = {
-          strategyType: document.getElementById("strategyType").value,
-          riskPerTrade: document.getElementById("riskPerTrade").value,
-          useStopLoss: document.getElementById("useStopLoss").checked,
-          stopLossPercent: document.getElementById("stopLossPercent").value,
-          useTakeProfit: document.getElementById("useTakeProfit").checked,
-          takeProfitPercent: document.getElementById("takeProfitPercent").value,
-          useClaudeAI: document.getElementById("useClaudeAI").checked,
-        };
-
-        localStorage.setItem(
-          "strategyPreferences",
-          JSON.stringify(preferences)
-        );
-      }
-
-      // Load strategy preferences from localStorage
-      function loadStrategyPreferences() {
-        const savedPrefs = localStorage.getItem("strategyPreferences");
-        if (savedPrefs) {
-          const preferences = JSON.parse(savedPrefs);
-
-          document.getElementById("strategyType").value =
-            preferences.strategyType;
-          document.getElementById("riskPerTrade").value =
-            preferences.riskPerTrade;
-          document.getElementById("riskValue").textContent =
-            preferences.riskPerTrade + "%";
-          document.getElementById("useStopLoss").checked =
-            preferences.useStopLoss;
-          document.getElementById("stopLossPercent").value =
-            preferences.stopLossPercent;
-          document.getElementById("useTakeProfit").checked =
-            preferences.useTakeProfit;
-          document.getElementById("takeProfitPercent").value =
-            preferences.takeProfitPercent;
-
-          // Only set Claude AI if it's not disabled
-          const claudeCheckbox = document.getElementById("useClaudeAI");
-          if (!claudeCheckbox.disabled) {
-            claudeCheckbox.checked = preferences.useClaudeAI;
-          }
-        }
-      }
-
-      // Save preferences when they change
-      document
-        .querySelectorAll(
-          "#strategyType, #riskPerTrade, #useStopLoss, #stopLossPercent, #useTakeProfit, #takeProfitPercent, #useClaudeAI"
-        )
-        .forEach((element) => {
-          element.addEventListener("change", saveStrategyPreferences);
-        });
-
-      // Load preferences when page loads
-      window.addEventListener("DOMContentLoaded", loadStrategyPreferences);
-
-      // Add keyboard shortcut (Alt+G) for generating strategy
-      document.addEventListener("keydown", function (e) {
-        if (
-          e.altKey &&
-          e.key === "g" &&
-          !document.getElementById("generateStrategyBtn").disabled
-        ) {
-          document.getElementById("generateStrategyBtn").click();
-        }
-      });
-
-      // Add this event listener to your JavaScript
-      document
-        .getElementById("riskPerTrade")
-        .addEventListener("input", function () {
-          document.getElementById("riskValue").textContent = this.value + "%";
-        });
-
-      // Add function to enable/disable the strategy generator button
-      function updateStrategyButton() {
-        const generateBtn = document.getElementById("generateStrategyBtn");
-
-        // Enable the button if analysis is complete
-        fetch("/analysis_result")
-          .then((response) => response.json())
-          .then((data) => {
-            generateBtn.disabled = !(data.status === "complete");
-          })
-          .catch(() => {
-            generateBtn.disabled = true;
-          });
-      }
-
-      // Add event listener for generate strategy button
-      document
-        .getElementById("generateStrategyBtn")
-        .addEventListener("click", function () {
-          const strategyLoader = document.getElementById("strategyLoader");
-          const strategyResult = document.getElementById("strategyResult");
-
-          strategyLoader.style.display = "block";
-          strategyResult.innerHTML = "";
-
-          // Get strategy parameters
-          const params = {
-            strategy_type: document.getElementById("strategyType").value,
-            risk_per_trade: document.getElementById("riskPerTrade").value,
-            use_stop_loss: document.getElementById("useStopLoss").checked,
-            stop_loss_percent: document.getElementById("stopLossPercent").value,
-            use_take_profit: document.getElementById("useTakeProfit").checked,
-            take_profit_percent:
-              document.getElementById("takeProfitPercent").value,
-            use_claude_ai: document.getElementById("useClaudeAI").checked,
-          };
-
-          // Send request to generate strategy
-          fetch("/generate_strategy", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(params),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              strategyLoader.style.display = "none";
-
-              if (data.error) {
-                strategyResult.innerHTML = `
-              <div class="alert alert-danger">
-                <strong>Error:</strong> ${data.error}
-              </div>`;
-              } else {
-                strategyResult.innerHTML = `
-              <div class="alert alert-success">
-                <strong>Success!</strong> Strategy generated successfully.
-              </div>
-              <div class="d-flex gap-2 mt-3">
-                <a href="${data.download_url}" class="btn btn-primary" download>
-                  Download Pine Script Strategy
-                </a>
-                <a href="${data.view_url}" class="btn btn-outline-secondary" target="_blank">
-                  View Code
-                </a>
-              </div>`;
-              }
-            })
-            .catch((error) => {
-              strategyLoader.style.display = "none";
-              strategyResult.innerHTML = `
-            <div class="alert alert-danger">
-              <strong>Error:</strong> ${error}
-            </div>`;
-            });
-        });
-
-      // Add this function to load available reports
-      function loadAvailableReports() {
-        const reportSelect = document.getElementById("reportSelect");
-
-        // Show loading state
-        reportSelect.innerHTML = '<option value="">Loading reports...</option>';
-
-        fetch("/list_reports")
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.reports && data.reports.length > 0) {
-              reportSelect.innerHTML =
-                '<option value="">-- Select a report --</option>';
-
-              data.reports.forEach((report) => {
-                const option = document.createElement("option");
-                option.value = report.path;
-                option.textContent = report.name;
-                reportSelect.appendChild(option);
-              });
-            } else {
-              reportSelect.innerHTML =
-                '<option value="">No reports available</option>';
-            }
-          })
-          .catch((error) => {
-            reportSelect.innerHTML =
-              '<option value="">Error loading reports</option>';
-            console.error("Error loading reports:", error);
-          });
-      }
-
-      // Call this when the page loads
-      document.addEventListener("DOMContentLoaded", function () {
-        loadAvailableReports();
-      });
-
-      // Add event listener for the refresh reports button
-      document
-        .getElementById("loadReportsBtn")
-        .addEventListener("click", loadAvailableReports);
-
-      // Modify the generate strategy button event listener
-      document
-        .getElementById("generateStrategyBtn")
-        .addEventListener("click", function () {
-          const reportPath = document.getElementById("reportSelect").value;
-          if (!reportPath) {
-            alert("Please select an analysis report first");
-            return;
-          }
-
-          const strategyLoader = document.getElementById("strategyLoader");
-          const strategyResult = document.getElementById("strategyResult");
-
-          strategyLoader.style.display = "block";
-          strategyResult.innerHTML = "";
-
-          // Get strategy parameters
-          const params = {
-            report_path: reportPath,
-            strategy_type: document.getElementById("strategyType").value,
-            risk_per_trade: document.getElementById("riskPerTrade").value,
-            use_stop_loss: document.getElementById("useStopLoss").checked,
-            stop_loss_percent: document.getElementById("stopLossPercent").value,
-            use_take_profit: document.getElementById("useTakeProfit").checked,
-            take_profit_percent:
-              document.getElementById("takeProfitPercent").value,
-          };
-
-          // Send request to generate strategy
-          fetch("/generate_strategy", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(params),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              strategyLoader.style.display = "none";
-
-              if (data.error) {
-                strategyResult.innerHTML = `
-              <div class="alert alert-danger">
-                <strong>Error:</strong> ${data.error}
-              </div>`;
-              } else {
-                strategyResult.innerHTML = `
-              <div class="alert alert-success">
-                <strong>Success!</strong> Strategy generated successfully using Claude AI.
-              </div>
-              <div class="d-flex gap-2 mt-3">
-                <a href="${data.download_url}" class="btn btn-primary" download>
-                  Download Pine Script Strategy
-                </a>
-                <a href="${data.view_url}" class="btn btn-outline-secondary" target="_blank">
-                  View Code
-                </a>
-              </div>`;
-              }
-            })
-            .catch((error) => {
-              strategyLoader.style.display = "none";
-              strategyResult.innerHTML = `
-            <div class="alert alert-danger">
-              <strong>Error:</strong> ${error}
-            </div>`;
-            });
-        });
-
-      // In your run analysis function
-      function runAnalysis() {
-        const btcFile = document.getElementById("btcFileSelect").value;
-        const altFile = document.getElementById("altFileSelect").value;
-
-        if (!btcFile || !altFile) {
-          showAlert("Please select both BTC and altcoin files", "warning");
-          return;
-        }
-
-        // Show loading indicators
-        // ...existing code...
-
-        // Send the request with optimize_strategy parameter
-        fetch("/run_analysis", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            btc_file: btcFile,
-            alt_file: altFile,
-            optimize_strategy: optimizeStrategy,
-          }),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            // ...existing code...
-          })
-          .catch((error) => {
-            // ...existing code...
-          });
-      }
     </script>
   </body>
 </html>

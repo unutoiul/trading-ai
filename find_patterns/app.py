@@ -7,9 +7,8 @@ import os
 from datetime import datetime
 import io
 import json
-
+import sys
 import pandas as pd
-from sklearn.pipeline import islice
 from src.data_fetch import available_pairs as get_available_pairs
 from src.data_fetch import fetch_data as fetch_crypto_data
 import queue
@@ -17,9 +16,6 @@ import threading
 import time
 from dotenv import load_dotenv
 from contextlib import redirect_stdout
-import io
-
-import sys
 
 # Add debugging at the top of app.py
 print(f"Python path: {sys.path}")
@@ -73,8 +69,21 @@ def index():
     """Render the main page."""
     try:
         # Get available files for dropdowns
-        btc_files = get_available_files(os.path.join(app.config['DATA_DIR'], 'btc'))
-        alt_files = get_available_files(os.path.join(app.config['DATA_DIR'], 'altcoins'))
+        data_dir = app.config['DATA_DIR']
+        
+        # Check if the expected subdirectories exist
+        btc_dir = os.path.join(data_dir, 'btc')
+        alt_dir = os.path.join(data_dir, 'altcoins')
+        
+        if os.path.exists(btc_dir) and os.path.exists(alt_dir):
+            # Use subdirectory structure
+            btc_files = get_available_files(btc_dir)
+            alt_files = get_available_files(alt_dir)
+        else:
+            # Files are directly in data directory, separate them by name
+            all_files = get_available_files_from_data_dir(data_dir)
+            btc_files = [f for f in all_files if 'BTC' in f['symbol'].upper()]
+            alt_files = [f for f in all_files if 'BTC' not in f['symbol'].upper()]
         
         return render_template('index.html', btcFiles=btc_files, altFiles=alt_files)
     except Exception as e:
@@ -211,14 +220,44 @@ def run_analysis():
         
         # Get condition filters if provided, otherwise use all available conditions
         conditions = data.get('conditions')
-        condition_type = data.get('condition_type', 'any')
+        
+        # Get custom settings if provided
+        custom_settings = data.get('custom_settings')
+        
+        # Get VectorBT optimization settings if provided
+        # Support both old and new parameter names for optimization settings
+        vectorbt_settings = data.get('optimization_settings') or data.get('vectorbt_settings')
         
         # Add initial log
         add_log(f"Starting directional analysis with {btc_file} and {alt_file}")
+        
+        # Log VectorBT settings if provided
+        if vectorbt_settings:
+            add_log("🚀 Advanced Optimization Settings:")
+            add_log(f"   • Max Combinations: {vectorbt_settings.get('max_combinations', 10000):,}")
+            add_log(f"   • Parallel Jobs: {vectorbt_settings.get('parallel_jobs', 4)}")
+            add_log(f"   • Trailing Stop Testing: {'ENABLED' if vectorbt_settings.get('enable_trailing_stop', True) else 'DISABLED'}")
+            add_log(f"   • Detailed Reports: {'ENABLED' if vectorbt_settings.get('detailed_reports', True) else 'DISABLED'}")
+        else:
+            add_log("Using default VectorBT optimization settings")
+        
+        if custom_settings:
+            add_log("🎯 Using custom analysis settings:")
+            add_log(f"   • Strong threshold: {custom_settings.get('strongThreshold', 0.15)}%")
+            add_log(f"   • Medium threshold: {custom_settings.get('mediumThreshold', 0.075)}%")
+            add_log(f"   • Active timeframes: {', '.join(custom_settings.get('timeframes', ['1m']))}")
+            add_log(f"   • Sustained moves: {'enabled' if custom_settings.get('sustainedMoves') else 'disabled'}")
+            add_log(f"   • Volatility breakouts: {'enabled' if custom_settings.get('volatilityBreakouts') else 'disabled'}")
+            add_log(f"   • Cross-timeframe: {'enabled' if custom_settings.get('crossTimeframe') else 'disabled'}")
+            add_log(f"   • Min confidence: {custom_settings.get('minConfidence', 0.6) * 100:.0f}%")
+            add_log(f"   • Lookback periods: {custom_settings.get('lookbackPeriods', 50)}")
+        else:
+            add_log("Running with standard settings")
+        
         add_log("Running only directional impact analysis and strategy generation")
         
         if conditions:
-            add_log(f"Applying {len(conditions)} condition filters ({condition_type})")
+            add_log(f"Applying {len(conditions)} condition filters")
         else:
             add_log("Using all market conditions (no filters applied)")
         
@@ -244,16 +283,26 @@ def run_analysis():
             # Import the run_analysis module
             from src import run_analysis as run_analysis_module
             
-            # Call our function with condition filters
+            # Call our function with condition filters, custom settings, and VectorBT settings
             result_dir = run_analysis_module.run_directional_analysis_only(
                 btc_file=btc_file,
                 alt_file=alt_file,
                 conditions=conditions,
-                condition_type=condition_type
+                custom_settings=custom_settings,
+                vectorbt_settings=vectorbt_settings
             )
             
             # Set the last result directory
             app.config['LAST_RESULT_DIR'] = result_dir
+            
+            # Update master index after successful analysis
+            try:
+                from src.visualization import update_master_index
+                update_master_index()
+                add_log("Master index updated successfully")
+            except Exception as e:
+                add_log(f"Warning: Could not update master index: {e}")
+            
             add_log("ANALYSIS_COMPLETE")
             
             return jsonify({'status': 'complete', 'result_dir': result_dir})
@@ -472,131 +521,11 @@ def list_reports():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/generate_strategy_from_params')
-def generate_strategy_from_params():
-    """Generate a Pine Script strategy from saved optimization parameters."""
-    try:
-        result_dir = request.args.get('result_dir')
-        if not result_dir:
-            return jsonify({'error': 'No result directory specified'}), 400
-            
-        # Validate the path (security check)
-        if '..' in result_dir or '/' in result_dir:
-            return jsonify({'error': 'Invalid result directory'}), 400
-            
-        # Path to strategy parameters
-        params_path = os.path.join('results', result_dir, 'reports', 'strategy_params.json')
-        if not os.path.exists(params_path):
-            return jsonify({'error': 'Strategy parameters not found'}), 404
-            
-        # Load strategy parameters
-        with open(params_path, 'r') as f:
-            strategy_data = json.load(f)
-            
-        # Generate the Pine Script
-        pine_script = generate_optimized_pine_script(strategy_data)
-        
-        # Set filename
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f"optimized_strategy_{timestamp}.pine"
-        
-        # Create response with file download
-        response = Response(pine_script)
-        response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
-        response.headers['Content-Type'] = 'text/plain'
-        
-        return response
-        
-    except Exception as e:
-        return jsonify({'error': f'Error generating strategy: {str(e)}'}), 500
-        
-def generate_optimized_pine_script(strategy_data):
-    """Generate Pine Script from optimized strategy parameters."""
-    best_params = strategy_data.get('best_params', {})
-    performance = strategy_data.get('performance_summary', {})
-
-    script = f"""// @version=5
-// Optimized BTC-Altcoin Strategy
-// Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-// 
-// PERFORMANCE METRICS:
-// Win Rate: {performance.get('win_rate', 0)*100:.1f}%
-// Profit Factor: {performance.get('profit_factor', 0):.2f}
-// Total Return: {performance.get('total_return_pct', 0):.2f}%
-// Max Drawdown: {performance.get('max_drawdown', 0):.2f}%
-// Sharpe Ratio: {performance.get('sharpe_ratio', 0):.2f}
-
-strategy("ML Optimized BTC-Altcoin Strategy", overlay=true)
-
-// === Input Parameters ===
-// These parameters were optimized by machine learning
-stopLossPct = input.float({best_params.get('stop_loss_pct', 2.0)}, "Stop Loss %", minval=0.1, maxval=20)
-takeProfitPct = input.float({best_params.get('take_profit_pct', 5.0)}, "Take Profit %", minval=0.1, maxval=50)
-patternLag = input.int({best_params.get('pattern_lag', 5)}, "Pattern Signal Lag", minval=1, maxval=20)
-positionSizePct = input.float({best_params.get('position_size_pct', 10.0)}, "Position Size %", minval=1, maxval=100)
-
-// === Get BTC Data ===
-// We need BTC data to detect patterns
-btcSymbol = input.symbol("BTCUSDT", "BTC Symbol")
-useCurrentTimeframe = input.bool(true, "Use Current Timeframe")
-btcTimeframe = useCurrentTimeframe ? timeframe.period : input.timeframe("15", "BTC Timeframe")
-
-[btcOpen, btcHigh, btcLow, btcClose] = request.security(btcSymbol, btcTimeframe, [open, high, low, close])
-btcVol = request.security(btcSymbol, btcTimeframe, volume)
-
-// === Pattern Detection ===
-// Detecting the "{best_params.get('use_pattern', 'btc_bullish_momentum')}" pattern
-btcReturns = (btcClose - btcClose[1]) / btcClose[1] * 100
-btcVolRatio = btcVol / ta.sma(btcVol, 20)
-
-// Pattern definitions
-btcBullishMomentum = btcReturns > 0.8 and btcClose > btcOpen and btcVolRatio > 1.2
-btcBearishMomentum = btcReturns < -0.8 and btcClose < btcOpen and btcVolRatio > 1.2
-btcSidewaysAction = math.abs(btcReturns) < 0.3 and btcVolRatio < 0.8
-btcBreakout = btcReturns > 1.5 and btcClose > btcClose[1] and btcVolRatio > 1.5
-
-// === Strategy Logic ===
-// Entry condition based on optimized pattern and lag
-usePattern = "{best_params.get('use_pattern', 'btc_bullish_momentum')}"
-patternSignal = false
-
-if (usePattern == "strong_up")
-    patternSignal := btcBullishMomentum
-else if (usePattern == "strong_down")
-    patternSignal := btcBearishMomentum
-else if (usePattern == "steady_climb" or usePattern == "steady_decline")
-    patternSignal := btcSidewaysAction
-else if (usePattern == "volatility_breakout")
-    patternSignal := btcBreakout
-else
-    patternSignal := btcBullishMomentum // default
-
-// Signal with lag
-entryCondition = patternSignal[patternLag]
-
-// === Position Management ===
-if (entryCondition and strategy.position_size == 0)
-    strategy.entry("Long", strategy.long, qty=strategy.equity * positionSizePct / 100 / close)
-    
-    if (stopLossPct > 0)
-        strategy.exit("SL/TP", "Long", 
-            stop=strategy.position_avg_price * (1 - stopLossPct/100), 
-            limit=strategy.position_avg_price * (1 + takeProfitPct/100))
-
-// === Plot Signals ===
-plotshape(entryCondition, title="Entry Signal", location=location.belowbar, color=color.green, style=shape.triangleup, size=size.small)
-
-// === Strategy Notes ===
-// This strategy was optimized using machine learning
-// It detects specific Bitcoin patterns that precede altcoin moves
-// The parameters have been optimized for maximum returns with acceptable risk
-// Always monitor the market and adjust parameters if needed
-"""
-    
-    return script
-
 def get_available_files(directory):
     """Get available data files with date ranges."""
+    if not os.path.exists(directory):
+        return []
+    
     files = []
     for filename in os.listdir(directory):
         if filename.endswith('.csv'):
@@ -638,40 +567,77 @@ def get_available_files(directory):
     
     return files
 
-# Helper function to read file from bottom
-def reversed_lines(file):
-    """Generate file lines in reverse order."""
-    part = ''
-    for block in reversed_blocks(file):
-        for c in reversed(block):
-            if c == '\n' and part:
-                yield part[::-1]
-                part = ''
-            part += c
-    if part:
-        yield part[::-1]
-
-def reversed_blocks(file, blocksize=4096):
-    """Generate blocks of file's contents in reverse order."""
-    file.seek(0, os.SEEK_END)
-    here = file.tell()
-    while (here > 0):
-        delta = min(blocksize, here)
-        here -= delta
-        file.seek(here, os.SEEK_SET)
-        yield file.read(delta)
+def get_available_files_from_data_dir(data_dir):
+    """Get available data files directly from data directory."""
+    if not os.path.exists(data_dir):
+        return []
+    
+    files = []
+    for filename in os.listdir(data_dir):
+        if filename.endswith('.csv'):
+            # Extract symbol from filename (e.g., "BTC_USDT_1m_01-July-2025_to_30-August-2025.csv" -> "BTC_USDT")
+            symbol = filename.split('_')[0] + '_' + filename.split('_')[1] if '_' in filename else os.path.splitext(filename)[0]
+            filepath = os.path.join(data_dir, filename)
+            
+            try:
+                # Read first and last rows to get date range
+                df = pd.read_csv(filepath)
+                if len(df) > 0:
+                    # Format min and max timestamps with proper dates
+                    first_date = pd.to_datetime(df['timestamp'].min()).strftime('%Y-%m-%d %H:%M')
+                    last_date = pd.to_datetime(df['timestamp'].max()).strftime('%Y-%m-%d %H:%M')
+                    
+                    # Create display name with full date range
+                    display_name = f"{symbol} ({first_date} to {last_date})"
+                    
+                    # Calculate file size in MB
+                    size = f"{os.path.getsize(filepath)/1024/1024:.1f} MB"
+                    
+                    files.append({
+                        "filename": filename,
+                        "filepath": filepath,
+                        "symbol": symbol,
+                        "display_name": display_name,
+                        "size": size,
+                        "first_date": first_date,
+                        "last_date": last_date
+                    })
+            except Exception as e:
+                # Fall back to simple format without dates
+                files.append({
+                    "filename": filename,
+                    "filepath": filepath,
+                    "symbol": symbol,
+                    "display_name": symbol
+                })
+    
+    return files
 
 @app.route('/get_available_files', methods=['GET'])
 def available_files():
     """Get available data files for the UI."""
     file_type = request.args.get('type', 'btc')
+    data_dir = app.config['DATA_DIR']
     
-    if file_type == 'btc':
-        directory = os.path.join(app.config['DATA_DIR'], 'btc')
+    # Check if the expected subdirectories exist
+    btc_dir = os.path.join(data_dir, 'btc')
+    alt_dir = os.path.join(data_dir, 'altcoins')
+    
+    if os.path.exists(btc_dir) and os.path.exists(alt_dir):
+        # Use subdirectory structure
+        if file_type == 'btc':
+            directory = btc_dir
+        else:
+            directory = alt_dir
+        files = get_available_files(directory)
     else:
-        directory = os.path.join(app.config['DATA_DIR'], 'altcoins')
+        # Files are directly in data directory, separate them by name
+        all_files = get_available_files_from_data_dir(data_dir)
+        if file_type == 'btc':
+            files = [f for f in all_files if 'BTC' in f['symbol'].upper()]
+        else:
+            files = [f for f in all_files if 'BTC' not in f['symbol'].upper()]
     
-    files = get_available_files(directory)
     return jsonify(files)
 
 @app.route('/available_conditions', methods=['GET'])
@@ -695,8 +661,7 @@ def available_conditions():
                 
             return jsonify({
                 'status': 'success',
-                'conditions': filter_config.get('conditions', []),
-                'condition_type': filter_config.get('condition_type', 'any')
+                'conditions': filter_config.get('conditions', [])
             })
         
         # If no filter config found, return standard conditions
@@ -704,10 +669,8 @@ def available_conditions():
             'status': 'success',
             'conditions': [
                 'btc_strong_up', 'btc_medium_up', 'btc_small_up',
-                'btc_strong_down', 'btc_medium_down', 'btc_small_down',
-                'btc_sideways', 'btc_high_volatility', 'btc_low_volatility'
-            ],
-            'condition_type': 'any'
+                'btc_strong_down', 'btc_medium_down', 'btc_small_down'
+            ]
         })
         
     except Exception as e:
@@ -719,7 +682,6 @@ def apply_conditions():
     try:
         data = request.json
         conditions = data.get('conditions', [])
-        condition_type = data.get('condition_type', 'any')
         
         # Get latest BTC and altcoin files
         btc_file = None
@@ -764,7 +726,6 @@ def apply_conditions():
                 use_ml=True,
                 optimize_strategy=True,
                 conditions=conditions,
-                condition_type=condition_type,
                 return_results_dir=True
             )
             

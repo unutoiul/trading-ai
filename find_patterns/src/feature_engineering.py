@@ -1,10 +1,63 @@
-"""Simplified price action and momentum analysis for crypto trading."""
+"""Enhanced multi-timeframe volatility breakout analysis for crypto trading."""
 
 import pandas as pd
 import numpy as np
+from .volatility_breakout_detector import VolatilityBreakoutDetector
+
+def add_multi_timeframe_features(df, prefix='btc', timeframes=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]):
+    """Add multi-timeframe volatility breakout features using the new detector for 1-10 minute analysis."""
+    # Track original columns to return what was added
+    orig_cols = df.columns.tolist()
+    
+    try:
+        # Initialize the volatility breakout detector
+        detector = VolatilityBreakoutDetector(df, prefix)
+        
+        # Generate all breakout conditions
+        breakout_df = detector.generate_all_conditions(timeframes=timeframes)
+        
+        # Add all new breakout features to the dataframe
+        for col in breakout_df.columns:
+            if col not in df.columns:  # Only add new columns
+                df[col] = breakout_df[col]
+        
+        print(f"Added {len([col for col in breakout_df.columns if col not in orig_cols])} multi-timeframe breakout features for {prefix.upper()}")
+        
+    except Exception as e:
+        print(f"Warning: Could not add multi-timeframe features for {prefix}: {e}")
+        # Fallback to legacy features
+        add_legacy_momentum_features(df, prefix)
+    
+    # Return names of newly added columns
+    new_cols = [col for col in df.columns if col not in orig_cols]
+    return new_cols
+
+def add_legacy_momentum_features(df, prefix='btc'):
+    """Fallback: Add basic momentum features if breakout detector fails."""
+    # Find price column
+    close_col = f'{prefix}_close'
+    if close_col not in df.columns:
+        close_col = f'close_{prefix}'
+        if close_col not in df.columns:
+            print(f"Warning: Could not find close price column for {prefix}")
+            return []
+    
+    # Enhanced momentum over multiple timeframes
+    for period in [3, 5, 10, 15, 30]:
+        # Price momentum (returns over period)
+        df[f'{prefix}_momentum_{period}'] = df[close_col].pct_change(period)
+        
+        # Acceleration (change in momentum)
+        if period > 5:
+            df[f'{prefix}_accel_{period}'] = df[f'{prefix}_momentum_{period}'].diff(3)
+    
+    # Simple volatility
+    df[f'{prefix}_volatility_15'] = df[f'{prefix}_returns'].rolling(15).std() if f'{prefix}_returns' in df.columns else None
+    
+    return [f'{prefix}_momentum_{p}' for p in [3, 5, 10, 15, 30]]
 
 def add_enhanced_momentum_features(df, prefix='btc'):
-    """Add enhanced momentum-focused features for price action analysis."""
+    """Add enhanced momentum features with volume weighting."""
     # Track original columns to return what was added
     orig_cols = df.columns.tolist()
     
@@ -22,9 +75,9 @@ def add_enhanced_momentum_features(df, prefix='btc'):
         volume_col = f'volume_{prefix}'
         if volume_col not in df.columns:
             print(f"Warning: Could not find volume column for {prefix}")
-            # Continue without volume features
+            volume_col = None
     
-    # Enhanced momentum over multiple timeframes
+    # Enhanced momentum over multiple timeframes focused on breakouts
     for period in [3, 5, 10, 15, 30, 60]:
         # Price momentum (returns over period)
         df[f'{prefix}_momentum_{period}'] = df[close_col].pct_change(period)
@@ -34,7 +87,7 @@ def add_enhanced_momentum_features(df, prefix='btc'):
             df[f'{prefix}_accel_{period}'] = df[f'{prefix}_momentum_{period}'].diff(3)
         
         # Volume-weighted momentum
-        if volume_col in df.columns:
+        if volume_col:
             # Calculate volume change
             vol_change = df[volume_col].pct_change(period)
             # Volume-weighted momentum
@@ -210,8 +263,8 @@ def add_relationship_features(df, btc_prefix='btc', alt_prefix='doge'):
     return new_cols
 
 def preprocess_data(btc_data, alt_data, alt_prefix=None):
-    """Preprocess BTC and altcoin data with minimal features."""
-    print("Preprocessing data with focus on price action only...")
+    """Preprocess BTC and altcoin data with multi-timeframe volatility breakout analysis."""
+    print("Preprocessing data with multi-timeframe volatility breakout focus...")
     
     # Detect altcoin prefix if not provided
     if alt_prefix is None:
@@ -245,11 +298,38 @@ def preprocess_data(btc_data, alt_data, alt_prefix=None):
         suffixes=(f'_btc', f'_{alt_prefix}')
     )
     
-    # Calculate basic returns
-    combined_data['btc_returns'] = combined_data['close_btc'].pct_change().replace([np.inf, -np.inf], np.nan)
-    combined_data[f'{alt_prefix}_returns'] = combined_data[f'close_{alt_prefix}'].pct_change().replace([np.inf, -np.inf], np.nan)
+    # Standardize column names for the breakout detector
+    # BTC columns
+    if 'close_btc' in combined_data.columns:
+        combined_data['btc_close'] = combined_data['close_btc']
+        combined_data['btc_high'] = combined_data['high_btc']
+        combined_data['btc_low'] = combined_data['low_btc']
+        combined_data['btc_open'] = combined_data['open_btc']
+        if 'volume_btc' in combined_data.columns:
+            combined_data['btc_volume'] = combined_data['volume_btc']
     
-    # Add price action features
+    # Altcoin columns
+    alt_close_col = f'close_{alt_prefix}'
+    if alt_close_col in combined_data.columns:
+        combined_data[f'{alt_prefix}_close'] = combined_data[alt_close_col]
+        combined_data[f'{alt_prefix}_high'] = combined_data[f'high_{alt_prefix}']
+        combined_data[f'{alt_prefix}_low'] = combined_data[f'low_{alt_prefix}']
+        combined_data[f'{alt_prefix}_open'] = combined_data[f'open_{alt_prefix}']
+        if f'volume_{alt_prefix}' in combined_data.columns:
+            combined_data[f'{alt_prefix}_volume'] = combined_data[f'volume_{alt_prefix}']
+    
+    # Calculate basic returns (legacy compatibility)
+    combined_data['btc_returns'] = combined_data['btc_close'].pct_change().replace([np.inf, -np.inf], np.nan)
+    combined_data[f'{alt_prefix}_returns'] = combined_data[f'{alt_prefix}_close'].pct_change().replace([np.inf, -np.inf], np.nan)
+    
+    # Add multi-timeframe volatility breakout features
+    print("Adding multi-timeframe breakout features for BTC...")
+    add_multi_timeframe_features(combined_data, 'btc', timeframes=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    
+    print(f"Adding multi-timeframe breakout features for {alt_prefix.upper()}...")
+    add_multi_timeframe_features(combined_data, alt_prefix, timeframes=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    
+    # Add basic price action features for backward compatibility
     add_price_action_features(combined_data, 'btc')
     add_price_action_features(combined_data, alt_prefix)
     
@@ -261,13 +341,20 @@ def preprocess_data(btc_data, alt_data, alt_prefix=None):
     
     # Fill NaNs with appropriate values
     # For momentum and returns, fill with 0
-    momentum_cols = [col for col in combined_data.columns if 'momentum' in col or 'returns' in col]
+    momentum_cols = [col for col in combined_data.columns if 'momentum' in col or 'returns' in col or 'return_' in col]
     combined_data[momentum_cols] = combined_data[momentum_cols].fillna(0)
     
-    # For other indicators, use forward fill then backward fill
-    combined_data = combined_data.ffill().bfill()
+    # For boolean columns (breakout conditions), fill with False
+    boolean_cols = [col for col in combined_data.columns if 
+                   any(pattern in col for pattern in ['_breakout_', '_strong_', '_sustained_'])]
+    combined_data[boolean_cols] = combined_data[boolean_cols].fillna(False)
     
-    print(f"Data loaded and preprocessed with price action focus. Shape: {combined_data.shape}")
+    # For other indicators, use forward fill then backward fill
+    remaining_cols = [col for col in combined_data.columns if col not in momentum_cols + boolean_cols]
+    combined_data[remaining_cols] = combined_data[remaining_cols].ffill().bfill()
+    
+    print(f"Data loaded and preprocessed with multi-timeframe volatility analysis. Shape: {combined_data.shape}")
+    print(f"Breakout conditions available: {len(boolean_cols)}")
     return combined_data
 
 def preprocess_chunk(chunk, add_features=True):
