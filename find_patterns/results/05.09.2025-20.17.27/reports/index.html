@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BTC-DOGE Analysis Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .analysis-card { transition: all 0.3s ease; }
+        .analysis-card:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 20px; }
+        .chart-item { border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; }
+        .chart-item img { width: 100%; height: auto; min-height: 400px; object-fit: contain; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h1 class="h2 mb-0">BTC-DOGE Analysis Results</h1>
+                        <p class="text-muted">Pattern analysis and trading strategy performance</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-12">
+                <h3 class="mb-3">Analysis Reports</h3>
+                <div class="row">
+                    <div class="col-md-12 col-lg-12 mb-3">
+                        <div class="card analysis-card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Strategy Optimization</h5>
+                                <p class="card-text">Advanced parameter optimization and backtesting results</p>
+                                <p class="small text-muted">Size: 30.3 KB</p>
+                                <a href="../optimization_report.html" class="btn btn-warning">View Optimization</a>
+                                <div class="mt-2"><small class="text-muted">Download data:</small><br><a href="../data/all_results.csv" class="btn-outline-primary btn-sm me-1">📊 All Results CSV</a><a href="../data/top_100_strategies.csv" class="btn-outline-success btn-sm me-1">🏆 Top 100 CSV</a><a href="../data/parameter_analysis.txt" class="btn-outline-info btn-sm me-1">⚙️ Parameters Report</a><br><a href="../data/trailing_stop_analysis.csv" class="btn-outline-dark btn-sm me-1 mt-1">📈 Trailing Stop CSV</a><a href="../data/individual_trades.csv" class="btn-outline-warning btn-sm me-1 mt-1">📝 Individual Trades CSV</a><a href="../data/trades_summary.csv" class="btn-outline-secondary btn-sm me-1 mt-1">📋 Trades Summary CSV</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <h3 class="mb-3">Generated Charts (4 charts)</h3>
+                <div class="chart-grid">
+                    <div class="chart-item">
+                        <h6>Parameter Impact</h6>
+                        <img src="../charts/parameter_impact.png" class="img-fluid" alt="Parameter Impact">
+                    </div>
+                    <div class="chart-item">
+                        <h6>Price Action Lag Impact</h6>
+                        <img src="../charts/price_action_lag_impact.png" class="img-fluid" alt="Price Action Lag Impact">
+                    </div>
+                    <div class="chart-item">
+                        <h6>Return Analysis</h6>
+                        <img src="../charts/return_analysis.png" class="img-fluid" alt="Return Analysis">
+                    </div>
+                    <div class="chart-item">
+                        <h6>Trailing Stop Analysis</h6>
+                        <img src="../charts/trailing_stop_analysis.png" class="img-fluid" alt="Trailing Stop Analysis">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="mb-3">Quick Actions</h5>
+                        <a href="../../index.html" class="btn btn-outline-primary me-2">← Back to All Results</a>
+                        <a href="/" class="btn btn-outline-secondary">Run New Analysis</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

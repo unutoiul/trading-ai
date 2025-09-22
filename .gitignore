@@ -1,43 +1,29 @@
-# Data directories and files
-find_patterns/data/*.csv
-find_patterns/data/
-*/data/
-*.csv
-*.parquet
-*.feather
-*.pickle
-*.pkl
-
-find_patterns/results/
-find_patterns/data/
-
-
-#/ Python cache files
-# Python cache files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-
-# Environment directories
-venv/
-.venv/
+*.so
+.Python
 env/
-.env
+venv/
+ENV/
+env.bak/
+venv.bak/
 
-# Distribution / packaging
-dist/
-build/
-*.egg-info/
+# Logs
+logs/
+*.log
 
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IDE specific files
-.idea/
+# IDE
 .vscode/
+.idea/
 *.swp
 *.swo
 
-# Operating system files
+# OS
 .DS_Store
 Thumbs.db
+
+# Development
+test_*.py
+*.test.py

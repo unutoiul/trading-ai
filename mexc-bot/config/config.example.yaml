@@ -1,0 +1,77 @@
+# MEXC Trading Bot Configuration
+# Copy this file to config.yaml and update with your settings
+
+# MEXC API Configuration
+mexc_api_key: "your_mexc_api_key_here"
+mexc_api_secret: "your_mexc_api_secret_here"
+mexc_sandbox: true  # Set to false for live trading
+mexc_base_url: "https://api.mexc.com"
+
+# Trading Configuration
+trading_enabled: false  # Set to true to enable live trading
+max_positions: 5  # Maximum concurrent positions
+max_account_risk: 0.02  # Maximum 2% of account at risk
+default_leverage: 10  # Default leverage for trades
+
+# Strategy Configuration
+strategy_data_path: "data/strategies"
+min_win_rate: 0.6  # Minimum 60% win rate for strategies
+min_return: 0.05  # Minimum 5% return for strategies
+
+# Dashboard Configuration
+dashboard_enabled: true
+dashboard_host: "127.0.0.1"
+dashboard_port: 8000
+
+# Logging Configuration
+log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+log_file: "logs/mexc_bot.log"
+
+# Risk Management
+risk_management:
+  max_drawdown: 0.1  # Maximum 10% drawdown
+  daily_loss_limit: 0.05  # Maximum 5% daily loss
+  position_size_risk: 0.01  # Maximum 1% per position
+  
+  # Stop-loss settings
+  default_stop_loss: 0.02  # 2% default stop-loss
+  max_stop_loss: 0.05  # Maximum 5% stop-loss
+  
+  # Take-profit settings
+  default_take_profit: 0.04  # 4% default take-profit
+  max_take_profit: 0.15  # Maximum 15% take-profit
+
+# Position Management
+position_management:
+  max_holding_time: 1440  # Maximum 24 hours (in minutes)
+  trailing_stop_enabled: true
+  trailing_stop_distance: 0.015  # 1.5% trailing stop
+
+# Market Data
+market_data:
+  symbols:
+    - "BTCUSDT"
+    - "ETHUSDT"
+    - "DOGEUSDT"
+  timeframes:
+    - "1m"
+    - "5m"
+    - "15m"
+
+# Notifications (optional)
+notifications:
+  enabled: false
+  discord_webhook: ""
+  telegram_bot_token: ""
+  telegram_chat_id: ""
+
+# Database (optional - defaults to SQLite)
+database:
+  type: "sqlite"  # sqlite or postgresql
+  path: "data/trading_bot.db"  # For SQLite
+  # For PostgreSQL:
+  # host: "localhost"
+  # port: 5432
+  # database: "mexc_bot"
+  # username: "your_username"
+  # password: "your_password"

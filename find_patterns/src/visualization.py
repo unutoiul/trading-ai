@@ -332,7 +332,7 @@ def generate_index_html(results_dirs, altcoin_name):
                     potential_files = {
                         'all_results.csv': ('📊 All Results CSV', 'btn-outline-primary'),
                         'top_100_strategies.csv': ('🏆 Top 100 CSV', 'btn-outline-success'), 
-                        'parameter_analysis.csv': ('⚙️ Parameters CSV', 'btn-outline-info'),
+                        'parameter_analysis.txt': ('⚙️ Parameters Report', 'btn-outline-info'),
                         'trailing_stop_analysis.csv': ('📈 Trailing Stop CSV', 'btn-outline-dark'),
                         'individual_trades.csv': ('📝 Individual Trades CSV', 'btn-outline-warning'),
                         'trades_summary.csv': ('📋 Trades Summary CSV', 'btn-outline-secondary')
@@ -341,25 +341,34 @@ def generate_index_html(results_dirs, altcoin_name):
                     for filename, (display_name, btn_class) in potential_files.items():
                         if os.path.exists(os.path.join(data_dir, filename)):
                             available_data_files.append((filename, display_name, btn_class))
+                    
+                    # Check for strategy trades folder
+                    strategy_trades_dir = os.path.join(data_dir, 'strategy_trades')
+                    if os.path.exists(strategy_trades_dir):
+                        strategy_files = glob.glob(os.path.join(strategy_trades_dir, '*.csv'))
+                        if strategy_files:
+                            # Add a link to the folder or first few files
+                            available_data_files.append(('strategy_trades/', '🎯 Strategy Trades Folder', 'btn-outline-danger'))
                 
                 # Build download links HTML
                 download_links = ""
                 if available_data_files:
                     download_links = '<small class="text-muted">Download data:</small><br>'
                     
-                    # Split into two rows for better layout
-                    first_row_files = available_data_files[:3]
-                    second_row_files = available_data_files[3:]
-                    
-                    # First row
-                    for filename, display_name, btn_class in first_row_files:
-                        download_links += f'<a href="../data/{filename}" class="{btn_class} btn-sm me-1">{display_name}</a>'
-                    
-                    # Second row if needed
-                    if second_row_files:
-                        download_links += '<br>'
-                        for filename, display_name, btn_class in second_row_files:
-                            download_links += f'<a href="../data/{filename}" class="{btn_class} btn-sm me-1 mt-1">{display_name}</a>'
+                    # Split into rows for better layout  
+                    files_per_row = 3
+                    for i in range(0, len(available_data_files), files_per_row):
+                        row_files = available_data_files[i:i+files_per_row]
+                        
+                        if i > 0:  # Add line break for subsequent rows
+                            download_links += '<br>'
+                        
+                        for filename, display_name, btn_class in row_files:
+                            if filename.endswith('/'):
+                                # For folders, create a different link style
+                                download_links += f'<span class="{btn_class} btn-sm me-1 mt-1" title="Contains individual strategy trade files">{display_name}</span>'
+                            else:
+                                download_links += f'<a href="../data/{filename}" class="{btn_class} btn-sm me-1 mt-1">{display_name}</a>'
                 
                 html_content += f"""
                     <div class="col-md-12 col-lg-12 mb-3">

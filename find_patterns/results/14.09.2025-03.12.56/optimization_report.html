@@ -1,0 +1,1234 @@
+
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Comprehensive Trading Strategy Analysis - DOGE</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+            <style>
+                .metric-card { 
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border-radius: 15px;
+                    padding: 20px;
+                    margin-bottom: 20px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                }
+                .strategy-card {
+                    border: 1px solid #e3e6f0;
+                    border-radius: 10px;
+                    padding: 15px;
+                    margin-bottom: 15px;
+                    transition: all 0.3s ease;
+                }
+                .strategy-card:hover {
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                    transform: translateY(-2px);
+                }
+                .positive { color: #28a745; font-weight: bold; }
+                .negative { color: #dc3545; font-weight: bold; }
+                .neutral { color: #6c757d; }
+                .performance-badge {
+                    padding: 5px 10px;
+                    border-radius: 20px;
+                    font-size: 0.8em;
+                    font-weight: bold;
+                }
+                .performance-excellent { background-color: #28a745; color: white; }
+                .performance-good { background-color: #17a2b8; color: white; }
+                .performance-average { background-color: #ffc107; color: black; }
+                .performance-poor { background-color: #dc3545; color: white; }
+                .chart-container {
+                    background: white;
+                    border-radius: 10px;
+                    padding: 20px;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+                    margin-bottom: 20px;
+                }
+                .parameter-insight {
+                    background: #f8f9fa;
+                    border-left: 4px solid #007bff;
+                    padding: 15px;
+                    margin-bottom: 15px;
+                    border-radius: 0 5px 5px 0;
+                }
+                .trailing-stop-analysis {
+                    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+                    border-radius: 10px;
+                    padding: 20px;
+                    margin-bottom: 20px;
+                }
+            </style>
+        </head>
+        <body class="bg-light">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center py-3">
+                            <h1 class="display-4"><i class="fas fa-chart-line text-primary"></i> Comprehensive Trading Strategy Analysis</h1>
+                            <div class="text-muted">
+                                <i class="fas fa-coins"></i> DOGE
+                                <br>
+                                <small>September 14, 2025 at 03:13</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="metric-card text-center">
+                            <h3><i class="fas fa-vials"></i></h3>
+                            <h2>2,000</h2>
+                            <p class="mb-0">Combinations Tested</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card text-center">
+                            <h3><i class="fas fa-trophy"></i></h3>
+                            <h2>1,605</h2>
+                            <p class="mb-0">Profitable Strategies</p>
+                            <small>(80.2% success rate)</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card text-center">
+                            <h3><i class="fas fa-chart-area"></i></h3>
+                            <h2>23.57%</h2>
+                            <p class="mb-0">Best Return</p>
+                            <small>Avg: 2.73%</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card text-center">
+                            <h3><i class="fas fa-bullseye"></i></h3>
+                            <h2>42.1%</h2>
+                            <p class="mb-0">Average Win Rate</p>
+                            <small>Sharpe: 9.740</small>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="row">
+                    <div class="col-12">
+                        <h2 class="mb-4"><i class="fas fa-star text-warning"></i> Top Performing Strategies</h2>
+                    </div>
+                </div>
+                <div class="row">
+        
+                <div class="col-md-6 mb-4">
+                    <div class="strategy-card border-success">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="text-success"><i class="fas fa-chart-line"></i> Highest Return</h5>
+                            <span class="performance-badge performance-excellent">
+                                Excellent
+                            </span>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Parameters:</strong>
+                                <ul class="list-unstyled mt-2">
+                                    <li><i class="fas fa-project-diagram"></i> Pattern: <code>btc_hl_breakout_9m</code></li>
+                                    <li><i class="fas fa-clock"></i> Lag: 0 min</li>
+                                    <li><i class="fas fa-hand-paper"></i> Stop Loss: 3.50%</li>
+                                    <li><i class="fas fa-flag-checkered"></i> Take Profit: 20.00%</li>
+                                    <li><i class="fas fa-chart-area"></i> Trailing Stop: 3.00%</li>
+                                    <li><i class="fas fa-percentage"></i> Position Size: 50%</li>
+                                    <li><i class="fas fa-hourglass-half"></i> Holding Time: 180 min</li>
+                                </ul>
+                            </div>
+                            <div class="col-6">
+                                <strong>Performance:</strong>
+                                <ul class="list-unstyled mt-2">
+                                    <li>📈 Return: <span class="positive">23.57%</span></li>
+                                    <li>🎯 Win Rate: 33.3%</li>
+                                    <li>⚡ Sharpe: 29.607</li>
+                                    <li>📉 Max Drawdown: -14.50%</li>
+                                    <li>🔢 Total Trades: 24</li>
+                                    <li>💰 Profit Factor: 1.62</li>
+                                </ul>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="strategy-card border-info">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="text-info"><i class="fas fa-balance-scale"></i> Best Sharpe Ratio</h5>
+                            <span class="performance-badge performance-excellent">
+                                Excellent
+                            </span>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Parameters:</strong>
+                                <ul class="list-unstyled mt-2">
+                                    <li><i class="fas fa-project-diagram"></i> Pattern: <code>btc_small_down_10m</code></li>
+                                    <li><i class="fas fa-clock"></i> Lag: 0 min</li>
+                                    <li><i class="fas fa-hand-paper"></i> Stop Loss: 3.50%</li>
+                                    <li><i class="fas fa-flag-checkered"></i> Take Profit: 1.00%</li>
+                                    <li><i class="fas fa-chart-area"></i> Trailing Stop: 5.00%</li>
+                                    <li><i class="fas fa-percentage"></i> Position Size: 30%</li>
+                                    <li><i class="fas fa-hourglass-half"></i> Holding Time: 120 min</li>
+                                </ul>
+                            </div>
+                            <div class="col-6">
+                                <strong>Performance:</strong>
+                                <ul class="list-unstyled mt-2">
+                                    <li>📈 Return: <span class="positive">13.15%</span></li>
+                                    <li>🎯 Win Rate: 71.4%</li>
+                                    <li>⚡ Sharpe: 37.520</li>
+                                    <li>📉 Max Drawdown: -4.67%</li>
+                                    <li>🔢 Total Trades: 42</li>
+                                    <li>💰 Profit Factor: 1.82</li>
+                                </ul>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="strategy-card border-warning">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="text-warning"><i class="fas fa-bullseye"></i> Highest Win Rate</h5>
+                            <span class="performance-badge performance-excellent">
+                                Average
+                            </span>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Parameters:</strong>
+                                <ul class="list-unstyled mt-2">
+                                    <li><i class="fas fa-project-diagram"></i> Pattern: <code>btc_small_down_10m</code></li>
+                                    <li><i class="fas fa-clock"></i> Lag: 0 min</li>
+                                    <li><i class="fas fa-hand-paper"></i> Stop Loss: 8.00%</li>
+                                    <li><i class="fas fa-flag-checkered"></i> Take Profit: 1.00%</li>
+                                    <li><i class="fas fa-chart-area"></i> Trailing Stop: 3.50%</li>
+                                    <li><i class="fas fa-percentage"></i> Position Size: 10%</li>
+                                    <li><i class="fas fa-hourglass-half"></i> Holding Time: 10 min</li>
+                                </ul>
+                            </div>
+                            <div class="col-6">
+                                <strong>Performance:</strong>
+                                <ul class="list-unstyled mt-2">
+                                    <li>📈 Return: <span class="positive">3.96%</span></li>
+                                    <li>🎯 Win Rate: 84.4%</li>
+                                    <li>⚡ Sharpe: 30.102</li>
+                                    <li>📉 Max Drawdown: -2.38%</li>
+                                    <li>🔢 Total Trades: 32</li>
+                                    <li>💰 Profit Factor: 1.94</li>
+                                </ul>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="strategy-card border-primary">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="text-primary"><i class="fas fa-coins"></i> Best Profit Factor</h5>
+                            <span class="performance-badge performance-excellent">
+                                Good
+                            </span>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Parameters:</strong>
+                                <ul class="list-unstyled mt-2">
+                                    <li><i class="fas fa-project-diagram"></i> Pattern: <code>btc_vol_breakout_2m</code></li>
+                                    <li><i class="fas fa-clock"></i> Lag: 0 min</li>
+                                    <li><i class="fas fa-hand-paper"></i> Stop Loss: 8.00%</li>
+                                    <li><i class="fas fa-flag-checkered"></i> Take Profit: 20.00%</li>
+                                    <li><i class="fas fa-chart-area"></i> Trailing Stop: 2.00%</li>
+                                    <li><i class="fas fa-percentage"></i> Position Size: 15%</li>
+                                    <li><i class="fas fa-hourglass-half"></i> Holding Time: 30 min</li>
+                                </ul>
+                            </div>
+                            <div class="col-6">
+                                <strong>Performance:</strong>
+                                <ul class="list-unstyled mt-2">
+                                    <li>📈 Return: <span class="positive">6.34%</span></li>
+                                    <li>🎯 Win Rate: 45.5%</li>
+                                    <li>⚡ Sharpe: 26.397</li>
+                                    <li>📉 Max Drawdown: -4.60%</li>
+                                    <li>🔢 Total Trades: 11</li>
+                                    <li>💰 Profit Factor: 2.15</li>
+                                </ul>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                </div>
+        
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">🎯 Bitcoin Movement Analysis by Pattern</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <p class="text-muted mb-4">Detailed analysis of actual Bitcoin price movements for each pattern - perfect for bot trading strategies.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+            
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-white">
+                                    <h6 class="mb-0">📈 Btc Bullish</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <small class="text-muted">Reliability Score</small>
+                                        <div class="progress mb-1" style="height: 8px;">
+                                            <div class="progress-bar bg-warning" 
+                                                 style="width: 51.7%"></div>
+                                        </div>
+                                        <small class="text-warning"><strong>51.7/100</strong></small>
+                                    </div>
+                                    
+                                    <div class="alert alert-info mb-3">
+                                        <strong>🚀 Bot Trading Data:</strong><br>
+                                        <small>Avg BTC Move: <strong class="text-primary">0.00%</strong></small><br>
+                                        <small>Max BTC Move: <strong class="text-success">0.00%</strong></small><br>
+                                        <small>Success Rate: <strong class="text-warning">0.0%</strong></small>
+                                    </div>
+                                    
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Strategy Win Rate</small>
+                                            <strong class="text-primary">41.6%</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Strategy Return</small>
+                                            <strong class="text-success">4.29%</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr class="my-2">
+                                    
+                                    <div class="text-center">
+                                        <small class="text-muted">Best for: <strong>UP movements</strong></small><br>
+                                        <small class="text-muted">Confidence: 95.0%</small><br>
+                                        <small class="text-info">Trades: 62</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-white">
+                                    <h6 class="mb-0">📈 Btc Hl Breakout 10M</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <small class="text-muted">Reliability Score</small>
+                                        <div class="progress mb-1" style="height: 8px;">
+                                            <div class="progress-bar bg-warning" 
+                                                 style="width: 50.8%"></div>
+                                        </div>
+                                        <small class="text-warning"><strong>50.8/100</strong></small>
+                                    </div>
+                                    
+                                    <div class="alert alert-info mb-3">
+                                        <strong>🚀 Bot Trading Data:</strong><br>
+                                        <small>Avg BTC Move: <strong class="text-primary">0.00%</strong></small><br>
+                                        <small>Max BTC Move: <strong class="text-success">0.00%</strong></small><br>
+                                        <small>Success Rate: <strong class="text-warning">0.0%</strong></small>
+                                    </div>
+                                    
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Strategy Win Rate</small>
+                                            <strong class="text-primary">44.6%</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Strategy Return</small>
+                                            <strong class="text-success">3.64%</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr class="my-2">
+                                    
+                                    <div class="text-center">
+                                        <small class="text-muted">Best for: <strong>UP movements</strong></small><br>
+                                        <small class="text-muted">Confidence: 94.0%</small><br>
+                                        <small class="text-info">Trades: 55</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h6 class="mb-0">📈 Btc Small Up 10M</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <small class="text-muted">Reliability Score</small>
+                                        <div class="progress mb-1" style="height: 8px;">
+                                            <div class="progress-bar bg-danger" 
+                                                 style="width: 47.7%"></div>
+                                        </div>
+                                        <small class="text-danger"><strong>47.7/100</strong></small>
+                                    </div>
+                                    
+                                    <div class="alert alert-info mb-3">
+                                        <strong>🚀 Bot Trading Data:</strong><br>
+                                        <small>Avg BTC Move: <strong class="text-primary">0.00%</strong></small><br>
+                                        <small>Max BTC Move: <strong class="text-success">0.00%</strong></small><br>
+                                        <small>Success Rate: <strong class="text-warning">0.0%</strong></small>
+                                    </div>
+                                    
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Strategy Win Rate</small>
+                                            <strong class="text-primary">42.8%</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Strategy Return</small>
+                                            <strong class="text-success">3.89%</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr class="my-2">
+                                    
+                                    <div class="text-center">
+                                        <small class="text-muted">Best for: <strong>UP movements</strong></small><br>
+                                        <small class="text-muted">Confidence: 95.0%</small><br>
+                                        <small class="text-info">Trades: 47</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h6 class="mb-0">📈 Btc Alt Aligned</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <small class="text-muted">Reliability Score</small>
+                                        <div class="progress mb-1" style="height: 8px;">
+                                            <div class="progress-bar bg-danger" 
+                                                 style="width: 46.3%"></div>
+                                        </div>
+                                        <small class="text-danger"><strong>46.3/100</strong></small>
+                                    </div>
+                                    
+                                    <div class="alert alert-info mb-3">
+                                        <strong>🚀 Bot Trading Data:</strong><br>
+                                        <small>Avg BTC Move: <strong class="text-primary">0.00%</strong></small><br>
+                                        <small>Max BTC Move: <strong class="text-success">0.00%</strong></small><br>
+                                        <small>Success Rate: <strong class="text-warning">0.0%</strong></small>
+                                    </div>
+                                    
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Strategy Win Rate</small>
+                                            <strong class="text-primary">40.7%</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Strategy Return</small>
+                                            <strong class="text-success">3.73%</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr class="my-2">
+                                    
+                                    <div class="text-center">
+                                        <small class="text-muted">Best for: <strong>UP movements</strong></small><br>
+                                        <small class="text-muted">Confidence: 82.5%</small><br>
+                                        <small class="text-info">Trades: 62</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h6 class="mb-0">📈 Btc Hl Breakout 9M</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <small class="text-muted">Reliability Score</small>
+                                        <div class="progress mb-1" style="height: 8px;">
+                                            <div class="progress-bar bg-danger" 
+                                                 style="width: 44.3%"></div>
+                                        </div>
+                                        <small class="text-danger"><strong>44.3/100</strong></small>
+                                    </div>
+                                    
+                                    <div class="alert alert-info mb-3">
+                                        <strong>🚀 Bot Trading Data:</strong><br>
+                                        <small>Avg BTC Move: <strong class="text-primary">0.00%</strong></small><br>
+                                        <small>Max BTC Move: <strong class="text-success">0.00%</strong></small><br>
+                                        <small>Success Rate: <strong class="text-warning">0.0%</strong></small>
+                                    </div>
+                                    
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Strategy Win Rate</small>
+                                            <strong class="text-primary">42.2%</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Strategy Return</small>
+                                            <strong class="text-success">3.75%</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr class="my-2">
+                                    
+                                    <div class="text-center">
+                                        <small class="text-muted">Best for: <strong>UP movements</strong></small><br>
+                                        <small class="text-muted">Confidence: 89.2%</small><br>
+                                        <small class="text-info">Trades: 54</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h6 class="mb-0">📈 Btc Vol Breakout 8M</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <small class="text-muted">Reliability Score</small>
+                                        <div class="progress mb-1" style="height: 8px;">
+                                            <div class="progress-bar bg-danger" 
+                                                 style="width: 43.8%"></div>
+                                        </div>
+                                        <small class="text-danger"><strong>43.8/100</strong></small>
+                                    </div>
+                                    
+                                    <div class="alert alert-info mb-3">
+                                        <strong>🚀 Bot Trading Data:</strong><br>
+                                        <small>Avg BTC Move: <strong class="text-primary">0.00%</strong></small><br>
+                                        <small>Max BTC Move: <strong class="text-success">0.00%</strong></small><br>
+                                        <small>Success Rate: <strong class="text-warning">0.0%</strong></small>
+                                    </div>
+                                    
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Strategy Win Rate</small>
+                                            <strong class="text-primary">42.1%</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Strategy Return</small>
+                                            <strong class="text-success">2.41%</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr class="my-2">
+                                    
+                                    <div class="text-center">
+                                        <small class="text-muted">Best for: <strong>UP movements</strong></small><br>
+                                        <small class="text-muted">Confidence: 81.9%</small><br>
+                                        <small class="text-info">Trades: 39</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-success">
+                                <h6><i class="fas fa-robot"></i> Bot Trading Insights:</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>Best Patterns for Bot:</strong>
+                                        <ul class="mb-2">
+            
+                                            <li><strong>Most Reliable:</strong> Btc Bullish - 51.7/100</li>
+                                            <li><strong>Biggest BTC Moves:</strong> Btc Bullish - 0.00% avg</li>
+                                            <li><strong>Best Prediction:</strong> Btc Bullish - 0.0% success</li>
+            
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Trading Bot Setup:</strong>
+                                        <ul class="mb-2">
+                                            <li>Use patterns with >70% reliability score</li>
+                                            <li>Focus on up movements for better success</li>
+                                            <li>Target 0.00% - 0.00% BTC moves</li>
+                                            <li>Expected win rate: 43.0%</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">📊 Market Condition & Timing Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-clock"></i> Optimal Timing Parameters</h6>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    
+            <p><strong>Optimal Lag:</strong> <span class="badge badge-primary">0 min</span></p>
+            <p><strong>Best Holding Time:</strong> <span class="badge badge-success">180 min</span></p>
+            <p><strong>Entry Signal Strength:</strong> 42.1% win rate</p>
+            <small class="text-muted">Lag determines how quickly patterns are detected after formation.</small>
+            
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-chart-line"></i> Volatility Insights</h6>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <p class='text-danger'>Error analyzing volatility patterns</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-warning">
+                                <h6><i class="fas fa-exclamation-triangle"></i> Market Timing Recommendations:</h6>
+                                <ul class="mb-0">
+                                    <li><strong>Best Entry Signals:</strong> Use patterns with reliability scores >70 during high volatility periods</li>
+                                    <li><strong>Risk Management:</strong> Shorter holding times (≤60 min) show better risk-adjusted returns</li>
+                                    <li><strong>Stop Loss Optimization:</strong> 2-3% stop loss levels provide optimal risk/reward balance</li>
+                                    <li><strong>Market Conditions:</strong> Pattern effectiveness varies significantly with market volatility</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">⚖️ Risk-Return Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-shield-alt"></i> Risk Categories</h6>
+                            
+            <div class="card border-success mb-2">
+                <div class="card-body p-2">
+                    <h6 class="card-title text-success">
+                        <i class="fas fa-shield-check"></i> Low Risk
+                    </h6>
+                    <small>Strategies: <strong>1</strong></small><br>
+                    <small>Avg Return: <strong>2.69%</strong></small><br>
+                    <small>Win Rate: <strong>60.0%</strong></small>
+                </div>
+            </div>
+            
+            <div class="card border-warning mb-2">
+                <div class="card-body p-2">
+                    <h6 class="card-title text-warning">
+                        <i class="fas fa-shield-exclamation"></i> Medium Risk
+                    </h6>
+                    <small>Strategies: <strong>528</strong></small><br>
+                    <small>Avg Return: <strong>3.09%</strong></small><br>
+                    <small>Win Rate: <strong>49.5%</strong></small>
+                </div>
+            </div>
+            
+            <div class="card border-danger mb-2">
+                <div class="card-body p-2">
+                    <h6 class="card-title text-danger">
+                        <i class="fas fa-exclamation-triangle"></i> High Risk
+                    </h6>
+                    <small>Strategies: <strong>1471</strong></small><br>
+                    <small>Avg Return: <strong>2.60%</strong></small><br>
+                    <small>Win Rate: <strong>39.4%</strong></small>
+                </div>
+            </div>
+            
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-chart-pie"></i> Return Profiles</h6>
+                            
+            <div class="card border-success mb-2">
+                <div class="card-body p-2">
+                    <h6 class="card-title text-success">High Return</h6>
+                    <small>Count: <strong>400</strong></small><br>
+                    <small>Avg Return: <strong>8.95%</strong></small><br>
+                    <small>Trades: <strong>35</strong></small>
+                </div>
+            </div>
+            
+            <div class="card border-info mb-2">
+                <div class="card-body p-2">
+                    <h6 class="card-title text-info">Medium Return</h6>
+                    <small>Count: <strong>800</strong></small><br>
+                    <small>Avg Return: <strong>2.86%</strong></small><br>
+                    <small>Trades: <strong>49</strong></small>
+                </div>
+            </div>
+            
+            <div class="card border-secondary mb-2">
+                <div class="card-body p-2">
+                    <h6 class="card-title text-secondary">Low Return</h6>
+                    <small>Count: <strong>800</strong></small><br>
+                    <small>Avg Return: <strong>-0.52%</strong></small><br>
+                    <small>Trades: <strong>60</strong></small>
+                </div>
+            </div>
+            
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-balance-scale"></i> Risk Metrics</h6>
+                            
+        <div class="card border-info">
+            <div class="card-body p-2">
+                <h6 class="card-title text-info">Key Metrics</h6>
+                <small>Volatility: <strong>4.00%</strong></small><br>
+                <small>Sharpe Proxy: <strong>0.68</strong></small><br>
+                <small>Win Rate Range: <strong>19.4% - 84.4%</strong></small><br>
+                <small>Return Range: <strong>-12.50% - 23.57%</strong></small>
+            </div>
+        </div>
+        
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-success">
+                                <h6><i class="fas fa-trophy"></i> Optimal Risk-Return Recommendations:</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>Conservative Approach:</strong>
+                                        <ul class="mb-2">
+                                            <li>Focus on strategies with >60% win rate</li>
+                                            <li>Use 2% stop loss maximum</li>
+                                            <li>Target 1-3% returns per trade</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Aggressive Approach:</strong>
+                                        <ul class="mb-2">
+                                            <li>Target strategies with >5% max return</li>
+                                            <li>Accept 4-5% stop loss levels</li>
+                                            <li>Focus on high-volatility patterns</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Strategy Trades Download</h5>
+            </div>
+            <div class="card-body text-center">
+                <p class="text-muted">No strategy trade files available</p>
+            </div>
+        </div>
+        
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-bitcoin text-warning"></i> Bitcoin Movement Analysis for Bot Trading</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <strong><i class="fas fa-robot"></i> Bot Trading Intelligence:</strong> 
+                        Exact Bitcoin percentage movements extracted from your strategy results - use this data to configure your trading bot!
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6><i class="fas fa-chart-line"></i> Bitcoin Movement Patterns</h6>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Pattern</th>
+                                            <th>Avg BTC Move</th>
+                                            <th>Max BTC Move</th>
+                                            <th>Success Rate</th>
+                                            <th>Bot Recommendation</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+            
+                                        <tr class="table-secondary">
+                                            <td><strong>Btc Hl Breakout 4M</strong></td>
+                                            <td><span class="badge badge-primary">15.00%</span></td>
+                                            <td><span class="badge badge-success">25.00%</span></td>
+                                            <td><span class="badge badge-info">40.6%</span></td>
+                                            <td><span class="badge badge-secondary">Caution</span></td>
+                                        </tr>
+                
+                                        <tr class="table-secondary">
+                                            <td><strong>Btc Hl Breakout 7M</strong></td>
+                                            <td><span class="badge badge-primary">15.00%</span></td>
+                                            <td><span class="badge badge-success">25.00%</span></td>
+                                            <td><span class="badge badge-info">53.8%</span></td>
+                                            <td><span class="badge badge-secondary">Caution</span></td>
+                                        </tr>
+                
+                                        <tr class="table-secondary">
+                                            <td><strong>Btc Bullish</strong></td>
+                                            <td><span class="badge badge-primary">15.00%</span></td>
+                                            <td><span class="badge badge-success">21.20%</span></td>
+                                            <td><span class="badge badge-info">32.3%</span></td>
+                                            <td><span class="badge badge-secondary">Caution</span></td>
+                                        </tr>
+                
+                                        <tr class="table-secondary">
+                                            <td><strong>Btc Hl Breakout 5M</strong></td>
+                                            <td><span class="badge badge-primary">15.00%</span></td>
+                                            <td><span class="badge badge-success">9.59%</span></td>
+                                            <td><span class="badge badge-info">38.4%</span></td>
+                                            <td><span class="badge badge-secondary">Caution</span></td>
+                                        </tr>
+                
+                                        <tr class="table-secondary">
+                                            <td><strong>Btc Hl Breakout 6M</strong></td>
+                                            <td><span class="badge badge-primary">15.00%</span></td>
+                                            <td><span class="badge badge-success">22.78%</span></td>
+                                            <td><span class="badge badge-info">39.4%</span></td>
+                                            <td><span class="badge badge-secondary">Caution</span></td>
+                                        </tr>
+                
+                                        <tr class="table-secondary">
+                                            <td><strong>Btc Hl Breakout 9M</strong></td>
+                                            <td><span class="badge badge-primary">9.08%</span></td>
+                                            <td><span class="badge badge-success">9.84%</span></td>
+                                            <td><span class="badge badge-info">31.6%</span></td>
+                                            <td><span class="badge badge-secondary">Caution</span></td>
+                                        </tr>
+                
+                                        <tr class="table-secondary">
+                                            <td><strong>Btc Vol Breakout 8M</strong></td>
+                                            <td><span class="badge badge-primary">8.57%</span></td>
+                                            <td><span class="badge badge-success">9.28%</span></td>
+                                            <td><span class="badge badge-info">40.6%</span></td>
+                                            <td><span class="badge badge-secondary">Caution</span></td>
+                                        </tr>
+                
+                                        <tr class="table-secondary">
+                                            <td><strong>Btc Hl Breakout 3M</strong></td>
+                                            <td><span class="badge badge-primary">4.32%</span></td>
+                                            <td><span class="badge badge-success">8.88%</span></td>
+                                            <td><span class="badge badge-info">50.3%</span></td>
+                                            <td><span class="badge badge-secondary">Caution</span></td>
+                                        </tr>
+                
+                                        <tr class="table-secondary">
+                                            <td><strong>Btc Vol Breakout 9M</strong></td>
+                                            <td><span class="badge badge-primary">3.98%</span></td>
+                                            <td><span class="badge badge-success">4.31%</span></td>
+                                            <td><span class="badge badge-info">35.5%</span></td>
+                                            <td><span class="badge badge-secondary">Caution</span></td>
+                                        </tr>
+                
+                                        <tr class="table-warning">
+                                            <td><strong>Btc Hl Breakout 1M</strong></td>
+                                            <td><span class="badge badge-primary">3.76%</span></td>
+                                            <td><span class="badge badge-success">4.07%</span></td>
+                                            <td><span class="badge badge-info">65.0%</span></td>
+                                            <td><span class="badge badge-warning">Good</span></td>
+                                        </tr>
+                
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-cogs"></i> Bot Configuration</h6>
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <strong>Recommended Bot Settings</strong>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Target BTC Movements:</strong></p>
+                                    <ul class="list-unstyled">
+                                        <li>🎯 Average: <strong>9.24%</strong></li>
+                                        <li>🚀 Maximum: <strong>15.00%</strong></li>
+                                        <li>✅ Success Rate: <strong>42.0%</strong></li>
+                                    </ul>
+                                    
+                                    <hr>
+                                    
+                                    <p><strong>Bot Parameters:</strong></p>
+                                    <ul class="list-unstyled small">
+                                        <li>📊 Min Movement: <strong>2.0%</strong></li>
+                                        <li>🎯 Target Profit: <strong>3-5%</strong></li>
+                                        <li>🛑 Stop Loss: <strong>2-3%</strong></li>
+                                        <li>⏱️ Max Hold Time: <strong>4-6 hours</strong></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-success">
+                                <h6><i class="fas fa-lightbulb"></i> Bot Trading Strategy Recommendations:</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>High Probability Setups:</strong>
+                                        <ul class="mb-2">
+            
+                                            <li><strong>Btc Hl Breakout 4M:</strong> Target 15.0% moves with 41% success rate</li>
+                
+                                            <li><strong>Btc Hl Breakout 7M:</strong> Target 15.0% moves with 54% success rate</li>
+                
+                                            <li><strong>Btc Bullish:</strong> Target 15.0% moves with 32% success rate</li>
+                
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Risk Management Rules:</strong>
+                                        <ul class="mb-2">
+                                            <li>Only trade patterns with >60% success rate</li>
+                                            <li>Set stop loss at 2-3% to limit downside</li>
+                                            <li>Take profits at 9.2% or higher</li>
+                                            <li>Use position sizing based on pattern reliability</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <strong><i class="fas fa-code"></i> Implementation Note:</strong> 
+                                These percentages represent actual Bitcoin price movements detected by the patterns. 
+                                Use these values to configure your bot's entry/exit thresholds and risk management parameters.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <h2 class="mb-4"><i class="fas fa-chart-area text-info"></i> Trailing Stop Analysis</h2>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="trailing-stop-analysis">
+                            <h5><i class="fas fa-microscope"></i> Trailing Stop Performance Analysis</h5>
+                            <p class="mb-3">Analysis of different trailing stop percentages and their impact on strategy performance.</p>
+            
+                            <div class="table-responsive">
+                                <table class="table table-hover bg-white">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Trailing Stop %</th>
+                                            <th>Avg Return %</th>
+                                            <th>Win Rate %</th>
+                                            <th>Avg Sharpe</th>
+                                            <th>Profit Probability</th>
+                                            <th>Sample Size</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+            
+                                        <tr>
+                                            <td><strong>4.0%</strong></td>
+                                            <td><span class="positive">4.06%</span></td>
+                                            <td>40.2%</td>
+                                            <td>11.922</td>
+                                            <td>85.1%</td>
+                                            <td>101</td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td><strong>3.0%</strong></td>
+                                            <td><span class="positive">3.48%</span></td>
+                                            <td>42.3%</td>
+                                            <td>9.853</td>
+                                            <td>78.4%</td>
+                                            <td>116</td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td><strong>2.5%</strong></td>
+                                            <td><span class="positive">3.29%</span></td>
+                                            <td>44.8%</td>
+                                            <td>10.359</td>
+                                            <td>80.0%</td>
+                                            <td>100</td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td><strong>5.0%</strong></td>
+                                            <td><span class="positive">3.19%</span></td>
+                                            <td>39.8%</td>
+                                            <td>9.845</td>
+                                            <td>78.3%</td>
+                                            <td>92</td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td><strong>3.5%</strong></td>
+                                            <td><span class="positive">2.88%</span></td>
+                                            <td>43.0%</td>
+                                            <td>9.972</td>
+                                            <td>78.3%</td>
+                                            <td>106</td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td><strong>1.0%</strong></td>
+                                            <td><span class="positive">2.82%</span></td>
+                                            <td>43.2%</td>
+                                            <td>9.438</td>
+                                            <td>78.2%</td>
+                                            <td>193</td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td><strong>0.3%</strong></td>
+                                            <td><span class="positive">2.79%</span></td>
+                                            <td>43.5%</td>
+                                            <td>9.501</td>
+                                            <td>79.0%</td>
+                                            <td>181</td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td><strong>0.8%</strong></td>
+                                            <td><span class="positive">2.57%</span></td>
+                                            <td>41.2%</td>
+                                            <td>9.659</td>
+                                            <td>80.7%</td>
+                                            <td>202</td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td><strong>1.2%</strong></td>
+                                            <td><span class="positive">2.55%</span></td>
+                                            <td>41.4%</td>
+                                            <td>9.933</td>
+                                            <td>82.4%</td>
+                                            <td>182</td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td><strong>2.0%</strong></td>
+                                            <td><span class="positive">2.41%</span></td>
+                                            <td>43.2%</td>
+                                            <td>9.811</td>
+                                            <td>79.9%</td>
+                                            <td>194</td>
+                                        </tr>
+                
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <h2 class="mb-4"><i class="fas fa-lightbulb text-warning"></i> Parameter Insights</h2>
+                    </div>
+                </div>
+                <div class="row">
+            
+                <div class="col-md-6 mb-3">
+                    <div class="parameter-insight">
+                        <h6><i class="fas fa-cog"></i> Stop Loss</h6>
+                        <p class="mb-2">
+                            <strong>Optimal Range:</strong> 0.010 - 0.100<br>
+                            <strong>Recommended Value:</strong> 0.040<br>
+                            <strong>Most Common:</strong> 0.035
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="parameter-insight">
+                        <h6><i class="fas fa-cog"></i> Take Profit</h6>
+                        <p class="mb-2">
+                            <strong>Optimal Range:</strong> 0.010 - 0.300<br>
+                            <strong>Recommended Value:</strong> 0.060<br>
+                            <strong>Most Common:</strong> 0.250
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="parameter-insight">
+                        <h6><i class="fas fa-cog"></i> Trailing Stop</h6>
+                        <p class="mb-2">
+                            <strong>Optimal Range:</strong> 0.003 - 0.050<br>
+                            <strong>Recommended Value:</strong> 0.015<br>
+                            <strong>Most Common:</strong> 0.010
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="parameter-insight">
+                        <h6><i class="fas fa-cog"></i> Lag</h6>
+                        <p class="mb-2">
+                            <strong>Optimal Range:</strong> 0.000 - 0.000<br>
+                            <strong>Recommended Value:</strong> 0.000<br>
+                            <strong>Most Common:</strong> 0.000
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="parameter-insight">
+                        <h6><i class="fas fa-cog"></i> Position Size</h6>
+                        <p class="mb-2">
+                            <strong>Optimal Range:</strong> 0.200 - 0.500<br>
+                            <strong>Recommended Value:</strong> 0.400<br>
+                            <strong>Most Common:</strong> 0.500
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="parameter-insight">
+                        <h6><i class="fas fa-cog"></i> Holding Time</h6>
+                        <p class="mb-2">
+                            <strong>Optimal Range:</strong> 5.000 - 1440.000<br>
+                            <strong>Recommended Value:</strong> 120.000<br>
+                            <strong>Most Common:</strong> 720.000
+                        </p>
+                    </div>
+                </div>
+                
+                </div>
+            
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <h2 class="mb-4"><i class="fas fa-download text-success"></i> Data Downloads</h2>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-chart-bar"></i> Analysis Results</h5>
+                                <p class="card-text text-muted">Comprehensive strategy performance data</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="data/all_results.csv" class="btn btn-outline-primary btn-sm">📊 All Results</a>
+                                    <a href="data/top_100_strategies.csv" class="btn btn-outline-success btn-sm">🏆 Top 100</a>
+                                    <a href="data/parameter_analysis.txt" class="btn btn-outline-info btn-sm">⚙️ Parameters</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>  
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-exchange-alt"></i> Trading Data</h5>
+                                <p class="card-text text-muted">Individual trades and detailed analysis</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="data/individual_trades.csv" class="btn btn-outline-warning btn-sm">📝 Individual Trades</a>
+                                    <a href="data/trades_summary.csv" class="btn btn-outline-secondary btn-sm">📋 Summary</a>
+                                    <a href="data/trailing_stop_analysis.csv" class="btn btn-outline-dark btn-sm">📈 Trailing Stop</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <h2 class="mb-4"><i class="fas fa-chart-bar text-info"></i> Analysis Charts</h2>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="chart-container">
+                            <h4><i class="fas fa-chart-line"></i> Return Analysis</h4>
+                            <p class="text-muted">Distribution of strategy returns and risk-return analysis</p>
+                            <img src="charts/return_analysis.png" class="img-fluid w-100 border rounded" alt="Return Analysis" style="max-height: 600px; object-fit: contain;">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="chart-container">
+                            <h4><i class="fas fa-sliders-h"></i> Parameter Impact Analysis</h4>
+                            <p class="text-muted">Impact of different parameter values on strategy performance</p>
+                            <img src="charts/parameter_impact.png" class="img-fluid w-100 border rounded" alt="Parameter Impact" style="max-height: 600px; object-fit: contain;">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="chart-container">
+                            <h4><i class="fas fa-clock"></i> Price Action Lag Impact</h4>
+                            <p class="text-muted">Analysis of how price action lag affects strategy performance</p>
+                            <img src="charts/price_action_lag_impact.png" class="img-fluid w-100 border rounded" alt="Price Action Lag Impact" style="max-height: 600px; object-fit: contain;">
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="chart-container">
+                            <h4><i class="fas fa-chart-area"></i> Trailing Stop Analysis</h4>
+                            <p class="text-muted">Impact of different trailing stop percentages on strategy performance</p>
+                            <img src="charts/trailing_stop_analysis.png" class="img-fluid w-100 border rounded" alt="Trailing Stop Analysis" style="max-height: 600px; object-fit: contain;">
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <div class="text-center">
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-body">
+                                    <h5 class="mb-3">Navigation</h5>
+                                    <a href="../index.html" class="btn btn-primary btn-lg">← View All Analysis Results</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center text-muted">
+                            <hr>
+                            <p><i class="fas fa-robot"></i> Comprehensive Trading Strategy Analysis Report</p>
+                            <p><i class="fas fa-chart-line"></i> Generated on September 14, 2025 at 03:13</p>
+                            <p><i class="fas fa-chart-area"></i> Trailing Stop Analysis Enabled</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        </body>
+        </html>
+        

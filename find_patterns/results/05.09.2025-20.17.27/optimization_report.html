@@ -1,0 +1,567 @@
+
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Comprehensive Trading Strategy Analysis - DOGE</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+            <style>
+                .metric-card { 
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border-radius: 15px;
+                    padding: 20px;
+                    margin-bottom: 20px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                }
+                .strategy-card {
+                    border: 1px solid #e3e6f0;
+                    border-radius: 10px;
+                    padding: 15px;
+                    margin-bottom: 15px;
+                    transition: all 0.3s ease;
+                }
+                .strategy-card:hover {
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                    transform: translateY(-2px);
+                }
+                .positive { color: #28a745; font-weight: bold; }
+                .negative { color: #dc3545; font-weight: bold; }
+                .neutral { color: #6c757d; }
+                .performance-badge {
+                    padding: 5px 10px;
+                    border-radius: 20px;
+                    font-size: 0.8em;
+                    font-weight: bold;
+                }
+                .performance-excellent { background-color: #28a745; color: white; }
+                .performance-good { background-color: #17a2b8; color: white; }
+                .performance-average { background-color: #ffc107; color: black; }
+                .performance-poor { background-color: #dc3545; color: white; }
+                .chart-container {
+                    background: white;
+                    border-radius: 10px;
+                    padding: 20px;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+                    margin-bottom: 20px;
+                }
+                .parameter-insight {
+                    background: #f8f9fa;
+                    border-left: 4px solid #007bff;
+                    padding: 15px;
+                    margin-bottom: 15px;
+                    border-radius: 0 5px 5px 0;
+                }
+                .trailing-stop-analysis {
+                    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+                    border-radius: 10px;
+                    padding: 20px;
+                    margin-bottom: 20px;
+                }
+            </style>
+        </head>
+        <body class="bg-light">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center py-3">
+                            <h1 class="display-4"><i class="fas fa-chart-line text-primary"></i> Comprehensive Trading Strategy Analysis</h1>
+                            <div class="text-muted">
+                                <i class="fas fa-coins"></i> DOGE
+                                <br>
+                                <small>September 05, 2025 at 20:18</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="metric-card text-center">
+                            <h3><i class="fas fa-vials"></i></h3>
+                            <h2>2,000</h2>
+                            <p class="mb-0">Combinations Tested</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card text-center">
+                            <h3><i class="fas fa-trophy"></i></h3>
+                            <h2>1,596</h2>
+                            <p class="mb-0">Profitable Strategies</p>
+                            <small>(79.8% success rate)</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card text-center">
+                            <h3><i class="fas fa-chart-area"></i></h3>
+                            <h2>23.51%</h2>
+                            <p class="mb-0">Best Return</p>
+                            <small>Avg: 2.87%</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card text-center">
+                            <h3><i class="fas fa-bullseye"></i></h3>
+                            <h2>41.8%</h2>
+                            <p class="mb-0">Average Win Rate</p>
+                            <small>Sharpe: 9.748</small>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="row">
+                    <div class="col-12">
+                        <h2 class="mb-4"><i class="fas fa-star text-warning"></i> Top Performing Strategies</h2>
+                    </div>
+                </div>
+                <div class="row">
+        
+                <div class="col-md-6 mb-4">
+                    <div class="strategy-card border-success">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="text-success"><i class="fas fa-chart-line"></i> Highest Return</h5>
+                            <span class="performance-badge performance-excellent">
+                                Excellent
+                            </span>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Parameters:</strong>
+                                <ul class="list-unstyled mt-2">
+                                    <li><i class="fas fa-project-diagram"></i> Pattern: <code>btc_small_up_10m</code></li>
+                                    <li><i class="fas fa-clock"></i> Lag: 0 min</li>
+                                    <li><i class="fas fa-hand-paper"></i> Stop Loss: 10.00%</li>
+                                    <li><i class="fas fa-flag-checkered"></i> Take Profit: 3.00%</li>
+                                    <li><i class="fas fa-chart-area"></i> Trailing Stop: 0.50%</li>
+                                    <li><i class="fas fa-percentage"></i> Position Size: 50%</li>
+                                    <li><i class="fas fa-hourglass-half"></i> Holding Time: 20 min</li>
+                                </ul>
+                            </div>
+                            <div class="col-6">
+                                <strong>Performance:</strong>
+                                <ul class="list-unstyled mt-2">
+                                    <li>📈 Return: <span class="positive">23.51%</span></li>
+                                    <li>🎯 Win Rate: 79.2%</li>
+                                    <li>⚡ Sharpe: 30.956</li>
+                                    <li>📉 Max Drawdown: -11.46%</li>
+                                    <li>🔢 Total Trades: 24</li>
+                                    <li>💰 Profit Factor: 1.78</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="strategy-card border-info">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="text-info"><i class="fas fa-balance-scale"></i> Best Sharpe Ratio</h5>
+                            <span class="performance-badge performance-excellent">
+                                Excellent
+                            </span>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Parameters:</strong>
+                                <ul class="list-unstyled mt-2">
+                                    <li><i class="fas fa-project-diagram"></i> Pattern: <code>btc_small_down_10m</code></li>
+                                    <li><i class="fas fa-clock"></i> Lag: 0 min</li>
+                                    <li><i class="fas fa-hand-paper"></i> Stop Loss: 10.00%</li>
+                                    <li><i class="fas fa-flag-checkered"></i> Take Profit: 1.00%</li>
+                                    <li><i class="fas fa-chart-area"></i> Trailing Stop: 2.00%</li>
+                                    <li><i class="fas fa-percentage"></i> Position Size: 40%</li>
+                                    <li><i class="fas fa-hourglass-half"></i> Holding Time: 20 min</li>
+                                </ul>
+                            </div>
+                            <div class="col-6">
+                                <strong>Performance:</strong>
+                                <ul class="list-unstyled mt-2">
+                                    <li>📈 Return: <span class="positive">21.07%</span></li>
+                                    <li>🎯 Win Rate: 86.7%</li>
+                                    <li>⚡ Sharpe: 38.297</li>
+                                    <li>📉 Max Drawdown: -6.94%</li>
+                                    <li>🔢 Total Trades: 30</li>
+                                    <li>💰 Profit Factor: 2.14</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="strategy-card border-warning">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="text-warning"><i class="fas fa-bullseye"></i> Highest Win Rate</h5>
+                            <span class="performance-badge performance-excellent">
+                                Excellent
+                            </span>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Parameters:</strong>
+                                <ul class="list-unstyled mt-2">
+                                    <li><i class="fas fa-project-diagram"></i> Pattern: <code>btc_vol_breakout_2m</code></li>
+                                    <li><i class="fas fa-clock"></i> Lag: 0 min</li>
+                                    <li><i class="fas fa-hand-paper"></i> Stop Loss: 10.00%</li>
+                                    <li><i class="fas fa-flag-checkered"></i> Take Profit: 1.00%</li>
+                                    <li><i class="fas fa-chart-area"></i> Trailing Stop: 1.25%</li>
+                                    <li><i class="fas fa-percentage"></i> Position Size: 40%</li>
+                                    <li><i class="fas fa-hourglass-half"></i> Holding Time: 30 min</li>
+                                </ul>
+                            </div>
+                            <div class="col-6">
+                                <strong>Performance:</strong>
+                                <ul class="list-unstyled mt-2">
+                                    <li>📈 Return: <span class="positive">15.60%</span></li>
+                                    <li>🎯 Win Rate: 87.2%</li>
+                                    <li>⚡ Sharpe: 28.604</li>
+                                    <li>📉 Max Drawdown: -8.31%</li>
+                                    <li>🔢 Total Trades: 47</li>
+                                    <li>💰 Profit Factor: 1.57</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="strategy-card border-primary">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="text-primary"><i class="fas fa-coins"></i> Best Profit Factor</h5>
+                            <span class="performance-badge performance-excellent">
+                                Average
+                            </span>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Parameters:</strong>
+                                <ul class="list-unstyled mt-2">
+                                    <li><i class="fas fa-project-diagram"></i> Pattern: <code>btc_hl_breakout_1m</code></li>
+                                    <li><i class="fas fa-clock"></i> Lag: 0 min</li>
+                                    <li><i class="fas fa-hand-paper"></i> Stop Loss: 8.00%</li>
+                                    <li><i class="fas fa-flag-checkered"></i> Take Profit: 20.00%</li>
+                                    <li><i class="fas fa-chart-area"></i> Trailing Stop: 1.25%</li>
+                                    <li><i class="fas fa-percentage"></i> Position Size: 5%</li>
+                                    <li><i class="fas fa-hourglass-half"></i> Holding Time: 720 min</li>
+                                </ul>
+                            </div>
+                            <div class="col-6">
+                                <strong>Performance:</strong>
+                                <ul class="list-unstyled mt-2">
+                                    <li>📈 Return: <span class="positive">2.06%</span></li>
+                                    <li>🎯 Win Rate: 45.5%</li>
+                                    <li>⚡ Sharpe: 25.946</li>
+                                    <li>📉 Max Drawdown: -1.62%</li>
+                                    <li>🔢 Total Trades: 11</li>
+                                    <li>💰 Profit Factor: 2.21</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                </div>
+        
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <h2 class="mb-4"><i class="fas fa-chart-area text-info"></i> Trailing Stop Analysis</h2>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="trailing-stop-analysis">
+                            <h5><i class="fas fa-microscope"></i> Trailing Stop Performance Analysis</h5>
+                            <p class="mb-3">Analysis of different trailing stop percentages and their impact on strategy performance.</p>
+            
+                            <div class="table-responsive">
+                                <table class="table table-hover bg-white">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Trailing Stop %</th>
+                                            <th>Avg Return %</th>
+                                            <th>Win Rate %</th>
+                                            <th>Avg Sharpe</th>
+                                            <th>Profit Probability</th>
+                                            <th>Sample Size</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+            
+                                        <tr>
+                                            <td><strong>3.0%</strong></td>
+                                            <td><span class="positive">4.60%</span></td>
+                                            <td>41.8%</td>
+                                            <td>12.367</td>
+                                            <td>84.8%</td>
+                                            <td>112</td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td><strong>2.5%</strong></td>
+                                            <td><span class="positive">3.65%</span></td>
+                                            <td>41.5%</td>
+                                            <td>9.655</td>
+                                            <td>78.9%</td>
+                                            <td>90</td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td><strong>5.0%</strong></td>
+                                            <td><span class="positive">3.54%</span></td>
+                                            <td>40.5%</td>
+                                            <td>10.997</td>
+                                            <td>80.7%</td>
+                                            <td>114</td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td><strong>1.8%</strong></td>
+                                            <td><span class="positive">3.34%</span></td>
+                                            <td>42.1%</td>
+                                            <td>11.166</td>
+                                            <td>84.4%</td>
+                                            <td>199</td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td><strong>3.5%</strong></td>
+                                            <td><span class="positive">3.10%</span></td>
+                                            <td>40.9%</td>
+                                            <td>9.960</td>
+                                            <td>83.8%</td>
+                                            <td>99</td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td><strong>1.5%</strong></td>
+                                            <td><span class="positive">3.04%</span></td>
+                                            <td>42.8%</td>
+                                            <td>10.546</td>
+                                            <td>83.5%</td>
+                                            <td>176</td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td><strong>4.0%</strong></td>
+                                            <td><span class="positive">3.02%</span></td>
+                                            <td>40.5%</td>
+                                            <td>10.174</td>
+                                            <td>80.4%</td>
+                                            <td>107</td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td><strong>0.8%</strong></td>
+                                            <td><span class="positive">2.99%</span></td>
+                                            <td>43.0%</td>
+                                            <td>10.151</td>
+                                            <td>78.0%</td>
+                                            <td>200</td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td><strong>0.3%</strong></td>
+                                            <td><span class="positive">2.76%</span></td>
+                                            <td>41.5%</td>
+                                            <td>9.013</td>
+                                            <td>79.0%</td>
+                                            <td>181</td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td><strong>0.5%</strong></td>
+                                            <td><span class="positive">2.27%</span></td>
+                                            <td>41.3%</td>
+                                            <td>8.886</td>
+                                            <td>76.4%</td>
+                                            <td>195</td>
+                                        </tr>
+                
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <h2 class="mb-4"><i class="fas fa-lightbulb text-warning"></i> Parameter Insights</h2>
+                    </div>
+                </div>
+                <div class="row">
+            
+                <div class="col-md-6 mb-3">
+                    <div class="parameter-insight">
+                        <h6><i class="fas fa-cog"></i> Stop Loss</h6>
+                        <p class="mb-2">
+                            <strong>Optimal Range:</strong> 0.007 - 0.100<br>
+                            <strong>Recommended Value:</strong> 0.040<br>
+                            <strong>Most Common:</strong> 0.035
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="parameter-insight">
+                        <h6><i class="fas fa-cog"></i> Take Profit</h6>
+                        <p class="mb-2">
+                            <strong>Optimal Range:</strong> 0.010 - 0.300<br>
+                            <strong>Recommended Value:</strong> 0.060<br>
+                            <strong>Most Common:</strong> 0.200
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="parameter-insight">
+                        <h6><i class="fas fa-cog"></i> Trailing Stop</h6>
+                        <p class="mb-2">
+                            <strong>Optimal Range:</strong> 0.003 - 0.050<br>
+                            <strong>Recommended Value:</strong> 0.018<br>
+                            <strong>Most Common:</strong> 0.030
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="parameter-insight">
+                        <h6><i class="fas fa-cog"></i> Lag</h6>
+                        <p class="mb-2">
+                            <strong>Optimal Range:</strong> 0.000 - 0.000<br>
+                            <strong>Recommended Value:</strong> 0.000<br>
+                            <strong>Most Common:</strong> 0.000
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="parameter-insight">
+                        <h6><i class="fas fa-cog"></i> Position Size</h6>
+                        <p class="mb-2">
+                            <strong>Optimal Range:</strong> 0.200 - 0.500<br>
+                            <strong>Recommended Value:</strong> 0.400<br>
+                            <strong>Most Common:</strong> 0.500
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="parameter-insight">
+                        <h6><i class="fas fa-cog"></i> Holding Time</h6>
+                        <p class="mb-2">
+                            <strong>Optimal Range:</strong> 5.000 - 1440.000<br>
+                            <strong>Recommended Value:</strong> 60.000<br>
+                            <strong>Most Common:</strong> 15.000
+                        </p>
+                    </div>
+                </div>
+                
+                </div>
+            
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <h2 class="mb-4"><i class="fas fa-download text-success"></i> Data Downloads</h2>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-chart-bar"></i> Analysis Results</h5>
+                                <p class="card-text text-muted">Comprehensive strategy performance data</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="data/all_results.csv" class="btn btn-outline-primary btn-sm">📊 All Results</a>
+                                    <a href="data/top_100_strategies.csv" class="btn btn-outline-success btn-sm">🏆 Top 100</a>
+                                    <a href="data/parameter_analysis.txt" class="btn btn-outline-info btn-sm">⚙️ Parameters</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>  
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-exchange-alt"></i> Trading Data</h5>
+                                <p class="card-text text-muted">Individual trades and detailed analysis</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="data/individual_trades.csv" class="btn btn-outline-warning btn-sm">📝 Individual Trades</a>
+                                    <a href="data/trades_summary.csv" class="btn btn-outline-secondary btn-sm">📋 Summary</a>
+                                    <a href="data/trailing_stop_analysis.csv" class="btn btn-outline-dark btn-sm">📈 Trailing Stop</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <h2 class="mb-4"><i class="fas fa-chart-bar text-info"></i> Analysis Charts</h2>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="chart-container">
+                            <h4><i class="fas fa-chart-line"></i> Return Analysis</h4>
+                            <p class="text-muted">Distribution of strategy returns and risk-return analysis</p>
+                            <img src="charts/return_analysis.png" class="img-fluid w-100 border rounded" alt="Return Analysis" style="max-height: 600px; object-fit: contain;">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="chart-container">
+                            <h4><i class="fas fa-sliders-h"></i> Parameter Impact Analysis</h4>
+                            <p class="text-muted">Impact of different parameter values on strategy performance</p>
+                            <img src="charts/parameter_impact.png" class="img-fluid w-100 border rounded" alt="Parameter Impact" style="max-height: 600px; object-fit: contain;">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="chart-container">
+                            <h4><i class="fas fa-clock"></i> Price Action Lag Impact</h4>
+                            <p class="text-muted">Analysis of how price action lag affects strategy performance</p>
+                            <img src="charts/price_action_lag_impact.png" class="img-fluid w-100 border rounded" alt="Price Action Lag Impact" style="max-height: 600px; object-fit: contain;">
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="chart-container">
+                            <h4><i class="fas fa-chart-area"></i> Trailing Stop Analysis</h4>
+                            <p class="text-muted">Impact of different trailing stop percentages on strategy performance</p>
+                            <img src="charts/trailing_stop_analysis.png" class="img-fluid w-100 border rounded" alt="Trailing Stop Analysis" style="max-height: 600px; object-fit: contain;">
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <div class="text-center">
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-body">
+                                    <h5 class="mb-3">Navigation</h5>
+                                    <a href="../index.html" class="btn btn-primary btn-lg">← View All Analysis Results</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center text-muted">
+                            <hr>
+                            <p><i class="fas fa-robot"></i> Comprehensive Trading Strategy Analysis Report</p>
+                            <p><i class="fas fa-chart-line"></i> Generated on September 05, 2025 at 20:18</p>
+                            <p><i class="fas fa-chart-area"></i> Trailing Stop Analysis Enabled</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        </body>
+        </html>
+        

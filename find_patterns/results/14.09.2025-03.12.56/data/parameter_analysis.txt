@@ -1,0 +1,129 @@
+ENHANCED PARAMETER ANALYSIS REPORT
+==================================================
+
+PATTERN ANALYSIS:
+------------------------------
+Top 10 values by average return:
+ 1. Value: btc_bullish | Avg Return:   4.29% | Win Rate:  41.6% | Samples:  104
+ 2. Value: btc_small_up_10m | Avg Return:   3.89% | Win Rate:  42.8% | Samples:   99
+ 3. Value: btc_hl_breakout_9m | Avg Return:   3.75% | Win Rate:  42.2% | Samples:  105
+ 4. Value: btc_alt_aligned | Avg Return:   3.73% | Win Rate:  40.7% | Samples:   84
+ 5. Value: btc_hl_breakout_10m | Avg Return:   3.64% | Win Rate:  44.6% | Samples:   77
+ 6. Value: btc_hl_breakout_4m | Avg Return:   3.61% | Win Rate:  41.9% | Samples:   90
+ 7. Value: btc_hl_breakout_7m | Avg Return:   3.33% | Win Rate:  42.6% | Samples:  113
+ 8. Value: btc_vol_breakout_2m | Avg Return:   3.09% | Win Rate:  42.0% | Samples:   93
+ 9. Value: btc_small_down_10m | Avg Return:   3.00% | Win Rate:  44.1% | Samples:  111
+10. Value: btc_vol_breakout_3m | Avg Return:   2.61% | Win Rate:  43.4% | Samples:  110
+
+LAG ANALYSIS:
+------------------------------
+Top 10 values by average return:
+ 1. Value: 0.0000 | Avg Return:   2.73% | Win Rate:  42.1% | Samples: 2000
+
+STOP LOSS ANALYSIS:
+------------------------------
+Top 10 values by average return:
+ 1. Value: 0.0600 | Avg Return:   6.75% | Win Rate:  57.1% | Samples:   80
+ 2. Value: 0.0800 | Avg Return:   6.25% | Win Rate:  60.7% | Samples:   90
+ 3. Value: 0.0400 | Avg Return:   6.14% | Win Rate:  47.2% | Samples:   97
+ 4. Value: 0.0350 | Avg Return:   5.96% | Win Rate:  48.8% | Samples:  161
+ 5. Value: 0.1000 | Avg Return:   5.73% | Win Rate:  58.9% | Samples:   81
+ 6. Value: 0.0500 | Avg Return:   4.23% | Win Rate:  50.0% | Samples:   82
+ 7. Value: 0.0300 | Avg Return:   3.67% | Win Rate:  45.5% | Samples:  146
+ 8. Value: 0.0250 | Avg Return:   3.47% | Win Rate:  43.1% | Samples:  151
+ 9. Value: 0.0125 | Avg Return:   3.21% | Win Rate:  39.8% | Samples:  148
+10. Value: 0.0100 | Avg Return:   1.88% | Win Rate:  34.9% | Samples:  169
+
+TAKE PROFIT ANALYSIS:
+------------------------------
+Top 10 values by average return:
+ 1. Value: 0.1000 | Avg Return:   4.14% | Win Rate:  35.2% | Samples:   72
+ 2. Value: 0.2000 | Avg Return:   4.10% | Win Rate:  33.1% | Samples:   70
+ 3. Value: 0.0800 | Avg Return:   3.95% | Win Rate:  36.7% | Samples:   73
+ 4. Value: 0.2500 | Avg Return:   3.82% | Win Rate:  32.7% | Samples:   89
+ 5. Value: 0.1500 | Avg Return:   3.63% | Win Rate:  33.4% | Samples:   89
+ 6. Value: 0.1200 | Avg Return:   3.44% | Win Rate:  33.4% | Samples:   65
+ 7. Value: 0.0200 | Avg Return:   3.04% | Win Rate:  50.5% | Samples:  144
+ 8. Value: 0.0350 | Avg Return:   2.98% | Win Rate:  44.2% | Samples:  141
+ 9. Value: 0.0250 | Avg Return:   2.90% | Win Rate:  46.8% | Samples:  161
+10. Value: 0.0300 | Avg Return:   2.74% | Win Rate:  44.4% | Samples:  125
+
+TRAILING STOP ANALYSIS:
+------------------------------
+Top 10 values by average return:
+ 1. Value: 0.0400 | Avg Return:   4.06% | Win Rate:  40.2% | Samples:  101
+ 2. Value: 0.0300 | Avg Return:   3.48% | Win Rate:  42.3% | Samples:  116
+ 3. Value: 0.0250 | Avg Return:   3.29% | Win Rate:  44.8% | Samples:  100
+ 4. Value: 0.0500 | Avg Return:   3.19% | Win Rate:  39.8% | Samples:   92
+ 5. Value: 0.0350 | Avg Return:   2.88% | Win Rate:  43.0% | Samples:  106
+ 6. Value: 0.0100 | Avg Return:   2.82% | Win Rate:  43.2% | Samples:  193
+ 7. Value: 0.0030 | Avg Return:   2.79% | Win Rate:  43.5% | Samples:  181
+ 8. Value: 0.0075 | Avg Return:   2.57% | Win Rate:  41.2% | Samples:  202
+ 9. Value: 0.0125 | Avg Return:   2.55% | Win Rate:  41.4% | Samples:  182
+10. Value: 0.0200 | Avg Return:   2.41% | Win Rate:  43.2% | Samples:  194
+
+POSITION SIZE ANALYSIS:
+------------------------------
+Top 10 values by average return:
+ 1. Value: 0.5000 | Avg Return:   7.33% | Win Rate:  44.7% | Samples:  153
+ 2. Value: 0.4000 | Avg Return:   5.41% | Win Rate:  41.3% | Samples:  161
+ 3. Value: 0.3000 | Avg Return:   4.24% | Win Rate:  42.0% | Samples:  162
+ 4. Value: 0.2500 | Avg Return:   2.93% | Win Rate:  41.6% | Samples:  314
+ 5. Value: 0.2000 | Avg Return:   2.40% | Win Rate:  41.6% | Samples:  281
+ 6. Value: 0.1500 | Avg Return:   1.87% | Win Rate:  42.4% | Samples:  300
+ 7. Value: 0.1000 | Avg Return:   1.37% | Win Rate:  43.4% | Samples:  315
+ 8. Value: 0.0500 | Avg Return:   0.59% | Win Rate:  40.7% | Samples:  314
+
+HOLDING TIME ANALYSIS:
+------------------------------
+Top 10 values by average return:
+ 1. Value: 180.0000 | Avg Return:   4.02% | Win Rate:  42.6% | Samples:   94
+ 2. Value: 120.0000 | Avg Return:   3.81% | Win Rate:  42.5% | Samples:   93
+ 3. Value: 480.0000 | Avg Return:   3.37% | Win Rate:  42.7% | Samples:   88
+ 4. Value: 720.0000 | Avg Return:   3.36% | Win Rate:  40.8% | Samples:  117
+ 5. Value: 240.0000 | Avg Return:   3.28% | Win Rate:  41.8% | Samples:   84
+ 6. Value: 1440.0000 | Avg Return:   2.93% | Win Rate:  43.1% | Samples:   81
+ 7. Value: 30.0000 | Avg Return:   2.85% | Win Rate:  42.8% | Samples:  166
+ 8. Value: 360.0000 | Avg Return:   2.85% | Win Rate:  41.8% | Samples:   84
+ 9. Value: 60.0000 | Avg Return:   2.66% | Win Rate:  43.8% | Samples:  177
+10. Value: 15.0000 | Avg Return:   2.59% | Win Rate:  40.9% | Samples:  178
+
+
+OPTIMAL PARAMETER RANGES (Top 10% Strategies):
+--------------------------------------------------
+STOP LOSS:
+  Range: 0.0100 - 0.1000
+  Recommended: 0.0400
+  Most Common: 0.0350
+  Mean: 0.0507
+
+TAKE PROFIT:
+  Range: 0.0100 - 0.3000
+  Recommended: 0.0600
+  Most Common: 0.2500
+  Mean: 0.0964
+
+TRAILING STOP:
+  Range: 0.0030 - 0.0500
+  Recommended: 0.0150
+  Most Common: 0.0100
+  Mean: 0.0198
+
+LAG:
+  Range: 0.0000 - 0.0000
+  Recommended: 0.0000
+  Most Common: 0.0000
+  Mean: 0.0000
+
+POSITION SIZE:
+  Range: 0.2000 - 0.5000
+  Recommended: 0.4000
+  Most Common: 0.5000
+  Mean: 0.4035
+
+HOLDING TIME:
+  Range: 5.0000 - 1440.0000
+  Recommended: 120.0000
+  Most Common: 720.0000
+  Mean: 267.2500
+
